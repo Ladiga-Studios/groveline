@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase/server";
 import { money, pickupWindow } from "@/lib/format";
 import type { Claim, Drop } from "@/lib/types";
+import Link from "next/link";
 import ClaimList, { InventoryControl } from "./ClaimList";
 import CopyButton from "@/components/CopyButton";
 
@@ -55,6 +56,9 @@ export default async function DropAdminPage({
         {drop.claimed} of {drop.quantity} claimed
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
+        <Link href={`/dashboard/drops/${drop.id}/edit`} className="btn btn-outline">
+          Edit drop
+        </Link>
         <CopyButton text={url} />
         <CopyButton
           text={(claims ?? [])

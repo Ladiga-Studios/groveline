@@ -23,6 +23,23 @@ export default function LoginPage() {
     if (params.get("error") === "link") {
       setError("That link expired. Log in below, or reset your password.");
     }
+    /* Already logged in? No reason to be here. */
+    (async () => {
+      const supabase = supabaseBrowser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("id, is_seller")
+          .maybeSingle();
+        router.replace(
+          profile ? (profile.is_seller ? "/dashboard" : "/browse") : "/welcome"
+        );
+      }
+    })();
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
 
   function switchMode(next: Mode) {

@@ -96,6 +96,7 @@ export default function ClaimList({
   const [claims, setClaims] = useState(initialClaims);
   const [status, setStatus] = useState(dropStatus);
   const [confirmClose, setConfirmClose] = useState(false);
+  const [removing, setRemoving] = useState<Claim | null>(null);
   const toast = useToast();
 
   async function togglePickedUp(claim: Claim) {
@@ -114,6 +115,21 @@ export default function ClaimList({
       );
       toast("Could not update. Try again.", "error");
     }
+  }
+
+  async function removeClaim(claim: Claim) {
+    const supabase = supabaseBrowser();
+    const { error } = await supabase.rpc("remove_claim", { p_claim: claim.id });
+    setRemoving(null);
+    if (error) {
+      toast("Could not remove the claim.", "error");
+      return;
+    }
+    setClaims((cs) => cs.filter((c) => c.id !== claim.id));
+    toast(
+      `Removed. ${claim.quantity} ${claim.quantity === 1 ? "item is" : "items are"} available again.`,
+      "success"
+    );
   }
 
   async function setDropStatus(next: "active" | "closed") {
@@ -166,17 +182,50 @@ export default function ClaimList({
                   {c.method === "cash" ? "Cash at pickup" : c.paid ? "Paid by card" : "Card pending"}
                 </p>
               </div>
-              <button
-                onClick={() => togglePickedUp(c)}
-                aria-pressed={c.picked_up}
-                className={c.picked_up ? "btn btn-grove !min-h-11" : "btn btn-outline !min-h-11"}
-              >
-                {c.picked_up ? "Picked up" : "Mark picked up"}
-              </button>
+              <div className="flex flex-col items-end gap-1">
+                <button
+                  onClick={() => togglePickedUp(c)}
+                  aria-pressed={c.picked_up}
+                  className={c.picked_up ? "btn btn-grove !min-h-11" : "btn btn-outline !min-h-11"}
+                >
+                  {c.picked_up ? "Picked up" : "Mark picked up"}
+                </button>
+                {!c.picked_up && (
+                  <button
+                    onClick={() => setRemoving(c)}
+                    className="px-2 py-1 text-xs text-muted underline"
+                  >
+                    Remove claim
+                  </button>
+                )}
+              </div>
             </li>
           ))}
         </ul>
       )}
+
+      <Modal
+        open={!!removing}
+        onClose={() => setRemoving(null)}
+        title="Remove this claim?"
+      >
+        <p className="mb-4">
+          {removing
+            ? `${removing.buyer_name}'s reservation for ${removing.quantity} comes off the list and those items open back up for anyone to claim. Use this when a buyer cancels or does not show.`
+            : ""}
+        </p>
+        <div className="flex gap-3">
+          <button
+            className="btn btn-primary grow"
+            onClick={() => removing && removeClaim(removing)}
+          >
+            Remove claim
+          </button>
+          <button className="btn btn-outline" onClick={() => setRemoving(null)}>
+            Keep it
+          </button>
+        </div>
+      </Modal>
 
       <Modal
         open={confirmClose}

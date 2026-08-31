@@ -36,6 +36,7 @@ export default function WelcomePage() {
     const base = slugify(farmName || name) || "seller";
     const { error: err } = await supabase.from("profiles").insert({
       id: user.id,
+      email: user.email ?? null,
       name: name.trim(),
       town: town.trim(),
       state: usState,

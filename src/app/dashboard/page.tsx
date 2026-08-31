@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase/server";
 import { money, pickupWindow } from "@/lib/format";
 import type { Drop } from "@/lib/types";
+import BecomeSeller from "./BecomeSeller";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,9 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .maybeSingle();
   if (!profile) redirect("/welcome");
-  if (!profile.is_seller) redirect("/browse");
+  if (!profile.is_seller) {
+    return <BecomeSeller firstName={profile.name.split(" ")[0]} />;
+  }
 
   const [{ data: drops }, { count: subCount }] = await Promise.all([
     supabase
@@ -45,9 +48,14 @@ export default async function DashboardPage() {
             {subCount ?? 0} email subscriber{(subCount ?? 0) === 1 ? "" : "s"}.
           </p>
         </div>
-        <Link href="/dashboard/new" className="btn btn-primary">
-          Post a drop
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/dashboard/settings" className="btn btn-outline">
+            Settings
+          </Link>
+          <Link href="/dashboard/new" className="btn btn-primary">
+            Post a drop
+          </Link>
+        </div>
       </div>
 
       <p className="mt-2 text-sm text-muted">

@@ -22,6 +22,12 @@ export default function Footer() {
           <Link href="/login" className="hover:underline">
             Log in
           </Link>
+          <Link href="/privacy" className="hover:underline">
+            Privacy
+          </Link>
+          <Link href="/terms" className="hover:underline">
+            Terms
+          </Link>
         </nav>
         <div className="flex flex-col gap-2 text-cream/80">
           <a href="mailto:hello@groveline.io" className="hover:underline">

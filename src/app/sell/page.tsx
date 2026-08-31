@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
+import { supabaseServer } from "@/lib/supabase/server";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Start selling",
@@ -9,7 +12,42 @@ export const metadata: Metadata = {
   alternates: { canonical: "/sell" },
 };
 
-export default function SellPage() {
+async function getViewer() {
+  try {
+    const supabase = await supabaseServer();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { loggedIn: false, isSeller: false };
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_seller")
+      .eq("id", user.id)
+      .maybeSingle();
+    return { loggedIn: true, isSeller: !!profile?.is_seller };
+  } catch {
+    return { loggedIn: false, isSeller: false };
+  }
+}
+
+export default async function SellPage() {
+  const { loggedIn, isSeller } = await getViewer();
+  const ctaHref = isSeller
+    ? "/dashboard/new"
+    : loggedIn
+      ? "/dashboard"
+      : "/login?mode=register";
+  const ctaLabel = isSeller
+    ? "Post a drop"
+    : loggedIn
+      ? "Turn on selling for my account"
+      : "Create your free account";
+  const ctaHint = isSeller
+    ? "You are all set up. A new drop takes about a minute."
+    : loggedIn
+      ? "You already have an account. One tap turns selling on, no new signup."
+      : "Takes about a minute to sign up. Your first drop can be live tonight.";
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
       <h1 className="text-4xl font-semibold">Your post, minus the chaos</h1>
@@ -63,12 +101,10 @@ export default function SellPage() {
       </Reveal>
 
       <div className="mt-8 text-center">
-        <Link href="/login?mode=register" className="btn btn-primary text-lg">
-          Create your free account
+        <Link href={ctaHref} className="btn btn-primary text-lg">
+          {ctaLabel}
         </Link>
-        <p className="mt-3 text-sm text-muted">
-          Takes about a minute to sign up. Your first drop can be live tonight.
-        </p>
+        <p className="mt-3 text-sm text-muted">{ctaHint}</p>
       </div>
     </div>
   );

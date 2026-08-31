@@ -25,6 +25,24 @@ const jsonLd = {
     "Groveline lets local sellers post a drop, share one link, and track claims, pickups, and buyer emails automatically.",
 };
 
+async function getViewer() {
+  try {
+    const supabase = await supabaseServer();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { loggedIn: false, isSeller: false };
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_seller")
+      .eq("id", user.id)
+      .maybeSingle();
+    return { loggedIn: true, isSeller: !!profile?.is_seller };
+  } catch {
+    return { loggedIn: false, isSeller: false };
+  }
+}
+
 async function getFreshDrops(): Promise<Drop[]> {
   try {
     const supabase = await supabaseServer();
@@ -42,7 +60,13 @@ async function getFreshDrops(): Promise<Drop[]> {
 }
 
 export default async function Home() {
-  const fresh = await getFreshDrops();
+  const [fresh, viewer] = await Promise.all([getFreshDrops(), getViewer()]);
+  const sellHref = viewer.isSeller
+    ? "/dashboard/new"
+    : viewer.loggedIn
+      ? "/dashboard"
+      : "/sell";
+  const sellLabel = viewer.isSeller ? "Post a drop" : "Start selling free";
 
   return (
     <>
@@ -67,8 +91,8 @@ export default async function Home() {
               <Link href="/browse" className="btn btn-primary text-lg">
                 Shop local drops
               </Link>
-              <Link href="/sell" className="btn btn-grove text-lg">
-                Start selling free
+              <Link href={sellHref} className="btn btn-grove text-lg">
+                {sellLabel}
               </Link>
             </div>
             <p className="mt-4 text-sm text-muted">
@@ -300,8 +324,21 @@ export default async function Home() {
           Groveline keeps 5 percent of card orders and that is the only fee.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Link href="/login?mode=register" className="btn btn-primary text-lg">
-            Create your free account
+          <Link
+            href={
+              viewer.isSeller
+                ? "/dashboard/new"
+                : viewer.loggedIn
+                  ? "/dashboard"
+                  : "/login?mode=register"
+            }
+            className="btn btn-primary text-lg"
+          >
+            {viewer.isSeller
+              ? "Post a drop"
+              : viewer.loggedIn
+                ? "Turn on selling for my account"
+                : "Create your free account"}
           </Link>
           <Link href="/browse" className="btn btn-outline text-lg">
             Just here to shop

@@ -20,6 +20,7 @@ it ships, new changes get a new file.
 ## Needs to be run
 
 - 0003_add_profile_state.sql
+- 0004_claim_removal_and_follower_emails.sql
 
 ## History
 
@@ -27,3 +28,4 @@ it ships, new changes get a new file.
   the atomic claim_drop function, all RLS policies, drop-photos bucket
 - 0002: category column on drops for browse filtering
 - 0003: state column on profiles for browse filtering
+- 0004: profile emails for follower notifications, atomic remove_claim function
