@@ -293,3 +293,15 @@ body[data-modal-open="true"] {
     transform: none;
   }
 }
+
+/* Subtle repeating texture for otherwise plain screens (auth, empty states).
+   Kept faint so it never fights with form text. */
+.pattern-bg {
+  background-image: url("/illustrations/pattern.jpg");
+  background-size: 340px;
+  background-repeat: repeat;
+  background-position: top left;
+}
+.pattern-bg::before {
+  content: "";
+}

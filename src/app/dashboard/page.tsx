@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase/server";
 import { money, pickupWindow } from "@/lib/format";
 import type { Drop } from "@/lib/types";
+import Image from "next/image";
 import BecomeSeller from "./BecomeSeller";
 
 export const dynamic = "force-dynamic";
@@ -71,7 +72,14 @@ export default async function DashboardPage() {
 
       {!drops || drops.length === 0 ? (
         <div className="tag-card mt-8 p-8 text-center">
-          <p className="font-display text-xl font-semibold">
+          <Image
+            src="/illustrations/sprout.jpg"
+            alt=""
+            width={1254}
+            height={1254}
+            className="mx-auto h-32 w-auto"
+          />
+          <p className="mt-4 font-display text-xl font-semibold">
             Nothing posted yet.
           </p>
           <p className="mt-2 text-muted">

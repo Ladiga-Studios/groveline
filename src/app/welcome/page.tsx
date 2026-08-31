@@ -55,6 +55,7 @@ export default function WelcomePage() {
   }
 
   return (
+    <div className="pattern-bg">
     <div className="mx-auto max-w-md px-4 py-14">
       <h1 className="text-3xl font-semibold">Almost there</h1>
       <p className="mt-2 text-muted">A few basics and you are in.</p>
@@ -129,6 +130,7 @@ export default function WelcomePage() {
           {busy ? "Saving" : "Finish"}
         </button>
       </form>
+    </div>
     </div>
   );
 }

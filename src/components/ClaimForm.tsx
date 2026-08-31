@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Image from "next/image";
 import type { Drop } from "@/lib/types";
 import { money, pickupWindow } from "@/lib/format";
 import { useToast } from "./Toast";
@@ -220,7 +221,14 @@ function WaitlistForm({ dropId }: { dropId: string }) {
   }
   return (
     <form onSubmit={submit} className="tag-card flex flex-col gap-3 p-6" noValidate>
-      <p className="font-display text-xl font-semibold">This drop is sold out.</p>
+      <Image
+        src="/illustrations/basket.jpg"
+        alt=""
+        width={1254}
+        height={1254}
+        className="mx-auto h-24 w-auto"
+      />
+      <p className="text-center font-display text-xl font-semibold">This drop is sold out.</p>
       <p className="text-sm text-muted">
         Leave your number and the seller can reach you if more opens up.
       </p>

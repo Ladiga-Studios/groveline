@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import Reveal from "@/components/Reveal";
 import { supabaseServer } from "@/lib/supabase/server";
 
@@ -50,13 +51,25 @@ export default async function SellPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
-      <h1 className="text-4xl font-semibold">Your post, minus the chaos</h1>
-      <p className="mt-4 text-lg">
-        Right now you post to Facebook and spend the next two days answering
-        the same three questions. Is this still available. How do I pay. When
-        can I get it. Groveline answers all of that for you, whether you sell
-        bread, beef, plants, soap, or Friday plate sales.
-      </p>
+      <div className="grid items-center gap-6 sm:grid-cols-[1fr_auto]">
+        <div>
+          <h1 className="text-4xl font-semibold">Your post, minus the chaos</h1>
+          <p className="mt-4 text-lg">
+            Right now you post to Facebook and spend the next two days
+            answering the same three questions. Is this still available. How
+            do I pay. When can I get it. Groveline answers all of that for
+            you, whether you sell bread, beef, plants, soap, or Friday plate
+            sales.
+          </p>
+        </div>
+        <Image
+          src="/illustrations/bag.jpg"
+          alt=""
+          width={1254}
+          height={1254}
+          className="mx-auto hidden h-32 w-auto sm:block"
+        />
+      </div>
 
       <Reveal>
         <div className="tag-card mt-8 p-6">
@@ -93,9 +106,9 @@ export default async function SellPage() {
         <div className="tag-card mt-4 p-6">
           <h2 className="text-2xl font-semibold">What it costs</h2>
           <p className="mt-2">
-            Free until money moves. Cash reservations cost nothing, forever.
-            When card payments launch, Groveline keeps 5 percent per card order
-            and that is the whole fee. No subscription, no monthly bill.
+            Your first drop is free to try, no card needed. After that it is a
+            flat $10 a month if you want to keep posting, and that is it, no
+            cut taken out of any sale, cash or card.
           </p>
         </div>
       </Reveal>

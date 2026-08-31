@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { useToast } from "@/components/Toast";
 
@@ -23,7 +24,6 @@ export default function LoginPage() {
     if (params.get("error") === "link") {
       setError("That link expired. Log in below, or reset your password.");
     }
-    /* Already logged in? No reason to be here. */
     (async () => {
       const supabase = supabaseBrowser();
       const {
@@ -113,7 +113,6 @@ export default function LoginPage() {
       return;
     }
 
-    // forgot
     const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/reset`,
     });
@@ -123,110 +122,125 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="mx-auto max-w-md px-4 py-14">
-      <h1 className="text-3xl font-semibold">
-        {mode === "register"
-          ? "Create your free account"
-          : mode === "forgot"
-            ? "Reset your password"
-            : "Log in"}
-      </h1>
-      <p className="mt-2 text-muted">
-        {mode === "register"
-          ? "One account covers buying and selling. Selling is free until you sell."
-          : mode === "forgot"
-            ? "Enter your email and we will send you a link to set a new password."
-            : "Welcome back."}
-      </p>
+    <div className="pattern-bg">
+      <div className="mx-auto grid max-w-4xl items-center gap-8 px-4 py-14 lg:grid-cols-2">
+        <div className="order-2 lg:order-1">
+          <h1 className="text-3xl font-semibold">
+            {mode === "register"
+              ? "Create your free account"
+              : mode === "forgot"
+                ? "Reset your password"
+                : "Log in"}
+          </h1>
+          <p className="mt-2 text-muted">
+            {mode === "register"
+              ? "One account covers buying and selling. Selling is free to start."
+              : mode === "forgot"
+                ? "Enter your email and we will send you a link to set a new password."
+                : "Welcome back."}
+          </p>
 
-      <form onSubmit={submit} className="tag-card mt-6 flex flex-col gap-4 p-6" noValidate>
-        <div>
-          <label htmlFor="auth-email" className="field-label">
-            Email address
-          </label>
-          <input
-            id="auth-email"
-            type="email"
-            className="field"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
-            aria-invalid={!!error}
-          />
-        </div>
-
-        {mode !== "forgot" && (
-          <div>
-            <label htmlFor="auth-password" className="field-label">
-              Password
-            </label>
-            <div className="relative">
+          <form onSubmit={submit} className="tag-card mt-6 flex flex-col gap-4 p-6" noValidate>
+            <div>
+              <label htmlFor="auth-email" className="field-label">
+                Email address
+              </label>
               <input
-                id="auth-password"
-                type={showPw ? "text" : "password"}
-                className="field pr-20"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete={mode === "register" ? "new-password" : "current-password"}
+                id="auth-email"
+                type="email"
+                className="field"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
                 aria-invalid={!!error}
               />
-              <button
-                type="button"
-                onClick={() => setShowPw(!showPw)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-3 py-2 text-sm font-medium text-muted hover:bg-cream-dark"
-              >
-                {showPw ? "Hide" : "Show"}
-              </button>
             </div>
+
+            {mode !== "forgot" && (
+              <div>
+                <label htmlFor="auth-password" className="field-label">
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    id="auth-password"
+                    type={showPw ? "text" : "password"}
+                    className="field pr-20"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete={mode === "register" ? "new-password" : "current-password"}
+                    aria-invalid={!!error}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPw(!showPw)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-3 py-2 text-sm font-medium text-muted hover:bg-cream-dark"
+                  >
+                    {showPw ? "Hide" : "Show"}
+                  </button>
+                </div>
+                {mode === "register" && (
+                  <p className="field-hint">At least 8 characters.</p>
+                )}
+              </div>
+            )}
+
+            {error && (
+              <p className="field-error" role="alert">
+                {error}
+              </p>
+            )}
+            {notice && (
+              <p className="font-medium text-grove" role="status">
+                {notice}
+              </p>
+            )}
+
+            <button className="btn btn-primary" disabled={busy}>
+              {busy
+                ? "One second"
+                : mode === "register"
+                  ? "Create account"
+                  : mode === "forgot"
+                    ? "Send reset link"
+                    : "Log in"}
+            </button>
+          </form>
+
+          <div className="mt-4 flex flex-col gap-2 text-center">
+            {mode === "login" && (
+              <>
+                <button className="text-grove underline underline-offset-2" onClick={() => switchMode("register")}>
+                  New here? Create a free account
+                </button>
+                <button className="text-sm text-muted underline" onClick={() => switchMode("forgot")}>
+                  Forgot your password?
+                </button>
+              </>
+            )}
             {mode === "register" && (
-              <p className="field-hint">At least 8 characters.</p>
+              <button className="text-grove underline underline-offset-2" onClick={() => switchMode("login")}>
+                Already have an account? Log in
+              </button>
+            )}
+            {mode === "forgot" && (
+              <button className="text-grove underline underline-offset-2" onClick={() => switchMode("login")}>
+                Back to log in
+              </button>
             )}
           </div>
-        )}
+        </div>
 
-        {error && (
-          <p className="field-error" role="alert">
-            {error}
-          </p>
-        )}
-        {notice && (
-          <p className="font-medium text-grove" role="status">
-            {notice}
-          </p>
-        )}
-
-        <button className="btn btn-primary" disabled={busy}>
-          {busy
-            ? "One second"
-            : mode === "register"
-              ? "Create account"
-              : mode === "forgot"
-                ? "Send reset link"
-                : "Log in"}
-        </button>
-      </form>
-
-      <div className="mt-4 flex flex-col gap-2 text-center">
-        {mode === "login" && (
-          <>
-            <button className="text-grove underline underline-offset-2" onClick={() => switchMode("register")}>
-              New here? Create a free account
-            </button>
-            <button className="text-sm text-muted underline" onClick={() => switchMode("forgot")}>
-              Forgot your password?
-            </button>
-          </>
-        )}
-        {mode === "register" && (
-          <button className="text-grove underline underline-offset-2" onClick={() => switchMode("login")}>
-            Already have an account? Log in
-          </button>
-        )}
-        {mode === "forgot" && (
-          <button className="text-grove underline underline-offset-2" onClick={() => switchMode("login")}>
-            Back to log in
-          </button>
-        )}
+        <div className="order-1 flex justify-center lg:order-2" aria-hidden="true">
+          <Image
+            src="/illustrations/phone.jpg"
+            alt=""
+            width={1254}
+            height={1254}
+            className="w-full max-w-xs"
+            priority
+          />
+        </div>
       </div>
     </div>
   );

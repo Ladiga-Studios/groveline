@@ -103,10 +103,10 @@ export default async function Home() {
 
           <div className="relative">
             <Image
-              src="/illustrations/hero.png"
+              src="/illustrations/hero.jpg"
               alt="A farmers market stand handing a bag of produce to a shopper"
-              width={1213}
-              height={445}
+              width={2172}
+              height={724}
               priority
               className="w-full rounded-2xl"
               sizes="(max-width: 1024px) 100vw, 600px"
@@ -158,40 +158,37 @@ export default async function Home() {
             Bread, eggs, beef shares, seedlings, soap, plate sales. If you make
             it in batches, this is for you.
           </p>
+          <Reveal>
+            <Image
+              src="/illustrations/steps.jpg"
+              alt="Writing a price tag, sending a link, and checking off a pickup list"
+              width={2172}
+              height={724}
+              className="mt-8 w-full rounded-2xl"
+              sizes="(max-width: 1024px) 100vw, 1152px"
+            />
+          </Reveal>
           <ol className="mt-8 grid gap-6 sm:grid-cols-3">
             {[
               {
-                img: "/illustrations/post.png",
-                alt: "A hand writing a price tag next to a basket of bread",
                 t: "Post it",
                 d: "What you have, how many, the price, and where to pick it up. About a minute on your phone, and a built in writer drafts the words if you want.",
               },
               {
-                img: "/illustrations/share.png",
-                alt: "A paper plane carrying a listing over a small town",
                 t: "Share it",
                 d: "You get one link. Paste it in the Facebook groups you already use. It shows your photo and price, and the count updates so nobody asks what is left.",
               },
               {
-                img: "/illustrations/pickup-list.png",
-                alt: "A clipboard checklist beside a crate of vegetables",
                 t: "Hand it out",
                 d: "Buyers reserve with a name and phone number. Pickup day, your list is your checklist: who is coming, how many, check them off as they pay.",
               },
             ].map((step, i) => (
               <Reveal key={step.t} delay={i * 90}>
                 <li className="tag-card h-full p-5">
-                  <Image
-                    src={step.img}
-                    alt={step.alt}
-                    width={220}
-                    height={250}
-                    className="mx-auto h-36 w-auto"
-                    sizes="220px"
-                  />
-                  <h3 className="mt-3 text-xl font-semibold">
-                    {i + 1}. {step.t}
-                  </h3>
+                  <p className="font-display text-3xl font-semibold text-leaf">
+                    {i + 1}
+                  </p>
+                  <h3 className="mt-1 text-xl font-semibold">{step.t}</h3>
                   <p className="mt-2 text-muted">{step.d}</p>
                 </li>
               </Reveal>
@@ -257,10 +254,10 @@ export default async function Home() {
       <section className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="shop">
         <div className="grid items-center gap-10 lg:grid-cols-2">
           <Image
-            src="/illustrations/goods.png"
-            alt="Bread, tomatoes, eggs, and preserves from local sellers"
-            width={353}
-            height={251}
+            src="/illustrations/goods.jpg"
+            alt="Bread, tomatoes, eggs, preserves, and cut flowers from local sellers"
+            width={1254}
+            height={1254}
             className="mx-auto w-full max-w-sm rounded-2xl"
             sizes="(max-width: 1024px) 100vw, 384px"
           />
@@ -303,10 +300,10 @@ export default async function Home() {
               </Link>
             </div>
             <Image
-              src="/illustrations/plates.png"
-              alt="A volunteer handing a plate to a neighbor at a fire station fundraiser"
-              width={407}
-              height={256}
+              src="/illustrations/plates.jpg"
+              alt="A volunteer handing a plate of food to a neighbor at a fundraiser"
+              width={1448}
+              height={1086}
               className="mx-auto w-full max-w-md rounded-2xl"
               sizes="(max-width: 1024px) 100vw, 448px"
             />
@@ -317,11 +314,12 @@ export default async function Home() {
       {/* Pricing + CTA */}
       <section className="mx-auto max-w-6xl px-4 py-16 text-center" aria-labelledby="go">
         <h2 id="go" className="text-3xl font-semibold">
-          Free until money moves
+          Your first drop is free
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-lg">
-          Cash reservations cost nothing, forever. When card payments launch,
-          Groveline keeps 5 percent of card orders and that is the only fee.
+          Try it with no card needed. After that it is a flat $10 a month if
+          you want to keep posting, and that is it, no cut taken out of any
+          sale, cash or card.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link
