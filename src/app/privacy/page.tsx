@@ -19,7 +19,9 @@ export default function PrivacyPage() {
             If you reserve something: your name, phone number, and email if you
             choose to leave one. If you make an account: your email, name, town,
             and state. If you sell: what you post, including photos. If you join
-            a seller&apos;s email list: your email.
+            a seller&apos;s email list: your email. We also log the IP address
+            behind a reservation, used only to catch spam and automated
+            submissions.
           </p>
         </section>
         <section>
@@ -29,7 +31,9 @@ export default function PrivacyPage() {
             seller you reserved from so they know who is coming and can reach
             you if plans change. Emails are used for the things you asked for:
             claim confirmations, new drop announcements from sellers you follow
-            or subscribed to, and account emails like password resets.
+            or subscribed to, and account emails like password resets. Photos
+            and listing text are automatically reviewed before a drop goes
+            live, to keep the marketplace safe and on topic.
           </p>
         </section>
         <section>

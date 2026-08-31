@@ -7,6 +7,7 @@ import { categoryLabel } from "@/lib/categories";
 export default function DropCard({ drop }: { drop: Drop }) {
   const left = drop.quantity - drop.claimed;
   const soldOut = left <= 0 || drop.status === "closed";
+  const cover = drop.photo_urls?.[0] || drop.photo_url;
   return (
     <Link
       href={`/d/${drop.slug}`}
@@ -16,9 +17,9 @@ export default function DropCard({ drop }: { drop: Drop }) {
       }`}
     >
       <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-cream-dark">
-        {drop.photo_url ? (
+        {cover ? (
           <Image
-            src={drop.photo_url}
+            src={cover}
             alt=""
             fill
             sizes="96px"

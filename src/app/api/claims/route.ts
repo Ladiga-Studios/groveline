@@ -1,6 +1,26 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
+async function verifyTurnstile(token: string, ip: string | null) {
+  if (!process.env.TURNSTILE_SECRET_KEY) return true; // not configured yet, don't block
+  if (!token) return false;
+  try {
+    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        secret: process.env.TURNSTILE_SECRET_KEY,
+        response: token,
+        ...(ip ? { remoteip: ip } : {}),
+      }),
+    });
+    const data = await res.json();
+    return !!data.success;
+  } catch {
+    return true; // Cloudflare hiccup shouldn't block a real buyer
+  }
+}
+
 export async function POST(req: Request) {
   let body: {
     drop_id?: string;
@@ -8,6 +28,9 @@ export async function POST(req: Request) {
     name?: string;
     phone?: string;
     email?: string | null;
+    company?: string;
+    renderedAt?: number;
+    turnstileToken?: string;
   };
   try {
     body = await req.json();
@@ -15,7 +38,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }
 
-  const { drop_id, quantity, name, phone, email } = body;
+  const { drop_id, quantity, name, phone, email, company, renderedAt, turnstileToken } = body;
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip") ||
+    null;
+
+  // Honeypot: a real person never fills this in.
+  if (company) {
+    return NextResponse.json({ position: 1 }); // pretend success, don't tip the bot off
+  }
+  // Too fast to be a person reading the form and typing.
+  if (renderedAt && Date.now() - renderedAt < 2500) {
+    return NextResponse.json({ position: 1 });
+  }
+  if (!(await verifyTurnstile(turnstileToken || "", ip))) {
+    return NextResponse.json({ error: "Verification failed" }, { status: 403 });
+  }
+
   if (
     !drop_id ||
     !name ||
@@ -30,6 +70,19 @@ export async function POST(req: Request) {
   }
 
   const supabase = supabaseAdmin();
+
+  if (ip) {
+    const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const { count } = await supabase
+      .from("claims")
+      .select("*", { count: "exact", head: true })
+      .eq("ip_address", ip)
+      .gte("created_at", since);
+    if ((count ?? 0) >= 6) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+  }
+
   const { data, error } = await supabase.rpc("claim_drop", {
     p_drop: drop_id,
     p_qty: quantity,
@@ -47,7 +100,10 @@ export async function POST(req: Request) {
 
   const result = data as { position: number; claim_id: string };
 
-  /* Email confirmation if the buyer left an email and Resend is configured. */
+  if (ip) {
+    supabase.from("claims").update({ ip_address: ip }).eq("id", result.claim_id).then();
+  }
+
   if (email && process.env.RESEND_API_KEY) {
     try {
       const { data: drop } = await supabase

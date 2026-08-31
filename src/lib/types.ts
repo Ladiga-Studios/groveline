@@ -16,6 +16,7 @@ export type Drop = {
   title: string;
   description: string | null;
   photo_url: string | null;
+  photo_urls: string[];
   price_cents: number;
   quantity: number;
   claimed: number;

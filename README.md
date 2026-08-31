@@ -34,32 +34,37 @@ The service role key stays server side only. It powers the atomic claim function
 
 Emails sent: buyer claim confirmations (when they leave an email) and new drop announcements to a seller's subscriber list. If `RESEND_API_KEY` is missing, the app runs fine and just skips email.
 
-### 4. Anthropic (the drop writer)
+### 4. Anthropic (content moderation)
 
-Set `ANTHROPIC_API_KEY`. The "Write it for me" button on the create drop screen sends the seller's rough notes to Claude and fills in a clean title and description. Cheap model, capped output, logged in sellers only. If the key is missing the button politely fails and sellers type it themselves.
+Set `ANTHROPIC_API_KEY`. Every drop, on posting or editing, gets checked in one API call that looks at all the photos and the listing text together and rejects anything with nudity, graphic content, or spammy text before it ever goes live. This costs a small fraction of a cent per drop since it's a single cheap-model call regardless of how many photos are attached. If the key is missing, drops post without a moderation check rather than sellers getting stuck, so don't skip this in production.
 
-### 5. Run it
+### 5. Cloudflare Turnstile (optional, stops bot reservations)
+
+Free, and reuses the same Cloudflare account already handling your DNS. In the Cloudflare dashboard, add a Turnstile site for groveline.io, choose the invisible/managed widget, and you'll get a site key and a secret key. Set `NEXT_PUBLIC_TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY`. Leave both blank and reservations still work, just without this extra bot check, the honeypot field and timing check still apply either way.
+
+### 6. Run it
 
 ```
 npm install
 npm run dev
 ```
 
-### 6. Deploy to Vercel
+### 7. Deploy to Vercel
 
 Push to your repo, import in Vercel, add the same environment variables, deploy. Point groveline.io at the Vercel project.
 
 ## What is in v1
 
-- Post a drop in four fields plus a photo, from a phone
+- Post a drop in a few fields plus up to 10 photos, drag and drop on desktop or tap to choose anywhere
+- Every photo and the listing text checked automatically before a drop goes live
 - Shareable drop links with auto generated preview cards for Facebook
 - 15 second claim flow, no buyer account needed, cash at pickup
+- Spam defenses on reservations: a honeypot field, a minimum time-on-page check, optional Cloudflare Turnstile, and IP based rate limiting
 - Live remaining count, per drop waitlist when sold out
-- Seller dashboard: claim checklist, picked up toggles, close and reopen
-- Buyer browse page with town filter
+- Seller dashboard: claim checklist, picked up toggles, close and reopen, remove a bad claim and it frees the inventory back up
+- Buyer browse page with search, category, town, and state filters
 - Seller profile pages with follow and per seller email lists
-- Automatic subscriber email when a seller posts a new drop
-- AI drop writer
+- Automatic subscriber and follower email when a seller posts a new drop
 
 ## Deliberately not in v1
 

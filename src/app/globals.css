@@ -294,8 +294,15 @@ body[data-modal-open="true"] {
   }
 }
 
-/* Subtle repeating texture for otherwise plain screens (auth, empty states).
-   Kept faint so it never fights with form text. */
+/* Invisible to real people, irresistible to basic bots that fill every
+   field they find. If this has anything in it, the submission is fake. */
+.hp-field {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
 .pattern-bg {
   background-image: url("/illustrations/pattern.jpg");
   background-size: 340px;

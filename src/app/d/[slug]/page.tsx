@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase/server";
 import ClaimForm from "@/components/ClaimForm";
 import { money, pickupWindow } from "@/lib/format";
 import ShareButton from "@/components/ShareButton";
+import PhotoGallery from "@/components/PhotoGallery";
 import type { Drop } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -58,7 +58,7 @@ export default async function DropPage({
     "@type": "Product",
     name: drop.title,
     description: drop.description || undefined,
-    image: drop.photo_url || undefined,
+    image: drop.photo_urls?.length ? drop.photo_urls : drop.photo_url ? [drop.photo_url] : undefined,
     offers: {
       "@type": "Offer",
       price: (drop.price_cents / 100).toFixed(2),
@@ -77,18 +77,10 @@ export default async function DropPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {drop.photo_url && (
-        <div className="relative mb-6 aspect-[4/3] w-full overflow-hidden rounded-2xl bg-cream-dark">
-          <Image
-            src={drop.photo_url}
-            alt={drop.title}
-            fill
-            priority
-            sizes="(max-width: 672px) 100vw, 672px"
-            className="object-cover"
-          />
-        </div>
-      )}
+      <PhotoGallery
+        urls={drop.photo_urls?.length ? drop.photo_urls : drop.photo_url ? [drop.photo_url] : []}
+        alt={drop.title}
+      />
 
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h1 className="text-3xl font-semibold">{drop.title}</h1>

@@ -1,9 +1,23 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import Script from "next/script";
 import Image from "next/image";
 import type { Drop } from "@/lib/types";
 import { money, pickupWindow } from "@/lib/format";
 import { useToast } from "./Toast";
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (
+        container: HTMLElement,
+        options: { sitekey: string; callback: (token: string) => void }
+      ) => string;
+    };
+  }
+}
 
 type Errors = Partial<Record<"name" | "phone" | "email", string>>;
 
@@ -16,10 +30,23 @@ export default function ClaimForm({ drop }: { drop: Drop }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [company, setCompany] = useState(""); // honeypot, real people never see this
+  const [renderedAt] = useState(() => Date.now());
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const turnstileRef = useRef<HTMLDivElement>(null);
   const [errors, setErrors] = useState<Errors>({});
   const [busy, setBusy] = useState(false);
   const [claim, setClaim] = useState<{ position: number } | null>(null);
   const toast = useToast();
+
+  function renderTurnstile() {
+    if (TURNSTILE_SITE_KEY && turnstileRef.current && window.turnstile) {
+      window.turnstile.render(turnstileRef.current, {
+        sitekey: TURNSTILE_SITE_KEY,
+        callback: setTurnstileToken,
+      });
+    }
+  }
 
   function validate(): boolean {
     const next: Errors = {};
@@ -45,6 +72,9 @@ export default function ClaimForm({ drop }: { drop: Drop }) {
         name: name.trim(),
         phone: phone.trim(),
         email: email.trim() || null,
+        company, // honeypot, should always be empty
+        renderedAt,
+        turnstileToken,
       }),
     });
     setBusy(false);
@@ -54,6 +84,10 @@ export default function ClaimForm({ drop }: { drop: Drop }) {
       toast("Reserved. See you at pickup.", "success");
     } else if (res.status === 409) {
       toast("Not enough left. Refresh to see what is available.", "error");
+    } else if (res.status === 429) {
+      toast("Too many reservations from here recently. Try again in a few minutes.", "error");
+    } else if (res.status === 403) {
+      toast("Could not verify you're not a robot. Refresh the page and try again.", "error");
     } else {
       toast("Could not reserve. Try again.", "error");
     }
@@ -173,7 +207,34 @@ export default function ClaimForm({ drop }: { drop: Drop }) {
         <p className="field-hint">We will email your pickup details.</p>
       </div>
 
-      <button className="btn btn-primary w-full text-lg" disabled={busy}>
+      {/* Honeypot: invisible to people, bots that fill every field trip it */}
+      <div className="hp-field" aria-hidden="true">
+        <label htmlFor="claim-company">Company</label>
+        <input
+          id="claim-company"
+          tabIndex={-1}
+          autoComplete="off"
+          value={company}
+          onChange={(e) => setCompany(e.target.value)}
+        />
+      </div>
+
+      {TURNSTILE_SITE_KEY && (
+        <>
+          <Script
+            src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+            async
+            defer
+            onLoad={renderTurnstile}
+          />
+          <div ref={turnstileRef} />
+        </>
+      )}
+
+      <button
+        className="btn btn-primary w-full text-lg"
+        disabled={busy || (!!TURNSTILE_SITE_KEY && !turnstileToken)}
+      >
         {busy
           ? "Reserving"
           : `Reserve ${qty} for ${money(drop.price_cents * qty)}`}
