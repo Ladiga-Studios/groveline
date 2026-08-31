@@ -44,7 +44,7 @@ Free, and reuses the same Cloudflare account already handling your DNS. In the C
 
 ### 6. Stripe (card payments and the subscription)
 
-Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. Create a recurring $10/month price in the Stripe dashboard and put its id (starts with `price_`) in `STRIPE_PRICE_ID`. Add a webhook endpoint at `https://groveline.io/api/stripe/webhook` listening for `checkout.session.completed`, `checkout.session.expired`, `customer.subscription.updated`, `customer.subscription.deleted`, and `account.updated`. Enable Stripe Connect (Express) in your Stripe settings so sellers can onboard.
+Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. In the Stripe dashboard create one product (the seller subscription) with two recurring prices, $10 monthly and $60 yearly, and put their ids (start with `price_`) in `STRIPE_PRICE_ID_MONTHLY` and `STRIPE_PRICE_ID_YEARLY`. Yearly is optional; leave it blank to offer monthly only. Add a webhook endpoint at `https://groveline.io/api/stripe/webhook` listening for `checkout.session.completed`, `checkout.session.expired`, `customer.subscription.updated`, `customer.subscription.deleted`, and `account.updated`. Enable Stripe Connect (Express) in your Stripe settings so sellers can onboard.
 
 How it works: sellers set up payouts from Settings and money goes straight to their bank. When a buyer pays by card, a hold is placed at reservation and only captured when the seller marks the claim picked up. Removing a claim or the buyer cancelling releases the hold. Leave Stripe blank and everything runs cash-only with no subscription gate.
 

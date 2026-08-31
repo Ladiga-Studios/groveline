@@ -18,7 +18,7 @@ export async function GET() {
   ]);
 
   const stripe = getStripe();
-  const stripeConfigured = !!stripe && !!process.env.STRIPE_PRICE_ID;
+  const stripeConfigured = !!stripe && !!(process.env.STRIPE_PRICE_ID_MONTHLY || process.env.STRIPE_PRICE_ID);
   const subscribed = ["active", "trialing", "past_due"].includes(billing?.subscription_status ?? "none");
 
   // Refresh payout status from Stripe if an account exists but isn't enabled yet.
@@ -37,6 +37,7 @@ export async function GET() {
 
   return NextResponse.json({
     stripeConfigured,
+    yearlyAvailable: !!process.env.STRIPE_PRICE_ID_YEARLY,
     subscribed,
     subscriptionStatus: billing?.subscription_status ?? "none",
     dropsCount: dropsCount ?? 0,

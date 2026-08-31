@@ -99,9 +99,13 @@ export default function SettingsPage() {
     } else toast(data.error || "Could not upload.", "error");
   }
 
-  async function go(path: string) {
+  async function go(path: string, body?: object) {
     setBusy(true);
-    const res = await fetch(path, { method: "POST" });
+    const res = await fetch(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body ?? {}),
+    });
     setBusy(false);
     const data = await res.json().catch(() => ({}));
     if (data.url) window.location.href = data.url;
@@ -187,12 +191,15 @@ export default function SettingsPage() {
           <section className="tag-card mt-4 p-6">
             <h2 className="text-lg font-semibold">Subscription</h2>
             <p className="mt-1 text-sm text-muted">
-              {billing.subscribed ? `Active. $10 a month, cancel any time.` : "Your first drop is free. After that it is a flat $10 a month."}
+              {billing.subscribed ? "Active. Switch plans, update your card, or cancel any time." : "Your first drop is free. After that it is $10 a month or $60 a year."}
             </p>
             {billing.subscribed ? (
               <button className="btn btn-outline mt-3" onClick={() => go("/api/stripe/portal")} disabled={busy}>Manage billing</button>
             ) : (
-              <button className="btn btn-primary mt-3" onClick={() => go("/api/stripe/subscribe")} disabled={busy}>Subscribe</button>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button className="btn btn-outline" onClick={() => go("/api/stripe/subscribe", { interval: "month" })} disabled={busy}>$10 monthly</button>
+                <button className="btn btn-primary" onClick={() => go("/api/stripe/subscribe", { interval: "year" })} disabled={busy}>$60 yearly</button>
+              </div>
             )}
           </section>
         </>

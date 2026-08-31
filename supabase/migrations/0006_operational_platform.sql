@@ -60,6 +60,7 @@ create table if not exists public.billing (
   updated_at timestamptz not null default now()
 );
 alter table public.billing enable row level security;
+drop policy if exists "owner reads billing" on public.billing;
 create policy "owner reads billing" on public.billing
   for select using (auth.uid() = profile_id);
 
@@ -79,6 +80,7 @@ create index if not exists claims_token_idx on public.claims (cancel_token);
 create index if not exists claims_buyer_idx on public.claims (buyer_user_id);
 create index if not exists claims_pi_idx on public.claims (payment_intent_id);
 
+drop policy if exists "buyers read own claims" on public.claims;
 create policy "buyers read own claims" on public.claims
   for select using (auth.uid() = buyer_user_id);
 
@@ -96,10 +98,12 @@ create table if not exists public.reports (
   created_at timestamptz not null default now()
 );
 alter table public.reports enable row level security;
+drop policy if exists "admins read reports" on public.reports;
 create policy "admins read reports" on public.reports
   for select using (
     exists (select 1 from public.profiles where id = auth.uid() and is_admin)
   );
+drop policy if exists "admins update reports" on public.reports;
 create policy "admins update reports" on public.reports
   for update using (
     exists (select 1 from public.profiles where id = auth.uid() and is_admin)

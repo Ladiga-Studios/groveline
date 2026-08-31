@@ -16,7 +16,7 @@ export async function POST(req: Request) {
 
   // Subscription gate: first drop free, then $10/month. Off if Stripe isn't set up.
   const admin = supabaseAdmin();
-  if (process.env.STRIPE_SECRET_KEY && process.env.STRIPE_PRICE_ID) {
+  if (process.env.STRIPE_SECRET_KEY && (process.env.STRIPE_PRICE_ID_MONTHLY || process.env.STRIPE_PRICE_ID)) {
     const [{ data: profile }, { data: billing }, { count }] = await Promise.all([
       admin.from("profiles").select("is_admin").eq("id", user.id).maybeSingle(),
       admin.from("billing").select("subscription_status").eq("profile_id", user.id).maybeSingle(),

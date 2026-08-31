@@ -24,7 +24,7 @@ export default function NewDropPage() {
   const [photos, setPhotos] = useState<File[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [gate, setGate] = useState<null | { needsSubscription: boolean }>(null);
+  const [gate, setGate] = useState<null | { needsSubscription: boolean; yearlyAvailable: boolean }>(null);
   const [created, setCreated] = useState<{ url: string; caption: string } | null>(null);
   const toast = useToast();
   const router = useRouter();
@@ -67,17 +67,21 @@ export default function NewDropPage() {
       const res = await fetch("/api/billing/status");
       if (res.ok) {
         const b = await res.json();
-        setGate({ needsSubscription: !!b.needsSubscription });
+        setGate({ needsSubscription: !!b.needsSubscription, yearlyAvailable: !!b.yearlyAvailable });
       } else {
-        setGate({ needsSubscription: false });
+        setGate({ needsSubscription: false, yearlyAvailable: false });
       }
     })();
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
 
-  async function subscribe() {
+  async function subscribe(interval: "month" | "year") {
     setBusy(true);
-    const res = await fetch("/api/stripe/subscribe", { method: "POST" });
+    const res = await fetch("/api/stripe/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ interval }),
+    });
     setBusy(false);
     const data = await res.json().catch(() => ({}));
     if (data.url) window.location.href = data.url;
@@ -120,7 +124,7 @@ export default function NewDropPage() {
     const res = await fetch("/api/drops", { method: "POST", body });
     setBusy(false);
     if (res.status === 402) {
-      setGate({ needsSubscription: true });
+      setGate((g) => ({ needsSubscription: true, yearlyAvailable: g?.yearlyAvailable ?? false }));
       return;
     }
     if (!res.ok) {
@@ -178,24 +182,36 @@ export default function NewDropPage() {
 
   if (gate?.needsSubscription) {
     return (
-      <div className="mx-auto max-w-md px-4 py-14">
+      <div className="mx-auto max-w-lg px-4 py-14">
         <h1 className="text-3xl font-semibold">Your first drop was on us.</h1>
         <p className="mt-3 text-lg">
-          To keep posting, Groveline is a flat $10 a month. No cut of your sales, cash or card, no matter how much you sell. Cancel any time.
+          To keep posting, pick a plan. No cut of your sales, cash or card, no matter how much you sell. Cancel any time.
         </p>
-        <div className="tag-card mt-6 p-6">
-          <p className="font-display text-4xl font-semibold text-grove">$10<span className="text-lg font-normal text-muted"> / month</span></p>
-          <ul className="mt-3 space-y-1 text-sm">
-            <li>Unlimited drops, up to 10 photos each</li>
-            <li>Automatic emails to your followers and subscribers</li>
-            <li>Card payments straight to your bank, if you want them</li>
-            <li>Pickup day checklists, waitlists, reminders</li>
-          </ul>
-          <button className="btn btn-primary mt-5 w-full" onClick={subscribe} disabled={busy}>
-            {busy ? "One second" : "Subscribe and keep posting"}
-          </button>
+        <div className={`mt-6 grid gap-4 ${gate.yearlyAvailable ? "sm:grid-cols-2" : ""}`}>
+          <div className="tag-card p-6">
+            <p className="font-display text-4xl font-semibold text-grove">$10<span className="text-lg font-normal text-muted"> / month</span></p>
+            <p className="mt-1 text-sm text-muted">Month to month.</p>
+            <button className="btn btn-outline mt-5 w-full" onClick={() => subscribe("month")} disabled={busy}>
+              {busy ? "One second" : "Go monthly"}
+            </button>
+          </div>
+          {gate.yearlyAvailable && (
+            <div className="tag-card border-leaf p-6">
+              <p className="font-display text-4xl font-semibold text-grove">$60<span className="text-lg font-normal text-muted"> / year</span></p>
+              <p className="mt-1 text-sm text-muted">Two months free. Set it and forget it.</p>
+              <button className="btn btn-primary mt-5 w-full" onClick={() => subscribe("year")} disabled={busy}>
+                {busy ? "One second" : "Go yearly"}
+              </button>
+            </div>
+          )}
         </div>
-        <p className="mt-4 text-center text-sm text-muted">Billing is handled by Stripe. You can manage or cancel from Settings.</p>
+        <ul className="mt-6 space-y-1 text-sm text-muted">
+          <li>Unlimited drops, up to 10 photos each</li>
+          <li>Automatic emails to your followers and subscribers</li>
+          <li>Card payments straight to your bank, if you want them</li>
+          <li>Pickup day checklists, waitlists, reminders</li>
+        </ul>
+        <p className="mt-4 text-center text-sm text-muted">Billing is handled by Stripe. You can switch plans or cancel from Settings.</p>
       </div>
     );
   }

@@ -3,9 +3,12 @@ import { supabaseServer, supabaseAdmin } from "@/lib/supabase/server";
 import { getStripe, siteUrl } from "@/lib/stripe";
 
 /* Starts a $10/month subscription checkout. */
-export async function POST() {
+export async function POST(req: Request) {
   const stripe = getStripe();
-  const price = process.env.STRIPE_PRICE_ID;
+  const { interval } = (await req.json().catch(() => ({}))) as { interval?: "month" | "year" };
+  const price = interval === "year"
+    ? process.env.STRIPE_PRICE_ID_YEARLY
+    : process.env.STRIPE_PRICE_ID_MONTHLY || process.env.STRIPE_PRICE_ID;
   if (!stripe || !price) return NextResponse.json({ error: "Billing not configured" }, { status: 503 });
 
   const supabase = await supabaseServer();
