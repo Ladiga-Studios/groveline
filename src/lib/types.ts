@@ -6,7 +6,13 @@ export type Profile = {
   state: string;
   slug: string;
   is_seller: boolean;
+  is_admin: boolean;
   bio: string | null;
+  email: string | null;
+  avatar_url: string | null;
+  notify_on_claim: boolean;
+  payouts_enabled: boolean;
+  created_at: string;
 };
 
 export type Drop = {
@@ -23,11 +29,18 @@ export type Drop = {
   max_per_buyer: number | null;
   category: string;
   pickup_place: string;
+  pickup_address: string | null;
+  pickup_city: string | null;
+  pickup_state: string | null;
+  pickup_zip: string | null;
+  pickup_lat: number | null;
+  pickup_lng: number | null;
   pickup_start: string;
   pickup_end: string;
-  status: "active" | "closed";
+  status: "active" | "closed" | "removed";
+  views: number;
   created_at: string;
-  profiles?: Profile;
+  profiles?: Partial<Profile>;
 };
 
 export type Claim = {
@@ -36,9 +49,22 @@ export type Claim = {
   buyer_name: string;
   buyer_phone: string;
   buyer_email: string | null;
+  buyer_user_id: string | null;
   quantity: number;
   method: "cash" | "card";
   paid: boolean;
   picked_up: boolean;
+  payment_intent_id: string | null;
+  payment_status: "none" | "pending" | "authorized" | "captured" | "cancelled";
+  cancel_token: string;
+  cancelled_at: string | null;
   created_at: string;
+  drops?: Partial<Drop>;
+};
+
+export type Billing = {
+  profile_id: string;
+  stripe_customer_id: string | null;
+  subscription_status: string;
+  stripe_account_id: string | null;
 };

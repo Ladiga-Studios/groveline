@@ -35,6 +35,7 @@ export default async function DropAdminPage({
       .from("claims")
       .select("*")
       .eq("drop_id", id)
+      .is("cancelled_at", null)
       .order("created_at", { ascending: true }),
     supabase
       .from("waitlist_entries")
@@ -54,10 +55,14 @@ export default async function DropAdminPage({
       </p>
       <p className="mt-3 font-display text-2xl font-semibold text-grove">
         {drop.claimed} of {drop.quantity} claimed
+        <span className="ml-3 text-base font-normal text-muted">{drop.views} views</span>
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
         <Link href={`/dashboard/drops/${drop.id}/edit`} className="btn btn-outline">
           Edit drop
+        </Link>
+        <Link href={`/dashboard/new?from=${drop.id}`} className="btn btn-outline">
+          Post again
         </Link>
         <CopyButton text={url} />
         <CopyButton

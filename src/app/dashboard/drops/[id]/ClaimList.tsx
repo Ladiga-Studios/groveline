@@ -90,38 +90,40 @@ export default function ClaimList({
   initialClaims,
 }: {
   dropId: string;
-  dropStatus: "active" | "closed";
+  dropStatus: "active" | "closed" | "removed";
   initialClaims: Claim[];
 }) {
   const [claims, setClaims] = useState(initialClaims);
-  const [status, setStatus] = useState(dropStatus);
+  const [status, setStatus] = useState<"active" | "closed" | "removed">(dropStatus);
   const [confirmClose, setConfirmClose] = useState(false);
   const [removing, setRemoving] = useState<Claim | null>(null);
   const toast = useToast();
 
   async function togglePickedUp(claim: Claim) {
-    const supabase = supabaseBrowser();
     const next = !claim.picked_up;
-    setClaims((cs) =>
-      cs.map((c) => (c.id === claim.id ? { ...c, picked_up: next } : c))
-    );
-    const { error } = await supabase
-      .from("claims")
-      .update({ picked_up: next })
-      .eq("id", claim.id);
-    if (error) {
-      setClaims((cs) =>
-        cs.map((c) => (c.id === claim.id ? { ...c, picked_up: !next } : c))
-      );
-      toast("Could not update. Try again.", "error");
+    setClaims((cs) => cs.map((c) => (c.id === claim.id ? { ...c, picked_up: next } : c)));
+    const res = await fetch(`/api/claims/${claim.id}/pickup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ picked_up: next }),
+    });
+    if (!res.ok) {
+      setClaims((cs) => cs.map((c) => (c.id === claim.id ? { ...c, picked_up: !next } : c)));
+      const data = await res.json().catch(() => ({}));
+      toast(data.error || "Could not update. Try again.", "error");
+      return;
+    }
+    const data = await res.json();
+    if (data.payment_status === "captured") {
+      setClaims((cs) => cs.map((c) => (c.id === claim.id ? { ...c, payment_status: "captured", paid: true } : c)));
+      toast("Picked up and card charged.", "success");
     }
   }
 
   async function removeClaim(claim: Claim) {
-    const supabase = supabaseBrowser();
-    const { error } = await supabase.rpc("remove_claim", { p_claim: claim.id });
+    const res = await fetch(`/api/claims/${claim.id}/remove`, { method: "POST" });
     setRemoving(null);
-    if (error) {
+    if (!res.ok) {
       toast("Could not remove the claim.", "error");
       return;
     }
@@ -179,7 +181,13 @@ export default function ClaimList({
                   <a href={`tel:${c.buyer_phone}`} className="underline">
                     {c.buyer_phone}
                   </a>{" "}
-                  {c.method === "cash" ? "Cash at pickup" : c.paid ? "Paid by card" : "Card pending"}
+                  {c.method === "cash"
+                    ? "Cash at pickup"
+                    : c.payment_status === "captured"
+                      ? "Paid by card"
+                      : c.payment_status === "authorized"
+                        ? "Card on hold, charges at pickup"
+                        : "Card not completed"}
                 </p>
               </div>
               <div className="flex flex-col items-end gap-1">
@@ -211,7 +219,7 @@ export default function ClaimList({
       >
         <p className="mb-4">
           {removing
-            ? `${removing.buyer_name}'s reservation for ${removing.quantity} comes off the list and those items open back up for anyone to claim. Use this when a buyer cancels or does not show.`
+            ? `${removing.buyer_name}'s reservation for ${removing.quantity} comes off the list and those items open back up for anyone to claim.${removing.payment_status === "authorized" ? " The hold on their card is released, they are not charged." : ""} Use this when a buyer cancels or does not show.`
             : ""}
         </p>
         <div className="flex gap-3">

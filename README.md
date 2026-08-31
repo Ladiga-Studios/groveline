@@ -42,14 +42,28 @@ Set `ANTHROPIC_API_KEY`. Every drop, on posting or editing, gets checked in one 
 
 Free, and reuses the same Cloudflare account already handling your DNS. In the Cloudflare dashboard, add a Turnstile site for groveline.io, choose the invisible/managed widget, and you'll get a site key and a secret key. Set `NEXT_PUBLIC_TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY`. Leave both blank and reservations still work, just without this extra bot check, the honeypot field and timing check still apply either way.
 
-### 6. Run it
+### 6. Stripe (card payments and the subscription)
+
+Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. Create a recurring $10/month price in the Stripe dashboard and put its id (starts with `price_`) in `STRIPE_PRICE_ID`. Add a webhook endpoint at `https://groveline.io/api/stripe/webhook` listening for `checkout.session.completed`, `checkout.session.expired`, `customer.subscription.updated`, `customer.subscription.deleted`, and `account.updated`. Enable Stripe Connect (Express) in your Stripe settings so sellers can onboard.
+
+How it works: sellers set up payouts from Settings and money goes straight to their bank. When a buyer pays by card, a hold is placed at reservation and only captured when the seller marks the claim picked up. Removing a claim or the buyer cancelling releases the hold. Leave Stripe blank and everything runs cash-only with no subscription gate.
+
+### 7. Daily jobs
+
+`vercel.json` schedules `/api/cron/daily` once a day. It emails pickup reminders to buyers who left an email, and releases card reservations that never finished checkout. Set `CRON_SECRET` in Vercel to lock the route.
+
+### 8. Make yourself admin
+
+In the Supabase table editor, set `is_admin` to true on your own profile row. That unlocks `/admin` (reports, takedowns) and exempts you from the subscription.
+
+### 9. Run it
 
 ```
 npm install
 npm run dev
 ```
 
-### 7. Deploy to Vercel
+### 10. Deploy to Vercel
 
 Push to your repo, import in Vercel, add the same environment variables, deploy. Point groveline.io at the Vercel project.
 
@@ -59,12 +73,20 @@ Push to your repo, import in Vercel, add the same environment variables, deploy.
 - Every photo and the listing text checked automatically before a drop goes live
 - Shareable drop links with auto generated preview cards for Facebook
 - 15 second claim flow, no buyer account needed, cash at pickup
-- Spam defenses on reservations: a honeypot field, a minimum time-on-page check, optional Cloudflare Turnstile, and IP based rate limiting
+- Spam defenses on reservations: a honeypot field, a minimum time-on-page check, and optional Cloudflare Turnstile
 - Live remaining count, per drop waitlist when sold out
 - Seller dashboard: claim checklist, picked up toggles, close and reopen, remove a bad claim and it frees the inventory back up
 - Buyer browse page with search, category, town, and state filters
 - Seller profile pages with follow and per seller email lists
 - Automatic subscriber and follower email when a seller posts a new drop
+- 130 plus categories in 13 groups, browse sidebar shows counts and grays out empties
+- Pickup addresses geocoded for free via OpenStreetMap, with an embedded map and a directions button
+- Seller profiles with photo, stats, and share; a sellers directory
+- Buyers get a reservation page they can cancel from, plus a My reservations list when logged in
+- Sellers get an email on each reservation and cancellation (can be turned off)
+- Card payments through Stripe Connect with a hold at reservation and capture at pickup
+- $10/month subscription after the first free drop, managed through Stripe
+- Pickup day reminder emails, listing reports, admin takedowns, view counts, post again
 
 ## Deliberately not in v1
 

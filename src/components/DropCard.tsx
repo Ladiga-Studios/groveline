@@ -45,7 +45,7 @@ export default function DropCard({ drop }: { drop: Drop }) {
         {drop.profiles && (
           <p className="truncate text-sm text-muted">
             {drop.profiles.farm_name || drop.profiles.name} in{" "}
-            {drop.profiles.town}
+            {drop.pickup_city || drop.profiles.town}
           </p>
         )}
         <p className="mt-1 text-sm">

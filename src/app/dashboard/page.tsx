@@ -32,6 +32,7 @@ export default async function DashboardPage() {
       .from("drops")
       .select("*")
       .eq("seller_id", user.id)
+      .neq("status", "removed")
       .order("created_at", { ascending: false }),
     supabase
       .from("newsletter_subscribers")
@@ -105,7 +106,7 @@ export default async function DashboardPage() {
                   <p className="truncate text-lg font-semibold">{d.title}</p>
                   <p className="text-sm text-muted">
                     {money(d.price_cents)} each. Pickup{" "}
-                    {pickupWindow(d.pickup_start, d.pickup_end)}
+                    {pickupWindow(d.pickup_start, d.pickup_end)}. {d.views} views
                   </p>
                 </div>
                 <div className="text-right">

@@ -22,6 +22,7 @@ it ships, new changes get a new file.
 - 0003_add_profile_state.sql
 - 0004_claim_removal_and_follower_emails.sql
 - 0005_multi_photo_and_claim_ip.sql
+- 0006_operational_platform.sql
 
 ## History
 
@@ -31,3 +32,4 @@ it ships, new changes get a new file.
 - 0003: state column on profiles for browse filtering
 - 0004: profile emails for follower notifications, atomic remove_claim function
 - 0005: photo_urls array on drops for multi-photo support, ip_address on claims for spam rate limiting
+- 0006: expanded categories, pickup address and coordinates, avatar and admin on profiles, billing table, buyer-linked claims with cancel tokens and payment tracking, reports, claim_drop_v2, release_claim, increment_views, seller_stats

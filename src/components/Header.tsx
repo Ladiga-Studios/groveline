@@ -5,10 +5,13 @@ import Logo from "./Logo";
 
 const links = [
   { href: "/browse", label: "Browse drops" },
+  { href: "/sellers", label: "Sellers" },
   { href: "/sell", label: "Start selling" },
 ];
 
-export default function Header({ loggedIn }: { loggedIn: boolean }) {
+export default function Header({ loggedIn, isSeller = false }: { loggedIn: boolean; isSeller?: boolean }) {
+  const accountHref = !loggedIn ? "/login" : isSeller ? "/dashboard" : "/reservations";
+  const accountLabel = !loggedIn ? "Log in" : isSeller ? "My drops" : "My account";
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -46,11 +49,8 @@ export default function Header({ loggedIn }: { loggedIn: boolean }) {
               {l.label}
             </Link>
           ))}
-          <Link
-            href={loggedIn ? "/dashboard" : "/login"}
-            className="btn btn-grove !min-h-11 !px-5"
-          >
-            {loggedIn ? "My drops" : "Log in"}
+          <Link href={accountHref} className="btn btn-grove !min-h-11 !px-5">
+            {accountLabel}
           </Link>
         </nav>
         <button
@@ -96,12 +96,8 @@ export default function Header({ loggedIn }: { loggedIn: boolean }) {
                 {l.label}
               </Link>
             ))}
-            <Link
-              href={loggedIn ? "/dashboard" : "/login"}
-              onClick={() => setOpen(false)}
-              className="btn btn-grove mt-2"
-            >
-              {loggedIn ? "My drops" : "Log in"}
+            <Link href={accountHref} onClick={() => setOpen(false)} className="btn btn-grove mt-2">
+              {accountLabel}
             </Link>
           </nav>
         </div>

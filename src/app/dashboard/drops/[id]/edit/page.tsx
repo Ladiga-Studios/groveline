@@ -5,7 +5,8 @@ import { supabaseBrowser } from "@/lib/supabase/client";
 import { useToast } from "@/components/Toast";
 import Modal from "@/components/Modal";
 import PhotoPicker from "@/components/PhotoPicker";
-import { CATEGORIES } from "@/lib/categories";
+import CategorySelect from "@/components/CategorySelect";
+import PickupFields, { type Pickup } from "@/components/PickupFields";
 
 export default function EditDropPage() {
   const { id } = useParams<{ id: string }>();
@@ -17,10 +18,9 @@ export default function EditDropPage() {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
-  const [pickupPlace, setPickupPlace] = useState("");
-  const [pickupDate, setPickupDate] = useState("");
-  const [startTime, setStartTime] = useState("08:00");
-  const [endTime, setEndTime] = useState("11:00");
+  const [pickup, setPickup] = useState<Pickup>({
+    place: "", address: "", city: "", state: "AL", zip: "", date: "", start: "08:00", end: "11:00",
+  });
   const [existingUrls, setExistingUrls] = useState<string[]>([]);
   const [newPhotos, setNewPhotos] = useState<File[]>([]);
   const [busy, setBusy] = useState(false);
@@ -54,14 +54,20 @@ export default function EditDropPage() {
       setDescription(d.description || "");
       setPrice(String(d.price_cents / 100));
       setQuantity(String(d.quantity));
-      setPickupPlace(d.pickup_place);
       setExistingUrls(d.photo_urls?.length ? d.photo_urls : d.photo_url ? [d.photo_url] : []);
       const start = new Date(d.pickup_start);
       const end = new Date(d.pickup_end);
       const pad = (n: number) => String(n).padStart(2, "0");
-      setPickupDate(`${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}`);
-      setStartTime(`${pad(start.getHours())}:${pad(start.getMinutes())}`);
-      setEndTime(`${pad(end.getHours())}:${pad(end.getMinutes())}`);
+      setPickup({
+        place: d.pickup_place,
+        address: d.pickup_address || "",
+        city: d.pickup_city || "",
+        state: d.pickup_state || "AL",
+        zip: d.pickup_zip || "",
+        date: `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}`,
+        start: `${pad(start.getHours())}:${pad(start.getMinutes())}`,
+        end: `${pad(end.getHours())}:${pad(end.getMinutes())}`,
+      });
       setLoaded(true);
     })();
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
@@ -79,9 +85,10 @@ export default function EditDropPage() {
       return setError(
         `${claimed} are already claimed, so the total cannot go below ${claimed}.`
       );
-    if (!pickupPlace.trim()) return setError("Enter a pickup place.");
-    const startAt = new Date(`${pickupDate}T${startTime}`);
-    const endAt = new Date(`${pickupDate}T${endTime}`);
+    if (!pickup.place.trim()) return setError("Enter a pickup place.");
+    if (!pickup.city.trim()) return setError("Enter the pickup city.");
+    const startAt = new Date(`${pickup.date}T${pickup.start}`);
+    const endAt = new Date(`${pickup.date}T${pickup.end}`);
     if (endAt <= startAt) return setError("Pickup end time needs to be after the start time.");
 
     setBusy(true);
@@ -91,7 +98,11 @@ export default function EditDropPage() {
     body.set("description", description.trim());
     body.set("price", price);
     body.set("quantity", quantity);
-    body.set("pickupPlace", pickupPlace.trim());
+    body.set("pickupPlace", pickup.place.trim());
+    body.set("pickupAddress", pickup.address.trim());
+    body.set("pickupCity", pickup.city.trim());
+    body.set("pickupState", pickup.state);
+    body.set("pickupZip", pickup.zip.trim());
     body.set("pickupStart", startAt.toISOString());
     body.set("pickupEnd", endAt.toISOString());
     existingUrls.forEach((u) => body.append("keptUrls", u));
@@ -158,13 +169,7 @@ export default function EditDropPage() {
               <label htmlFor="e-cat" className="field-label">
                 Category
               </label>
-              <select id="e-cat" className="field" value={category} onChange={(e) => setCategory(e.target.value)}>
-                {CATEGORIES.map((c) => (
-                  <option key={c.value} value={c.value}>
-                    {c.label}
-                  </option>
-                ))}
-              </select>
+              <CategorySelect id="e-cat" value={category} onChange={setCategory} />
             </div>
             <div>
               <label htmlFor="e-desc" className="field-label">
@@ -206,7 +211,7 @@ export default function EditDropPage() {
                     inputMode="decimal"
                     min="0"
                     step="0.01"
-                    className="field pl-7"
+                    className="field pl-8"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
                   />
@@ -218,33 +223,8 @@ export default function EditDropPage() {
 
         <section className="tag-card p-6">
           <h2 className="text-lg font-semibold">Pickup</h2>
-          <div className="mt-4 flex flex-col gap-5">
-            <div>
-              <label htmlFor="e-place" className="field-label">
-                Pickup place
-              </label>
-              <input id="e-place" className="field" value={pickupPlace} onChange={(e) => setPickupPlace(e.target.value)} />
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <label htmlFor="e-date" className="field-label">
-                  Date
-                </label>
-                <input id="e-date" type="date" className="field" value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} />
-              </div>
-              <div>
-                <label htmlFor="e-start" className="field-label">
-                  From
-                </label>
-                <input id="e-start" type="time" className="field" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
-              </div>
-              <div>
-                <label htmlFor="e-end" className="field-label">
-                  Until
-                </label>
-                <input id="e-end" type="time" className="field" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
-              </div>
-            </div>
+          <div className="mt-4">
+            <PickupFields value={pickup} onChange={setPickup} prefix="e" />
           </div>
         </section>
 

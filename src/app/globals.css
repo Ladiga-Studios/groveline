@@ -64,6 +64,7 @@ h3,
   border-radius: 4px;
 }
 
+@layer components {
 /* Buttons: 44px minimum touch targets */
 .btn {
   display: inline-flex;
@@ -258,6 +259,8 @@ a.tag-card:focus-visible {
 
 body[data-modal-open="true"] {
   overflow: hidden;
+}
+
 }
 
 /* Section reveals, driven by IntersectionObserver adding data-shown */

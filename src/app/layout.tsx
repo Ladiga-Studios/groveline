@@ -37,12 +37,17 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   let loggedIn = false;
+  let isSeller = false;
   try {
     const supabase = await supabaseServer();
     const {
       data: { user },
     } = await supabase.auth.getUser();
     loggedIn = !!user;
+    if (user) {
+      const { data: p } = await supabase.from("profiles").select("is_seller").eq("id", user.id).maybeSingle();
+      isSeller = !!p?.is_seller;
+    }
   } catch {
     loggedIn = false;
   }
@@ -51,7 +56,7 @@ export default async function RootLayout({
     <html lang="en">
       <body>
         <ToastProvider>
-          <Header loggedIn={loggedIn} />
+          <Header loggedIn={loggedIn} isSeller={isSeller} />
           <main id="main">{children}</main>
           <Footer />
         </ToastProvider>
