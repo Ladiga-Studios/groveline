@@ -6,7 +6,7 @@ Local drops, claimed in seconds. Sellers post what they have, share one link, an
 
 ### 1. Supabase (database and auth)
 
-1. Open your Supabase project, go to the SQL editor, paste the contents of `supabase/schema.sql`, and run it once. That creates every table, policy, the atomic claim function, and the photo storage bucket.
+1. Open your Supabase project, go to the SQL editor, and run every file in `supabase/migrations/` in numbered order, one at a time. That creates every table, policy, the atomic claim function, and the photo storage bucket. All future schema changes land in that folder as new numbered files, see `supabase/README.md` for the rules.
 2. In Authentication, Sign In / Providers, make sure Email is enabled, then turn OFF "Confirm email". The app uses normal email and password login, and with confirmation off, people can sign up and use it immediately with no email step.
 3. Recommended: point Supabase auth emails (password resets) at your Resend account. In Project Settings, Authentication, SMTP, enable custom SMTP with Resend's SMTP credentials. Supabase's built in mailer only sends a couple emails per hour, which is why OTP codes were unreliable.
 4. Grab your Project URL, anon key, and service role key from Project Settings, API.
@@ -72,4 +72,4 @@ Push to your repo, import in Vercel, add the same environment variables, deploy.
 - `src/app` pages and API routes
 - `src/components` UI building blocks
 - `src/lib` Supabase clients, types, formatters
-- `supabase/schema.sql` the whole database
+- `supabase/migrations/` the whole database, one numbered file per change
