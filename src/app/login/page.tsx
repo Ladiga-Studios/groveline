@@ -4,62 +4,35 @@ import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { useToast } from "@/components/Toast";
 
+type Mode = "login" | "register" | "forgot";
+
 export default function LoginPage() {
+  const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
-  const [stage, setStage] = useState<"email" | "code">("email");
+  const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const toast = useToast();
   const router = useRouter();
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("error") === "link") {
-      setError(
-        "That link expired or was already used. Enter your email and we will send a fresh one."
-      );
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("mode") === "register") setMode("register");
+    if (params.get("error") === "link") {
+      setError("That link expired. Log in below, or reset your password.");
     }
   }, []);
 
-  async function sendCode(e: React.FormEvent) {
-    e.preventDefault();
+  function switchMode(next: Mode) {
+    setMode(next);
     setError("");
-    if (!/^\S+@\S+\.\S+$/.test(email)) {
-      setError("Enter a valid email address.");
-      return;
-    }
-    setBusy(true);
-    const supabase = supabaseBrowser();
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        shouldCreateUser: true,
-        emailRedirectTo: `${window.location.origin}/auth/confirm`,
-      },
-    });
-    setBusy(false);
-    if (error) setError("Could not send the code. Try again in a minute.");
-    else {
-      setStage("code");
-      toast("Check your email.", "success");
-    }
+    setNotice("");
   }
 
-  async function verify(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    setBusy(true);
+  async function goWhereTheyBelong() {
     const supabase = supabaseBrowser();
-    const { error } = await supabase.auth.verifyOtp({
-      email,
-      token: code.trim(),
-      type: "email",
-    });
-    setBusy(false);
-    if (error) {
-      setError("That code did not work. Check it and try again.");
-      return;
-    }
     const { data: profile } = await supabase
       .from("profiles")
       .select("id, is_seller")
@@ -68,74 +41,176 @@ export default function LoginPage() {
     router.refresh();
   }
 
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setNotice("");
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      setError("Enter a valid email address.");
+      return;
+    }
+    if (mode !== "forgot" && password.length < 8) {
+      setError("Password needs at least 8 characters.");
+      return;
+    }
+    setBusy(true);
+    const supabase = supabaseBrowser();
+
+    if (mode === "register") {
+      const { data, error: err } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/auth/confirm` },
+      });
+      setBusy(false);
+      if (err) {
+        setError(
+          err.message.toLowerCase().includes("already registered")
+            ? "That email already has an account. Log in instead."
+            : "Could not create the account. Try again."
+        );
+        return;
+      }
+      if (data.session) {
+        toast("Account created.", "success");
+        await goWhereTheyBelong();
+      } else {
+        setNotice(
+          "Account created. Check your email for a confirmation link, then come back and log in."
+        );
+      }
+      return;
+    }
+
+    if (mode === "login") {
+      const { error: err } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      setBusy(false);
+      if (err) {
+        setError("Email or password is not right. Try again or reset it below.");
+        return;
+      }
+      await goWhereTheyBelong();
+      return;
+    }
+
+    // forgot
+    const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/reset`,
+    });
+    setBusy(false);
+    if (err) setError("Could not send the reset email. Try again in a minute.");
+    else setNotice("If that email has an account, a reset link is on the way.");
+  }
+
   return (
     <div className="mx-auto max-w-md px-4 py-14">
-      <h1 className="text-3xl font-semibold">Log in or sign up</h1>
+      <h1 className="text-3xl font-semibold">
+        {mode === "register"
+          ? "Create your free account"
+          : mode === "forgot"
+            ? "Reset your password"
+            : "Log in"}
+      </h1>
       <p className="mt-2 text-muted">
-        New here? Same box. Enter your email, we send you a code, and your
-        account is made on the spot. Buy, sell, or both, one account covers it.
-        No password to remember.
+        {mode === "register"
+          ? "One account covers buying and selling. Selling is free until you sell."
+          : mode === "forgot"
+            ? "Enter your email and we will send you a link to set a new password."
+            : "Welcome back."}
       </p>
 
-      {stage === "email" ? (
-        <form onSubmit={sendCode} className="tag-card mt-6 flex flex-col gap-4 p-6" noValidate>
+      <form onSubmit={submit} className="tag-card mt-6 flex flex-col gap-4 p-6" noValidate>
+        <div>
+          <label htmlFor="auth-email" className="field-label">
+            Email address
+          </label>
+          <input
+            id="auth-email"
+            type="email"
+            className="field"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            aria-invalid={!!error}
+          />
+        </div>
+
+        {mode !== "forgot" && (
           <div>
-            <label htmlFor="login-email" className="field-label">
-              Email address
+            <label htmlFor="auth-password" className="field-label">
+              Password
             </label>
-            <input
-              id="login-email"
-              type="email"
-              className="field"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              aria-invalid={!!error}
-            />
-            {error && <p className="field-error">{error}</p>}
+            <div className="relative">
+              <input
+                id="auth-password"
+                type={showPw ? "text" : "password"}
+                className="field pr-20"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete={mode === "register" ? "new-password" : "current-password"}
+                aria-invalid={!!error}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw(!showPw)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-3 py-2 text-sm font-medium text-muted hover:bg-cream-dark"
+              >
+                {showPw ? "Hide" : "Show"}
+              </button>
+            </div>
+            {mode === "register" && (
+              <p className="field-hint">At least 8 characters.</p>
+            )}
           </div>
-          <button className="btn btn-primary" disabled={busy}>
-            {busy ? "Sending" : "Email me a code"}
-          </button>
-        </form>
-      ) : (
-        <form onSubmit={verify} className="tag-card mt-6 flex flex-col gap-4 p-6" noValidate>
-          <p className="text-sm">
-            We sent an email to <span className="font-semibold">{email}</span>.
-            Type the code below, or just tap the link in the email. Either one
-            signs you in.
+        )}
+
+        {error && (
+          <p className="field-error" role="alert">
+            {error}
           </p>
-          <div>
-            <label htmlFor="login-code" className="field-label">
-              Code
-            </label>
-            <input
-              id="login-code"
-              className="field text-center text-2xl tracking-widest"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={6}
-              aria-invalid={!!error}
-            />
-            {error && <p className="field-error">{error}</p>}
-          </div>
-          <button className="btn btn-primary" disabled={busy || code.length < 6}>
-            {busy ? "Checking" : "Log in"}
+        )}
+        {notice && (
+          <p className="font-medium text-grove" role="status">
+            {notice}
+          </p>
+        )}
+
+        <button className="btn btn-primary" disabled={busy}>
+          {busy
+            ? "One second"
+            : mode === "register"
+              ? "Create account"
+              : mode === "forgot"
+                ? "Send reset link"
+                : "Log in"}
+        </button>
+      </form>
+
+      <div className="mt-4 flex flex-col gap-2 text-center">
+        {mode === "login" && (
+          <>
+            <button className="text-grove underline underline-offset-2" onClick={() => switchMode("register")}>
+              New here? Create a free account
+            </button>
+            <button className="text-sm text-muted underline" onClick={() => switchMode("forgot")}>
+              Forgot your password?
+            </button>
+          </>
+        )}
+        {mode === "register" && (
+          <button className="text-grove underline underline-offset-2" onClick={() => switchMode("login")}>
+            Already have an account? Log in
           </button>
-          <button
-            type="button"
-            className="text-sm text-muted underline"
-            onClick={() => {
-              setStage("email");
-              setError("");
-            }}
-          >
-            Use a different email
+        )}
+        {mode === "forgot" && (
+          <button className="text-grove underline underline-offset-2" onClick={() => switchMode("login")}>
+            Back to log in
           </button>
-        </form>
-      )}
+        )}
+      </div>
     </div>
   );
 }

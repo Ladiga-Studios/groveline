@@ -7,8 +7,9 @@ Local drops, claimed in seconds. Sellers post what they have, share one link, an
 ### 1. Supabase (database and auth)
 
 1. Open your Supabase project, go to the SQL editor, paste the contents of `supabase/schema.sql`, and run it once. That creates every table, policy, the atomic claim function, and the photo storage bucket.
-2. In Authentication settings, make sure Email provider is on. The login flow uses email one time codes, which work out of the box. Optional but recommended: in the Email Templates section, edit the OTP template so the code is front and center.
-3. Grab your Project URL, anon key, and service role key from Project Settings, API.
+2. In Authentication, Sign In / Providers, make sure Email is enabled, then turn OFF "Confirm email". The app uses normal email and password login, and with confirmation off, people can sign up and use it immediately with no email step.
+3. Recommended: point Supabase auth emails (password resets) at your Resend account. In Project Settings, Authentication, SMTP, enable custom SMTP with Resend's SMTP credentials. Supabase's built in mailer only sends a couple emails per hour, which is why OTP codes were unreliable.
+4. Grab your Project URL, anon key, and service role key from Project Settings, API.
 
 ### 2. Environment variables
 

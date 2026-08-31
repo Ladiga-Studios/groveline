@@ -19,6 +19,7 @@ export type Drop = {
   quantity: number;
   claimed: number;
   max_per_buyer: number | null;
+  category: string;
   pickup_place: string;
   pickup_start: string;
   pickup_end: string;

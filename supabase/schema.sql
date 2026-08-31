@@ -18,6 +18,7 @@ create table public.drops (
   seller_id uuid not null references public.profiles (id) on delete cascade,
   slug text not null unique,
   title text not null,
+  category text not null default 'other' check (category in ('baked', 'produce', 'meat', 'plants', 'crafts', 'plates', 'other')),
   description text,
   photo_url text,
   price_cents integer not null check (price_cents >= 0),

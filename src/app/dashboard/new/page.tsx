@@ -5,9 +5,11 @@ import { supabaseBrowser } from "@/lib/supabase/client";
 import { slugify, shortId } from "@/lib/format";
 import { useToast } from "@/components/Toast";
 import CopyButton from "@/components/CopyButton";
+import { CATEGORIES } from "@/lib/categories";
 
 export default function NewDropPage() {
   const [title, setTitle] = useState("");
+  const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [notes, setNotes] = useState("");
   const [price, setPrice] = useState("");
@@ -55,6 +57,7 @@ export default function NewDropPage() {
     const priceCents = Math.round(parseFloat(price) * 100);
     const qty = parseInt(quantity, 10);
     if (!title.trim()) return setError("Give it a name, like Sourdough loaves.");
+    if (!category) return setError("Pick a category so buyers can find it.");
     if (!priceCents || priceCents <= 0) return setError("Enter a price.");
     if (!qty || qty <= 0) return setError("Enter how many you have.");
     if (!pickupPlace.trim()) return setError("Enter a pickup place.");
@@ -89,6 +92,7 @@ export default function NewDropPage() {
       seller_id: user.id,
       slug,
       title: title.trim(),
+      category,
       description: description.trim() || null,
       photo_url: photoUrl,
       price_cents: priceCents,
@@ -170,6 +174,27 @@ export default function NewDropPage() {
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Sourdough loaves"
           />
+        </div>
+
+        <div>
+          <label htmlFor="d-cat" className="field-label">
+            Category
+          </label>
+          <select
+            id="d-cat"
+            className="field"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            <option value="" disabled>
+              Pick one
+            </option>
+            {CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="tag-card p-4">
