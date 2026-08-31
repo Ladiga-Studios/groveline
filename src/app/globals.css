@@ -1,0 +1,288 @@
+@import "tailwindcss";
+
+/*
+  Groveline design system.
+  Warm organic-modern. Deep green does the heavy lifting, cream is the paper,
+  peach is the action color. Everything themeable from this block.
+*/
+@theme {
+  --color-cream: #faf6ef;
+  --color-cream-dark: #f1eadc;
+  --color-grove: #1e4d2b;
+  --color-grove-dark: #163a20;
+  --color-leaf: #4e8a5a;
+  --color-peach: #f2a65a;
+  --color-peach-dark: #dd8a3d;
+  --color-ink: #2b2b26;
+  --color-muted: #6b6a5f;
+
+  --font-display: "Fraunces Variable", Georgia, serif;
+  --font-body: "Instrument Sans Variable", system-ui, sans-serif;
+
+  --radius-tag: 14px;
+  --radius-pill: 999px;
+
+  --shadow-lift: 0 2px 12px rgba(30, 77, 43, 0.1);
+}
+
+:root {
+  --transition-fast: 160ms ease-out;
+  --transition-med: 240ms ease-out;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 40;
+  letter-spacing: -0.01em;
+}
+
+/* Visible focus everywhere, tuned per surface */
+:focus-visible {
+  outline: 3px solid var(--color-peach);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Buttons: 44px minimum touch targets */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  padding: 0 1.5rem;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast),
+    border-color var(--transition-fast);
+  text-decoration: none;
+}
+.btn:active {
+  transform: scale(0.98);
+}
+.btn-primary {
+  background: var(--color-peach);
+  color: var(--color-ink);
+}
+.btn-primary:hover {
+  background: var(--color-peach-dark);
+}
+.btn-grove {
+  background: var(--color-grove);
+  color: var(--color-cream);
+}
+.btn-grove:hover {
+  background: var(--color-grove-dark);
+}
+.btn-outline {
+  background: transparent;
+  color: var(--color-grove);
+  border-color: var(--color-grove);
+}
+.btn-outline:hover {
+  background: var(--color-cream-dark);
+}
+.btn-outline-cream {
+  background: transparent;
+  color: var(--color-cream);
+  border-color: var(--color-cream);
+}
+.btn-outline-cream:hover {
+  background: rgba(250, 246, 239, 0.12);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* The signature element: the claim tag. Drop cards read as market price
+   tags, with a punched hole on the left edge. */
+.tag-card {
+  position: relative;
+  background: white;
+  border: 1.5px solid var(--color-cream-dark);
+  border-radius: var(--radius-tag);
+  box-shadow: var(--shadow-lift);
+  padding-left: 1.75rem;
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast);
+}
+.tag-card::before {
+  content: "";
+  position: absolute;
+  left: 0.65rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--color-cream);
+  border: 2px solid var(--color-cream-dark);
+}
+a.tag-card:hover,
+a.tag-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--color-leaf);
+}
+
+/* Forms */
+.field {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 0.65rem 0.9rem;
+  border: 1.5px solid var(--color-cream-dark);
+  border-radius: 10px;
+  background: white;
+  font-size: 1rem;
+  transition: border-color var(--transition-fast);
+}
+.field:focus {
+  outline: none;
+  border-color: var(--color-leaf);
+}
+.field-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+.field-error {
+  color: #a33a2a;
+  font-size: 0.9rem;
+  margin-top: 0.3rem;
+}
+.field-hint {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  margin-top: 0.3rem;
+}
+
+/* Toasts */
+.toast {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  background: var(--color-ink);
+  color: var(--color-cream);
+  padding: 0.8rem 1.25rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+  animation: toast-in var(--transition-med);
+  max-width: min(92vw, 26rem);
+}
+.toast[data-kind="error"] {
+  background: #7a2c1f;
+}
+.toast[data-kind="success"] {
+  background: var(--color-grove);
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(43, 43, 38, 0.55);
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  animation: fade-in var(--transition-fast);
+}
+.modal-card {
+  background: var(--color-cream);
+  border-radius: 18px;
+  padding: 1.75rem;
+  width: 100%;
+  max-width: 26rem;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.25);
+  animation: modal-in var(--transition-med);
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+body[data-modal-open="true"] {
+  overflow: hidden;
+}
+
+/* Section reveals, driven by IntersectionObserver adding data-shown */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 420ms ease-out,
+    transform 420ms ease-out;
+}
+.reveal[data-shown="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Sticky header offset for in-page anchors */
+[id] {
+  scroll-margin-top: 5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
