@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { useToast } from "@/components/Toast";
@@ -13,6 +13,14 @@ export default function LoginPage() {
   const toast = useToast();
   const router = useRouter();
 
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("error") === "link") {
+      setError(
+        "That link expired or was already used. Enter your email and we will send a fresh one."
+      );
+    }
+  }, []);
+
   async function sendCode(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -24,13 +32,16 @@ export default function LoginPage() {
     const supabase = supabaseBrowser();
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { shouldCreateUser: true },
+      options: {
+        shouldCreateUser: true,
+        emailRedirectTo: `${window.location.origin}/auth/confirm`,
+      },
     });
     setBusy(false);
     if (error) setError("Could not send the code. Try again in a minute.");
     else {
       setStage("code");
-      toast("Code sent. Check your email.", "success");
+      toast("Check your email.", "success");
     }
   }
 
@@ -61,8 +72,9 @@ export default function LoginPage() {
     <div className="mx-auto max-w-md px-4 py-14">
       <h1 className="text-3xl font-semibold">Log in or sign up</h1>
       <p className="mt-2 text-muted">
-        One account for selling and following. We email you a code, no password
-        to remember.
+        New here? Same box. Enter your email, we send you a code, and your
+        account is made on the spot. Buy, sell, or both, one account covers it.
+        No password to remember.
       </p>
 
       {stage === "email" ? (
@@ -89,7 +101,9 @@ export default function LoginPage() {
       ) : (
         <form onSubmit={verify} className="tag-card mt-6 flex flex-col gap-4 p-6" noValidate>
           <p className="text-sm">
-            We sent a 6 digit code to <span className="font-semibold">{email}</span>.
+            We sent an email to <span className="font-semibold">{email}</span>.
+            Type the code below, or just tap the link in the email. Either one
+            signs you in.
           </p>
           <div>
             <label htmlFor="login-code" className="field-label">
@@ -113,7 +127,10 @@ export default function LoginPage() {
           <button
             type="button"
             className="text-sm text-muted underline"
-            onClick={() => setStage("email")}
+            onClick={() => {
+              setStage("email");
+              setError("");
+            }}
           >
             Use a different email
           </button>
