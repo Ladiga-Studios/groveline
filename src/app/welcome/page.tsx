@@ -4,10 +4,12 @@ import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { slugify, shortId } from "@/lib/format";
 import { useToast } from "@/components/Toast";
+import { STATES } from "@/lib/states";
 
 export default function WelcomePage() {
   const [name, setName] = useState("");
   const [town, setTown] = useState("");
+  const [usState, setUsState] = useState("AL");
   const [isSeller, setIsSeller] = useState(false);
   const [farmName, setFarmName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -36,6 +38,7 @@ export default function WelcomePage() {
       id: user.id,
       name: name.trim(),
       town: town.trim(),
+      state: usState,
       is_seller: isSeller,
       farm_name: farmName.trim() || null,
       slug: `${base}-${shortId()}`,
@@ -78,6 +81,23 @@ export default function WelcomePage() {
             onChange={(e) => setTown(e.target.value)}
             placeholder="Piedmont"
           />
+        </div>
+        <div>
+          <label htmlFor="w-state" className="field-label">
+            State
+          </label>
+          <select
+            id="w-state"
+            className="field"
+            value={usState}
+            onChange={(e) => setUsState(e.target.value)}
+          >
+            {STATES.map(([code, name]) => (
+              <option key={code} value={code}>
+                {name}
+              </option>
+            ))}
+          </select>
         </div>
         <label className="flex min-h-11 cursor-pointer items-center gap-3">
           <input

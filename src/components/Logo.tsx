@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-/* The mark: a tree whose roots settle into one straight line. */
+/* The mark: a full grove canopy whose roots settle into one shared line. */
 export function GrovelineMark({ size = 34 }: { size?: number }) {
   return (
     <svg
@@ -10,14 +10,18 @@ export function GrovelineMark({ size = 34 }: { size?: number }) {
       aria-hidden="true"
       focusable="false"
     >
+      <g fill="currentColor">
+        <circle cx="32" cy="15" r="10" />
+        <circle cx="20" cy="24" r="8" />
+        <circle cx="44" cy="24" r="8" />
+        <circle cx="32" cy="26" r="9" />
+      </g>
       <g fill="none" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round">
-        <path d="M32 46 V26" />
-        <path d="M32 34 C 26 30, 22 24, 23 16" />
-        <path d="M32 30 C 38 27, 42 21, 41 13" />
-        <circle cx="21" cy="13" r="4.5" fill="currentColor" stroke="none" />
-        <circle cx="43" cy="10" r="4.5" fill="currentColor" stroke="none" />
-        <circle cx="32" cy="18" r="5.5" fill="currentColor" stroke="none" />
-        <path d="M8 52 H56" />
+        <path d="M32 30 V44" />
+        <path d="M32 44 L19 53" />
+        <path d="M32 44 L45 53" />
+        <path d="M32 44 V54" />
+        <path d="M6 58 H58" />
       </g>
     </svg>
   );

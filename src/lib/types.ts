@@ -3,6 +3,7 @@ export type Profile = {
   name: string;
   farm_name: string | null;
   town: string;
+  state: string;
   slug: string;
   is_seller: boolean;
   bio: string | null;

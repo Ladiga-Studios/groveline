@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Drop } from "@/lib/types";
 import { money, pickupWindow } from "@/lib/format";
+import { categoryLabel } from "@/lib/categories";
 
 export default function DropCard({ drop }: { drop: Drop }) {
   const left = drop.quantity - drop.claimed;
@@ -49,12 +50,17 @@ export default function DropCard({ drop }: { drop: Drop }) {
         <p className="mt-1 text-sm">
           Pickup {pickupWindow(drop.pickup_start, drop.pickup_end)}
         </p>
-        <p
-          className={`mt-1 text-sm font-semibold ${
-            soldOut ? "text-muted" : "text-grove"
-          }`}
-        >
-          {soldOut ? "Sold out" : `${left} of ${drop.quantity} left`}
+        <p className="mt-1 flex flex-wrap items-center gap-2 text-sm">
+          <span
+            className={`font-semibold ${soldOut ? "text-muted" : "text-grove"}`}
+          >
+            {soldOut ? "Sold out" : `${left} of ${drop.quantity} left`}
+          </span>
+          {drop.category && drop.category !== "other" && (
+            <span className="rounded-full bg-cream-dark px-2 py-0.5 text-xs font-medium text-ink">
+              {categoryLabel(drop.category)}
+            </span>
+          )}
         </p>
       </div>
     </Link>

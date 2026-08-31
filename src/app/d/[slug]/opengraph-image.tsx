@@ -8,10 +8,12 @@ export const alt = "Groveline drop";
 
 const colors = {
   cream: "#faf6ef",
+  creamDark: "#f1eadc",
   grove: "#1e4d2b",
   leaf: "#4e8a5a",
   peach: "#f2a65a",
   ink: "#2b2b26",
+  muted: "#6b6a5f",
 };
 
 function money(cents: number) {
@@ -22,8 +24,9 @@ function money(cents: number) {
 export default async function OgImage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
+  const { slug } = await params;
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -31,7 +34,7 @@ export default async function OgImage({
   const { data: drop } = await supabase
     .from("drops")
     .select("*, profiles!drops_seller_id_fkey(name, farm_name, town)")
-    .eq("slug", params.slug)
+    .eq("slug", slug)
     .maybeSingle();
 
   const title = drop?.title ?? "A local drop";
@@ -39,6 +42,7 @@ export default async function OgImage({
   const seller = drop?.profiles?.farm_name || drop?.profiles?.name || "";
   const town = drop?.profiles?.town || "";
   const left = drop ? drop.quantity - drop.claimed : 0;
+  const photo = drop?.photo_url as string | undefined;
   const pickup = drop
     ? new Date(drop.pickup_start).toLocaleDateString("en-US", {
         weekday: "long",
@@ -55,99 +59,103 @@ export default async function OgImage({
           height: "100%",
           display: "flex",
           background: colors.cream,
-          padding: 48,
+          padding: 40,
         }}
       >
-        {/* The tag card */}
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
             width: "100%",
             background: "white",
-            borderRadius: 32,
-            border: `3px solid #f1eadc`,
-            padding: 56,
-            position: "relative",
+            borderRadius: 28,
+            border: `3px solid ${colors.creamDark}`,
+            overflow: "hidden",
           }}
         >
-          {/* punched hole */}
-          <div
-            style={{
-              position: "absolute",
-              left: 28,
-              top: 285,
-              width: 26,
-              height: 26,
-              borderRadius: 26,
-              background: colors.cream,
-              border: `5px solid #f1eadc`,
-            }}
-          />
-          <div style={{ display: "flex", flexDirection: "column", marginLeft: 40 }}>
-            <div
-              style={{
-                fontSize: 68,
-                fontWeight: 700,
-                color: colors.ink,
-                lineHeight: 1.1,
-              }}
-            >
-              {title}
-            </div>
-            {seller ? (
-              <div style={{ fontSize: 34, color: "#6b6a5f", marginTop: 14 }}>
-                {seller}
-                {town ? ` in ${town}` : ""}
-              </div>
-            ) : null}
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginLeft: 40,
-            }}
-          >
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <div style={{ fontSize: 84, fontWeight: 700, color: colors.grove }}>
-                {price}
-              </div>
-              <div style={{ fontSize: 32, color: colors.ink }}>
-                {left > 0 ? `${left} left` : "Sold out"}
-                {pickup ? `, pickup ${pickup}` : ""}
-              </div>
-            </div>
+          {photo ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={photo}
+              alt=""
+              style={{ width: 470, height: "100%", objectFit: "cover" }}
+            />
+          ) : (
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                background: colors.peach,
-                color: colors.ink,
-                fontSize: 36,
-                fontWeight: 700,
-                padding: "24px 44px",
-                borderRadius: 999,
+                justifyContent: "center",
+                width: 300,
+                height: "100%",
+                background: colors.grove,
+                color: colors.cream,
+                fontSize: 130,
               }}
             >
-              Tap to reserve
+              *
             </div>
-          </div>
+          )}
           <div
             style={{
-              position: "absolute",
-              bottom: 24,
-              right: 44,
               display: "flex",
-              alignItems: "center",
-              fontSize: 26,
-              color: colors.leaf,
-              fontWeight: 600,
+              flexDirection: "column",
+              justifyContent: "space-between",
+              flex: 1,
+              padding: 44,
             }}
           >
-            groveline.io
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div
+                style={{
+                  fontSize: 56,
+                  fontWeight: 700,
+                  color: colors.ink,
+                  lineHeight: 1.1,
+                }}
+              >
+                {title}
+              </div>
+              {seller ? (
+                <div style={{ fontSize: 30, color: colors.muted, marginTop: 12 }}>
+                  {seller}
+                  {town ? ` in ${town}` : ""}
+                </div>
+              ) : null}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div style={{ fontSize: 76, fontWeight: 700, color: colors.grove }}>
+                {price}
+              </div>
+              <div style={{ fontSize: 28, color: colors.ink, marginTop: 4 }}>
+                {left > 0 ? `${left} left` : "Sold out"}
+                {pickup ? `, pickup ${pickup}` : ""}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginTop: 24,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    background: colors.peach,
+                    color: colors.ink,
+                    fontSize: 30,
+                    fontWeight: 700,
+                    padding: "18px 36px",
+                    borderRadius: 999,
+                  }}
+                >
+                  Tap to reserve
+                </div>
+                <div style={{ fontSize: 24, color: colors.leaf, fontWeight: 600 }}>
+                  groveline.io
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

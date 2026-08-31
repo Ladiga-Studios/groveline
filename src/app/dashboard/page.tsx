@@ -50,6 +50,10 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
+      <p className="mt-2 text-sm text-muted">
+        Every drop gets one link. Paste it in your Facebook groups, text it to
+        regulars, pin it to your page. That link is your storefront.
+      </p>
       <p className="mt-2 text-sm">
         Your public page:{" "}
         <Link href={`/s/${profile.slug}`} className="text-grove underline underline-offset-2">
@@ -74,6 +78,7 @@ export default async function DashboardPage() {
         <div className="mt-8 grid gap-4">
           {(drops as Drop[]).map((d) => {
             const left = d.quantity - d.claimed;
+            const ended = new Date(d.pickup_end) < new Date();
             return (
               <Link
                 key={d.id}
@@ -87,15 +92,24 @@ export default async function DashboardPage() {
                     {pickupWindow(d.pickup_start, d.pickup_end)}
                   </p>
                 </div>
-                <p
-                  className={`font-display text-xl font-semibold ${
-                    d.status === "closed" || left <= 0 ? "text-muted" : "text-grove"
-                  }`}
-                >
-                  {d.status === "closed"
-                    ? "Closed"
-                    : `${d.claimed} of ${d.quantity} claimed`}
-                </p>
+                <div className="text-right">
+                  <p
+                    className={`font-display text-xl font-semibold ${
+                      d.status === "closed" || left <= 0 || ended
+                        ? "text-muted"
+                        : "text-grove"
+                    }`}
+                  >
+                    {d.status === "closed"
+                      ? "Closed"
+                      : `${d.claimed} of ${d.quantity} claimed`}
+                  </p>
+                  {ended && d.status === "active" && (
+                    <p className="text-xs text-muted">
+                      Pickup passed, no longer shown in browse
+                    </p>
+                  )}
+                </div>
               </Link>
             );
           })}

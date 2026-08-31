@@ -6,6 +6,7 @@ import { slugify, shortId } from "@/lib/format";
 import { useToast } from "@/components/Toast";
 import CopyButton from "@/components/CopyButton";
 import { CATEGORIES } from "@/lib/categories";
+import ShareButton from "@/components/ShareButton";
 
 export default function NewDropPage() {
   const [title, setTitle] = useState("");
@@ -62,6 +63,14 @@ export default function NewDropPage() {
     if (!qty || qty <= 0) return setError("Enter how many you have.");
     if (!pickupPlace.trim()) return setError("Enter a pickup place.");
     if (!pickupDate) return setError("Pick a pickup date.");
+    const startAt = new Date(`${pickupDate}T${startTime}`);
+    const endAt = new Date(`${pickupDate}T${endTime}`);
+    if (endAt <= startAt)
+      return setError("Pickup end time needs to be after the start time.");
+    if (endAt < new Date())
+      return setError(
+        "That pickup time has already passed. Pick a future date or time so buyers can find it."
+      );
 
     setBusy(true);
     const supabase = supabaseBrowser();
@@ -98,8 +107,8 @@ export default function NewDropPage() {
       price_cents: priceCents,
       quantity: qty,
       pickup_place: pickupPlace.trim(),
-      pickup_start: new Date(`${pickupDate}T${startTime}`).toISOString(),
-      pickup_end: new Date(`${pickupDate}T${endTime}`).toISOString(),
+      pickup_start: startAt.toISOString(),
+      pickup_end: endAt.toISOString(),
       status: "active",
     });
     setBusy(false);
@@ -128,23 +137,43 @@ export default function NewDropPage() {
       <div className="mx-auto max-w-md px-4 py-14">
         <h1 className="text-3xl font-semibold text-grove">Your drop is live.</h1>
         <p className="mt-2">
-          Share this link anywhere you already post. It shows your photo,
-          price, and pickup details automatically.
+          Nobody can buy what they never see. Here is what to do right now, it
+          takes about a minute.
         </p>
-        <div className="tag-card mt-6 p-5">
-          <p className="break-all font-mono text-sm">{created.url}</p>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <CopyButton text={created.url} />
-            <CopyButton text={created.caption} label="Copy a ready caption" />
-          </div>
-        </div>
-        <p className="mt-4 text-sm text-muted">
-          Tip: on Facebook, post the link and give it a second. The preview
-          card builds itself. Your email subscribers were notified
-          automatically.
-        </p>
+        <ol className="mt-5 list-none space-y-4">
+          <li className="tag-card p-4">
+            <p className="font-semibold">1. Grab your link</p>
+            <p className="mt-1 break-all font-mono text-sm text-muted">{created.url}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <ShareButton
+                url={created.url}
+                title={title || "My new drop on Groveline"}
+                text="Reserve yours before it is gone."
+                primary
+              />
+              <CopyButton text={created.url} />
+              <CopyButton text={created.caption} label="Copy a ready caption" />
+            </div>
+          </li>
+          <li className="tag-card p-4">
+            <p className="font-semibold">2. Paste it where your buyers already are</p>
+            <p className="mt-1 text-sm text-muted">
+              The Facebook groups you always post in, your page, your story, a
+              text to your regulars. The link turns into a card with your photo
+              and price by itself, just give it a second to load after pasting.
+            </p>
+          </li>
+          <li className="tag-card p-4">
+            <p className="font-semibold">3. That is it</p>
+            <p className="mt-1 text-sm text-muted">
+              Your email subscribers were already notified automatically.
+              Claims show up on your dashboard as they come in, and pickup day
+              your list is your checklist.
+            </p>
+          </li>
+        </ol>
         <div className="mt-6 flex gap-3">
-          <a href={created.url} className="btn btn-primary">
+          <a href={created.url} className="btn btn-grove">
             See your drop
           </a>
           <button className="btn btn-outline" onClick={() => router.push("/dashboard")}>
@@ -250,17 +279,25 @@ export default function NewDropPage() {
             <label htmlFor="d-price" className="field-label">
               Price each
             </label>
-            <input
-              id="d-price"
-              type="number"
-              inputMode="decimal"
-              min="0"
-              step="0.01"
-              className="field"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              placeholder="9"
-            />
+            <div className="relative">
+              <span
+                aria-hidden="true"
+                className="absolute left-3 top-1/2 -translate-y-1/2 font-semibold text-muted"
+              >
+                $
+              </span>
+              <input
+                id="d-price"
+                type="number"
+                inputMode="decimal"
+                min="0"
+                step="0.01"
+                className="field pl-7"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                placeholder="9"
+              />
+            </div>
           </div>
         </div>
 
@@ -287,6 +324,9 @@ export default function NewDropPage() {
               type="date"
               className="field"
               value={pickupDate}
+              min={new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+                .toISOString()
+                .slice(0, 10)}
               onChange={(e) => setPickupDate(e.target.value)}
             />
           </div>

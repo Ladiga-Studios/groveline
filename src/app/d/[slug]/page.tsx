@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase/server";
 import ClaimForm from "@/components/ClaimForm";
 import { money, pickupWindow } from "@/lib/format";
+import ShareButton from "@/components/ShareButton";
 import type { Drop } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -132,7 +133,34 @@ export default async function DropPage({
       )}
 
       <div className="mt-8">
-        <ClaimForm drop={drop} />
+        {new Date(drop.pickup_end) < new Date() ? (
+          <div className="tag-card p-6">
+            <p className="font-display text-xl font-semibold">
+              This pickup time has passed.
+            </p>
+            <p className="mt-2 text-muted">
+              {seller
+                ? `Follow ${seller.farm_name || seller.name} or join their email list to catch the next one.`
+                : "Check the browse page for what is claimable now."}
+            </p>
+            <Link href="/browse" className="btn btn-primary mt-4">
+              See what is claimable now
+            </Link>
+          </div>
+        ) : (
+          <ClaimForm drop={drop} />
+        )}
+      </div>
+
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <ShareButton
+          url={`${process.env.NEXT_PUBLIC_SITE_URL || "https://groveline.io"}/d/${drop.slug}`}
+          title={`${drop.title} for ${money(drop.price_cents)}`}
+          text="Reserve yours before it is gone."
+        />
+        <p className="text-sm text-muted">
+          Know somebody who would want this? Send it to them.
+        </p>
       </div>
     </div>
   );

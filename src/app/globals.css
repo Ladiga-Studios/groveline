@@ -32,6 +32,7 @@
 
 html {
   scroll-behavior: smooth;
+  background: var(--color-cream);
 }
 
 body {
@@ -39,6 +40,12 @@ body {
   color: var(--color-ink);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+body > main {
+  flex: 1;
 }
 
 h1,

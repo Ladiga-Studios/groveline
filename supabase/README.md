@@ -17,8 +17,13 @@ it ships, new changes get a new file.
 - 0001_initial_schema.sql (applied via the one time reset script)
 - 0002_add_drop_categories.sql
 
+## Needs to be run
+
+- 0003_add_profile_state.sql
+
 ## History
 
 - 0001: profiles, drops, claims, waitlist, follows, newsletter subscribers,
   the atomic claim_drop function, all RLS policies, drop-photos bucket
 - 0002: category column on drops for browse filtering
+- 0003: state column on profiles for browse filtering
