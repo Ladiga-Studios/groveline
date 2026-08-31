@@ -23,6 +23,7 @@ it ships, new changes get a new file.
 - 0004_claim_removal_and_follower_emails.sql
 - 0005_multi_photo_and_claim_ip.sql
 - 0006_operational_platform.sql
+- 0007_shipping_terms_contact_digest.sql
 
 ## History
 
@@ -33,3 +34,4 @@ it ships, new changes get a new file.
 - 0004: profile emails for follower notifications, atomic remove_claim function
 - 0005: photo_urls array on drops for multi-photo support, ip_address on claims for spam rate limiting
 - 0006: expanded categories, pickup address and coordinates, avatar and admin on profiles, billing table, buyer-linked claims with cancel tokens and payment tracking, reports, claim_drop_v2, release_claim, increment_views, seller_stats
+- 0007: shipping and fulfillment on drops, delivery and address on claims, terms acceptance, seller contact info, notification digest preference, claim_drop_v3

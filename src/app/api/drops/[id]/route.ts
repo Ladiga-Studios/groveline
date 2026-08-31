@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase/server";
 import { moderateDropSubmission } from "@/lib/moderation";
 import { isValidCategory } from "@/lib/categories";
+import { cleanSlug } from "@/lib/format";
 import { geocode } from "@/lib/geocode";
 
 export const runtime = "nodejs";
@@ -27,6 +28,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   const description = String(form.get("description") ?? "").trim();
   const priceCents = Math.round(parseFloat(String(form.get("price") ?? "0")) * 100);
   const quantity = parseInt(String(form.get("quantity") ?? "0"), 10);
+  const fulfillment = String(form.get("fulfillment") ?? "pickup");
+  const shippingCents = Math.round(parseFloat(String(form.get("shipping") ?? "0")) * 100) || 0;
+  const requestedSlug = cleanSlug(String(form.get("slug") ?? ""));
   const pickupPlace = String(form.get("pickupPlace") ?? "").trim();
   const pickupAddress = String(form.get("pickupAddress") ?? "").trim() || null;
   const pickupCity = String(form.get("pickupCity") ?? "").trim();
@@ -43,7 +47,18 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   if (!quantity || quantity <= 0) return NextResponse.json({ error: "Enter how many." }, { status: 400 });
   if (quantity < existing.claimed)
     return NextResponse.json({ error: `${existing.claimed} are already claimed, so the total can't go below that.` }, { status: 400 });
-  if (!pickupPlace) return NextResponse.json({ error: "Enter a pickup place." }, { status: 400 });
+  if (!["pickup", "shipping", "both"].includes(fulfillment)) return NextResponse.json({ error: "Bad request" }, { status: 400 });
+  if (fulfillment !== "shipping" && !pickupPlace) return NextResponse.json({ error: "Enter a pickup place." }, { status: 400 });
+  if (fulfillment !== "pickup") {
+    const { data: me } = await supabase.from("profiles").select("payouts_enabled").eq("id", user.id).maybeSingle();
+    if (!me?.payouts_enabled) return NextResponse.json({ error: "Set up card payments in Settings before offering shipping." }, { status: 400 });
+  }
+  if (requestedSlug) {
+    let q = supabase.from("drops").select("id").eq("slug", requestedSlug);
+    q = q.neq("id", id);
+    const { data: taken } = await q.maybeSingle();
+    if (taken) return NextResponse.json({ error: "That link is already taken. Try another." }, { status: 400 });
+  }
   if (!pickupCity || !pickupState) return NextResponse.json({ error: "Enter the pickup city and state." }, { status: 400 });
   if (keptUrls.length + newPhotos.length > 10) return NextResponse.json({ error: "Up to 10 photos." }, { status: 400 });
 
@@ -86,7 +101,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       photo_url: photoUrls[0] ?? null,
       price_cents: priceCents,
       quantity,
-      pickup_place: pickupPlace,
+      ...(requestedSlug ? { slug: requestedSlug } : {}),
+      fulfillment,
+      shipping_cents: shippingCents,
+      pickup_place: pickupPlace || null,
       pickup_address: pickupAddress,
       pickup_city: pickupCity,
       pickup_state: pickupState,

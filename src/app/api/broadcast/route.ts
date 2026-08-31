@@ -6,7 +6,7 @@ import { supabaseAdmin, supabaseServer } from "@/lib/supabase/server";
 export async function POST(req: Request) {
   if (!process.env.RESEND_API_KEY) return NextResponse.json({ ok: true });
 
-  let body: { slug?: string };
+  let body: { slug?: string; kind?: "new" | "update" };
   try {
     body = await req.json();
   } catch {
@@ -23,11 +23,15 @@ export async function POST(req: Request) {
   const admin = supabaseAdmin();
   const { data: drop } = await admin
     .from("drops")
-    .select("id, seller_id, title, price_cents, pickup_place, pickup_start, slug, profiles!drops_seller_id_fkey(name, farm_name)")
+    .select("id, seller_id, title, price_cents, pickup_place, pickup_start, pickup_end, slug, fulfillment, last_broadcast_at, profiles!drops_seller_id_fkey(name, farm_name)")
     .eq("slug", body.slug)
     .maybeSingle();
   if (!drop || drop.seller_id !== user.id) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  const isUpdate = body.kind === "update";
+  if (isUpdate && drop.last_broadcast_at && Date.now() - new Date(drop.last_broadcast_at).getTime() < 60 * 60 * 1000) {
+    return NextResponse.json({ error: "You emailed about this drop less than an hour ago. Give folks a minute." }, { status: 429 });
   }
 
   const [{ data: subs }, { data: followerRows }] = await Promise.all([
@@ -65,11 +69,12 @@ export async function POST(req: Request) {
 
   const { Resend } = await import("resend");
   const resend = new Resend(process.env.RESEND_API_KEY);
+  const where = drop.fulfillment === "shipping" ? `Ships to you, order by ${day}` : `Pickup ${day} at ${drop.pickup_place}`;
   const batch = emails.map((email) => ({
     from: process.env.RESEND_FROM || "Groveline <hello@groveline.io>",
     to: email,
-    subject: `New drop from ${sellerName}: ${drop.title}`,
-    text: `${sellerName} just posted a new drop.\n\n${drop.title}, $${price} each\nPickup ${day} at ${drop.pickup_place}\n\nReserve yours: ${site}/d/${drop.slug}\n\nYou get these because you follow or subscribed to ${sellerName} on Groveline.\nStop these emails: ${site}/unsubscribe?s=${user.id}&e=${encodeURIComponent(email)}`,
+    subject: isUpdate ? `Update from ${sellerName}: ${drop.title}` : `New drop from ${sellerName}: ${drop.title}`,
+    text: `${sellerName} ${isUpdate ? "has an update on a drop" : "just posted a new drop"}.\n\n${drop.title}, $${price} each\n${where}\n\n${isUpdate ? "See what changed" : "Reserve yours"}: ${site}/d/${drop.slug}\n\nYou get these because you follow or subscribed to ${sellerName} on Groveline.\nStop these emails: ${site}/unsubscribe?s=${user.id}&e=${encodeURIComponent(email)}`,
   }));
 
   try {
@@ -77,5 +82,6 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ ok: false }, { status: 500 });
   }
+  await admin.from("drops").update({ last_broadcast_at: new Date().toISOString() }).eq("id", drop.id);
   return NextResponse.json({ ok: true, sent: batch.length });
 }

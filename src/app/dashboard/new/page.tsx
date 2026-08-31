@@ -19,12 +19,14 @@ export default function NewDropPage() {
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
   const [pickup, setPickup] = useState<Pickup>({
-    place: "", address: "", city: "", state: "AL", zip: "", date: "", start: "08:00", end: "11:00",
+    fulfillment: "pickup", shipping: "", place: "", address: "", city: "", state: "AL", zip: "", date: "", start: "08:00", end: "11:00",
   });
+  const [customSlug, setCustomSlug] = useState("");
+  const [canShip, setCanShip] = useState(false);
   const [photos, setPhotos] = useState<File[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [gate, setGate] = useState<null | { needsSubscription: boolean; yearlyAvailable: boolean }>(null);
+  const [gate, setGate] = useState<null | { needsSubscription: boolean; yearlyAvailable: boolean; freeLeft: number | null }>(null);
   const [created, setCreated] = useState<{ url: string; caption: string } | null>(null);
   const toast = useToast();
   const router = useRouter();
@@ -55,7 +57,9 @@ export default function NewDropPage() {
           setQuantity(String(d.quantity));
           setPickup((v) => ({
             ...v,
-            place: d.pickup_place,
+            fulfillment: d.fulfillment || "pickup",
+            shipping: d.shipping_cents ? String(d.shipping_cents / 100) : "",
+            place: d.pickup_place || "",
             address: d.pickup_address || "",
             city: d.pickup_city || v.city,
             state: d.pickup_state || v.state,
@@ -67,9 +71,10 @@ export default function NewDropPage() {
       const res = await fetch("/api/billing/status");
       if (res.ok) {
         const b = await res.json();
-        setGate({ needsSubscription: !!b.needsSubscription, yearlyAvailable: !!b.yearlyAvailable });
+        setGate({ needsSubscription: !!b.needsSubscription, yearlyAvailable: !!b.yearlyAvailable, freeLeft: b.freeLeft ?? null });
+        setCanShip(!!b.payoutsEnabled);
       } else {
-        setGate({ needsSubscription: false, yearlyAvailable: false });
+        setGate({ needsSubscription: false, yearlyAvailable: false, freeLeft: null });
       }
     })();
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
@@ -97,13 +102,15 @@ export default function NewDropPage() {
     if (!category) return setError("Pick a category so buyers can find it.");
     if (!priceCents || priceCents <= 0) return setError("Enter a price.");
     if (!qty || qty <= 0) return setError("Enter how many you have.");
-    if (!pickup.place.trim()) return setError("Enter a pickup place.");
-    if (!pickup.city.trim()) return setError("Enter the pickup city.");
-    if (!pickup.date) return setError("Pick a pickup date.");
-    const startAt = new Date(`${pickup.date}T${pickup.start}`);
-    const endAt = new Date(`${pickup.date}T${pickup.end}`);
+    const shipOnly = pickup.fulfillment === "shipping";
+    if (!shipOnly && !pickup.place.trim()) return setError("Enter a pickup place.");
+    if (!pickup.city.trim()) return setError("Enter the city.");
+    if (!pickup.date) return setError(shipOnly ? "Pick the last day to order." : "Pick a pickup date.");
+    if (pickup.fulfillment !== "pickup" && !(parseFloat(pickup.shipping) >= 0)) return setError("Enter a shipping charge (0 is fine).");
+    const startAt = shipOnly ? new Date(`${pickup.date}T00:00`) : new Date(`${pickup.date}T${pickup.start}`);
+    const endAt = shipOnly ? new Date(`${pickup.date}T23:59`) : new Date(`${pickup.date}T${pickup.end}`);
     if (endAt <= startAt) return setError("Pickup end time needs to be after the start time.");
-    if (endAt < new Date()) return setError("That pickup time has already passed. Pick a future date or time.");
+    if (endAt < new Date()) return setError("That date has already passed. Pick a future date.");
 
     setBusy(true);
     const body = new FormData();
@@ -112,6 +119,9 @@ export default function NewDropPage() {
     body.set("description", description.trim());
     body.set("price", price);
     body.set("quantity", quantity);
+    body.set("fulfillment", pickup.fulfillment);
+    body.set("shipping", pickup.shipping || "0");
+    body.set("slug", customSlug);
     body.set("pickupPlace", pickup.place.trim());
     body.set("pickupAddress", pickup.address.trim());
     body.set("pickupCity", pickup.city.trim());
@@ -124,7 +134,7 @@ export default function NewDropPage() {
     const res = await fetch("/api/drops", { method: "POST", body });
     setBusy(false);
     if (res.status === 402) {
-      setGate((g) => ({ needsSubscription: true, yearlyAvailable: g?.yearlyAvailable ?? false }));
+      setGate((g) => ({ needsSubscription: true, yearlyAvailable: g?.yearlyAvailable ?? false, freeLeft: 0 }));
       return;
     }
     if (!res.ok) {
@@ -134,7 +144,9 @@ export default function NewDropPage() {
     }
     const data = await res.json();
     const url = `${window.location.origin}/d/${data.slug}`;
-    const caption = `${title.trim()}, $${price} each. Pickup ${startAt.toLocaleDateString("en-US", { weekday: "long" })} at ${pickup.place.trim()}. Tap to reserve yours: ${url}`;
+    const caption = shipOnly
+      ? `${title.trim()}, $${price} each, shipped to you. Order by ${endAt.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}: ${url}`
+      : `${title.trim()}, $${price} each. Pickup ${startAt.toLocaleDateString("en-US", { weekday: "long" })} at ${pickup.place.trim()}. Tap to reserve yours: ${url}`;
     setCreated({ url, caption });
     fetch("/api/broadcast", {
       method: "POST",
@@ -183,7 +195,7 @@ export default function NewDropPage() {
   if (gate?.needsSubscription) {
     return (
       <div className="mx-auto max-w-lg px-4 py-14">
-        <h1 className="text-3xl font-semibold">Your first drop was on us.</h1>
+        <h1 className="text-3xl font-semibold">Your first three drops were on us.</h1>
         <p className="mt-3 text-lg">
           To keep posting, pick a plan. No cut of your sales, cash or card, no matter how much you sell. Cancel any time.
         </p>
@@ -219,7 +231,10 @@ export default function NewDropPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
       <h1 className="text-3xl font-semibold">Post a drop</h1>
-      <p className="mt-2 text-muted">A few details and some photos. About a minute.</p>
+      <p className="mt-2 text-muted">
+        A few details and some photos. About a minute.
+        {gate?.freeLeft !== null && gate?.freeLeft !== undefined && gate.freeLeft > 0 && ` This is one of your ${gate.freeLeft} free drop${gate.freeLeft === 1 ? "" : "s"}.`}
+      </p>
 
       <form onSubmit={submit} className="mt-8 flex flex-col gap-8" noValidate>
         <section className="tag-card p-6">
@@ -256,7 +271,16 @@ export default function NewDropPage() {
         <section className="tag-card p-6">
           <h2 className="text-lg font-semibold">Pickup</h2>
           <div className="mt-4">
-            <PickupFields value={pickup} onChange={setPickup} prefix="d" minDate={todayLocal()} />
+            <PickupFields value={pickup} onChange={setPickup} prefix="d" minDate={todayLocal()} canShip={canShip} />
+          </div>
+        </section>
+
+        <section className="tag-card p-6">
+          <h2 className="text-lg font-semibold">Your link <span className="font-normal text-muted">(optional)</span></h2>
+          <p className="mt-1 text-sm text-muted">Make it easy to say out loud at the booth. Letters, numbers, and dashes.</p>
+          <div className="mt-3 flex items-center gap-2">
+            <span className="shrink-0 text-sm text-muted">groveline.io/d/</span>
+            <input className="field" value={customSlug} onChange={(e) => setCustomSlug(e.target.value)} placeholder="saturday-sourdough" />
           </div>
         </section>
 

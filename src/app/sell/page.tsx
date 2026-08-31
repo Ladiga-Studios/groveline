@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Start selling",
   description:
-    "Post a drop in about a minute, share one link, and Groveline tracks every claim and emails your regulars. Free until you sell.",
+    "Post a drop in a minute, share one link, and Groveline keeps the list. Cash or card, pickup or shipping. First three drops free.",
   alternates: { canonical: "/sell" },
 };
 
@@ -20,104 +20,112 @@ async function getViewer() {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return { loggedIn: false, isSeller: false };
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_seller")
-      .eq("id", user.id)
-      .maybeSingle();
+    const { data: profile } = await supabase.from("profiles").select("is_seller").eq("id", user.id).maybeSingle();
     return { loggedIn: true, isSeller: !!profile?.is_seller };
   } catch {
     return { loggedIn: false, isSeller: false };
   }
 }
 
+const faq = [
+  {
+    q: "Do I need a business license or anything?",
+    a: "That depends on what you sell and where you live. Cottage food laws cover most home baking in Alabama, and other states have their own rules. Groveline is a list, not a license. What you sell and how you sell it is on you, same as it is on Facebook.",
+  },
+  {
+    q: "Do my buyers need an account?",
+    a: "No. They tap your link, put in a name and a phone number, and that is a reservation. If they want, they can make a free account to follow you and keep track of what they have reserved.",
+  },
+  {
+    q: "What happens when somebody does not show up?",
+    a: "You tap Remove on their name and those items go right back up for anyone to claim. If they paid by card, the hold on their card is released and nobody is charged.",
+  },
+  {
+    q: "How do card payments work?",
+    a: "You connect a bank account through Stripe from Settings. When a buyer pays by card, the money is held on their card, and it is only charged when you mark them picked up or shipped. It lands in your bank, not ours. We never take a cut.",
+  },
+  {
+    q: "Can I ship?",
+    a: "Yes, once card payments are set up. You set a flat shipping charge, the buyer pays when they order, and you charge the card when you mark it shipped.",
+  },
+  {
+    q: "What does it cost?",
+    a: "Your first three drops are free. After that it is $10 a month or $60 a year, and that is the whole bill. We never take a percentage of what you sell.",
+  },
+];
+
 export default async function SellPage() {
   const { loggedIn, isSeller } = await getViewer();
-  const ctaHref = isSeller
-    ? "/dashboard/new"
-    : loggedIn
-      ? "/dashboard"
-      : "/login?mode=register";
-  const ctaLabel = isSeller
-    ? "Post a drop"
-    : loggedIn
-      ? "Turn on selling for my account"
-      : "Create your free account";
-  const ctaHint = isSeller
-    ? "You are all set up. A new drop takes about a minute."
-    : loggedIn
-      ? "You already have an account. One tap turns selling on, no new signup."
-      : "Takes about a minute to sign up. Your first drop can be live tonight.";
+  const ctaHref = isSeller ? "/dashboard/new" : loggedIn ? "/dashboard" : "/login?mode=register";
+  const ctaLabel = isSeller ? "Post a drop" : loggedIn ? "Turn on selling for my account" : "Create your free account";
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12">
-      <div className="grid items-center gap-6 sm:grid-cols-[1fr_auto]">
+    <div className="mx-auto max-w-6xl px-4 py-12">
+      <div className="grid items-center gap-10 lg:grid-cols-2">
         <div>
-          <h1 className="text-4xl font-semibold">Your post, minus the chaos</h1>
+          <h1 className="text-4xl font-semibold">You make the thing. We keep the list.</h1>
           <p className="mt-4 text-lg">
-            Right now you post to Facebook and spend the next two days
-            answering the same three questions. Is this still available. How
-            do I pay. When can I get it. Groveline answers all of that for
-            you, whether you sell bread, beef, plants, soap, or Friday plate
-            sales.
+            Right now you post to Facebook and spend two days answering the same three questions. Is this still
+            available. How do I pay. When can I get it. Groveline answers all three so you can get back to the oven,
+            the field, or the shop.
           </p>
+          <div className="mt-6">
+            <Link href={ctaHref} className="btn btn-primary text-lg">{ctaLabel}</Link>
+            <p className="mt-3 text-sm text-muted">Three free drops, no card needed to start.</p>
+          </div>
         </div>
         <Image
-          src="/illustrations/bag.jpg"
-          alt=""
+          src="/illustrations/workshop.jpg"
+          alt="A woodworker sanding a cutting board in a small shop"
           width={1254}
           height={1254}
-          className="mx-auto hidden h-32 w-auto sm:block"
+          className="mx-auto w-full max-w-md rounded-2xl"
+          sizes="(max-width: 1024px) 100vw, 448px"
+          priority
         />
       </div>
 
-      <Reveal>
-        <div className="tag-card mt-8 p-6">
-          <h2 className="text-2xl font-semibold">What you do</h2>
-          <ol className="mt-3 list-decimal space-y-2 pl-5">
-            <li>Fill out a few fields: what, how many, price, pickup.</li>
-            <li>
-              Add a photo. If words are not your thing, tap one button and the
-              built in writer drafts your description from a few notes.
-            </li>
-            <li>Share your link in the groups you already post in.</li>
-          </ol>
-        </div>
-      </Reveal>
+      <div className="mt-16 grid gap-6 lg:grid-cols-2">
+        <Reveal>
+          <div className="tag-card h-full p-6">
+            <h2 className="text-2xl font-semibold">What you do</h2>
+            <ol className="mt-3 list-decimal space-y-2 pl-5">
+              <li>Fill out what, how many, price, and where and when to get it. Add photos.</li>
+              <li>Copy your link. Paste it where your buyers already are.</li>
+              <li>Show up with the goods and a phone. Tap names as they pay.</li>
+            </ol>
+          </div>
+        </Reveal>
+        <Reveal delay={80}>
+          <div className="tag-card h-full p-6">
+            <h2 className="text-2xl font-semibold">What Groveline does</h2>
+            <ul className="mt-3 space-y-2">
+              <li>Keeps a live count so nobody asks what is left</li>
+              <li>Takes reservations with a name and phone number, no buyer accounts</li>
+              <li>Emails your followers and subscribers every time you post</li>
+              <li>Keeps a waitlist when you sell out and reminds buyers the day before</li>
+              <li>Holds card payments until you hand it over, and handles shipping orders</li>
+              <li>Gives you a page with your photo, your drops, and a signup box</li>
+            </ul>
+          </div>
+        </Reveal>
+      </div>
 
-      <Reveal delay={80}>
-        <div className="tag-card mt-4 p-6">
-          <h2 className="text-2xl font-semibold">What Groveline does</h2>
-          <ul className="mt-3 space-y-2">
-            <li>Shows a live count so nobody asks if it is still available</li>
-            <li>Takes reservations with a name and phone number, no buyer accounts needed</li>
-            <li>Builds your pickup day checklist: who, how many, paid or cash</li>
-            <li>Keeps a waitlist when you sell out</li>
-            <li>
-              Emails your regulars for you. People join your list from your
-              page, and every time you post a drop, the whole list gets an
-              email automatically. You never have to send anything.
-            </li>
-          </ul>
+      <section className="mt-16" aria-labelledby="faq">
+        <h2 id="faq" className="text-3xl font-semibold">Questions people ask</h2>
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          {faq.map((f) => (
+            <div key={f.q} className="tag-card p-5">
+              <h3 className="font-semibold">{f.q}</h3>
+              <p className="mt-2 text-muted">{f.a}</p>
+            </div>
+          ))}
         </div>
-      </Reveal>
+      </section>
 
-      <Reveal delay={140}>
-        <div className="tag-card mt-4 p-6">
-          <h2 className="text-2xl font-semibold">What it costs</h2>
-          <p className="mt-2">
-            Your first drop is free to try, no card needed. After that it is a
-            flat $10 a month if you want to keep posting, and that is it, no
-            cut taken out of any sale, cash or card.
-          </p>
-        </div>
-      </Reveal>
-
-      <div className="mt-8 text-center">
-        <Link href={ctaHref} className="btn btn-primary text-lg">
-          {ctaLabel}
-        </Link>
-        <p className="mt-3 text-sm text-muted">{ctaHint}</p>
+      <div className="mt-12 text-center">
+        <Link href={ctaHref} className="btn btn-primary text-lg">{ctaLabel}</Link>
+        <p className="mt-3 text-sm text-muted">Takes about a minute. Your first drop can be live tonight.</p>
       </div>
     </div>
   );

@@ -19,8 +19,10 @@ export default function EditDropPage() {
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
   const [pickup, setPickup] = useState<Pickup>({
-    place: "", address: "", city: "", state: "AL", zip: "", date: "", start: "08:00", end: "11:00",
+    fulfillment: "pickup", shipping: "", place: "", address: "", city: "", state: "AL", zip: "", date: "", start: "08:00", end: "11:00",
   });
+  const [slug, setSlug] = useState("");
+  const [canShip, setCanShip] = useState(false);
   const [existingUrls, setExistingUrls] = useState<string[]>([]);
   const [newPhotos, setNewPhotos] = useState<File[]>([]);
   const [busy, setBusy] = useState(false);
@@ -58,8 +60,12 @@ export default function EditDropPage() {
       const start = new Date(d.pickup_start);
       const end = new Date(d.pickup_end);
       const pad = (n: number) => String(n).padStart(2, "0");
+      setSlug(d.slug);
+      fetch("/api/billing/status").then((r) => r.ok && r.json()).then((b) => b && setCanShip(!!b.payoutsEnabled));
       setPickup({
-        place: d.pickup_place,
+        fulfillment: d.fulfillment || "pickup",
+        shipping: d.shipping_cents ? String(d.shipping_cents / 100) : "",
+        place: d.pickup_place || "",
         address: d.pickup_address || "",
         city: d.pickup_city || "",
         state: d.pickup_state || "AL",
@@ -85,10 +91,11 @@ export default function EditDropPage() {
       return setError(
         `${claimed} are already claimed, so the total cannot go below ${claimed}.`
       );
-    if (!pickup.place.trim()) return setError("Enter a pickup place.");
-    if (!pickup.city.trim()) return setError("Enter the pickup city.");
-    const startAt = new Date(`${pickup.date}T${pickup.start}`);
-    const endAt = new Date(`${pickup.date}T${pickup.end}`);
+    const shipOnly = pickup.fulfillment === "shipping";
+    if (!shipOnly && !pickup.place.trim()) return setError("Enter a pickup place.");
+    if (!pickup.city.trim()) return setError("Enter the city.");
+    const startAt = shipOnly ? new Date(`${pickup.date}T00:00`) : new Date(`${pickup.date}T${pickup.start}`);
+    const endAt = shipOnly ? new Date(`${pickup.date}T23:59`) : new Date(`${pickup.date}T${pickup.end}`);
     if (endAt <= startAt) return setError("Pickup end time needs to be after the start time.");
 
     setBusy(true);
@@ -98,6 +105,9 @@ export default function EditDropPage() {
     body.set("description", description.trim());
     body.set("price", price);
     body.set("quantity", quantity);
+    body.set("fulfillment", pickup.fulfillment);
+    body.set("shipping", pickup.shipping || "0");
+    body.set("slug", slug);
     body.set("pickupPlace", pickup.place.trim());
     body.set("pickupAddress", pickup.address.trim());
     body.set("pickupCity", pickup.city.trim());
@@ -224,7 +234,16 @@ export default function EditDropPage() {
         <section className="tag-card p-6">
           <h2 className="text-lg font-semibold">Pickup</h2>
           <div className="mt-4">
-            <PickupFields value={pickup} onChange={setPickup} prefix="e" />
+            <PickupFields value={pickup} onChange={setPickup} prefix="e" canShip={canShip} />
+          </div>
+        </section>
+
+        <section className="tag-card p-6">
+          <h2 className="text-lg font-semibold">Your link</h2>
+          <p className="mt-1 text-sm text-muted">Changing this breaks any link you already shared.</p>
+          <div className="mt-3 flex items-center gap-2">
+            <span className="shrink-0 text-sm text-muted">groveline.io/d/</span>
+            <input className="field" value={slug} onChange={(e) => setSlug(e.target.value)} />
           </div>
         </section>
 

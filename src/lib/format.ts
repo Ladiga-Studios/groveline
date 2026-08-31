@@ -29,3 +29,18 @@ export function slugify(text: string) {
 export function shortId() {
   return Math.random().toString(36).slice(2, 8);
 }
+
+export function shortDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+}
+
+/* One line that says when and how, for any drop type. */
+export function whenLabel(d: { fulfillment?: string | null; pickup_start: string; pickup_end: string; pickup_place?: string | null }) {
+  if (d.fulfillment === "shipping") return `Order by ${shortDate(d.pickup_end)}, ships to you`;
+  const base = `Pickup ${pickupWindow(d.pickup_start, d.pickup_end)}`;
+  return d.fulfillment === "both" ? `${base}, or shipped` : base;
+}
+
+export function cleanSlug(input: string) {
+  return input.toLowerCase().trim().replace(/[^a-z0-9-]+/g, "-").replace(/-{2,}/g, "-").replace(/(^-|-$)/g, "").slice(0, 60);
+}

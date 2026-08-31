@@ -32,6 +32,9 @@ export async function POST(req: Request) {
     phone?: string;
     email?: string | null;
     method?: "cash" | "card";
+    delivery?: "pickup" | "shipping";
+    shipAddress?: string;
+    acceptedTerms?: boolean;
     company?: string;
     renderedAt?: number;
     turnstileToken?: string;
@@ -43,7 +46,11 @@ export async function POST(req: Request) {
   }
 
   const { drop_id, quantity, name, phone, email, company, renderedAt, turnstileToken } = body;
-  const method = body.method === "card" ? "card" : "cash";
+  const delivery = body.delivery === "shipping" ? "shipping" : "pickup";
+  const method = delivery === "shipping" || body.method === "card" ? "card" : "cash";
+  const shipAddress = (body.shipAddress ?? "").trim().slice(0, 300);
+  if (!body.acceptedTerms) return NextResponse.json({ error: "Please agree to the terms." }, { status: 400 });
+  if (delivery === "shipping" && shipAddress.length < 10) return NextResponse.json({ error: "Enter a full shipping address." }, { status: 400 });
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     req.headers.get("x-real-ip") ||
@@ -74,7 +81,7 @@ export async function POST(req: Request) {
   const admin = supabaseAdmin();
   const { data: drop } = await admin
     .from("drops")
-    .select("id, title, slug, price_cents, pickup_place, pickup_start, pickup_end, seller_id, profiles!drops_seller_id_fkey(name, farm_name, email, notify_on_claim, payouts_enabled)")
+    .select("id, title, slug, price_cents, pickup_place, pickup_start, pickup_end, seller_id, fulfillment, shipping_cents, profiles!drops_seller_id_fkey(name, farm_name, email, notify_on_claim, notify_digest, payouts_enabled)")
     .eq("id", drop_id)
     .maybeSingle();
   if (!drop) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -83,8 +90,15 @@ export async function POST(req: Request) {
   if (method === "card" && !seller?.payouts_enabled) {
     return NextResponse.json({ error: "This seller only takes cash." }, { status: 400 });
   }
+  if (delivery === "shipping" && drop.fulfillment === "pickup") {
+    return NextResponse.json({ error: "This drop is pickup only." }, { status: 400 });
+  }
+  if (delivery === "pickup" && drop.fulfillment === "shipping") {
+    return NextResponse.json({ error: "This drop ships only." }, { status: 400 });
+  }
+  const shippingCents = delivery === "shipping" ? drop.shipping_cents || 0 : 0;
 
-  const { data, error } = await admin.rpc("claim_drop_v2", {
+  const { data, error } = await admin.rpc("claim_drop_v3", {
     p_drop: drop_id,
     p_qty: quantity,
     p_name: name,
@@ -92,6 +106,9 @@ export async function POST(req: Request) {
     p_email: email ?? null,
     p_method: method,
     p_buyer: buyerId,
+    p_delivery: delivery,
+    p_ship_address: delivery === "shipping" ? shipAddress : null,
+    p_terms: true,
   });
   if (error) {
     if (error.message.includes("not_enough")) return NextResponse.json({ error: "Not enough left" }, { status: 409 });
@@ -122,13 +139,12 @@ export async function POST(req: Request) {
         mode: "payment",
         line_items: [
           {
-            price_data: {
-              currency: "usd",
-              product_data: { name: drop.title },
-              unit_amount: drop.price_cents,
-            },
+            price_data: { currency: "usd", product_data: { name: drop.title }, unit_amount: drop.price_cents },
             quantity,
           },
+          ...(shippingCents > 0
+            ? [{ price_data: { currency: "usd", product_data: { name: "Shipping" }, unit_amount: shippingCents }, quantity: 1 }]
+            : []),
         ],
         payment_intent_data: {
           capture_method: "manual",
@@ -148,22 +164,27 @@ export async function POST(req: Request) {
     }
   }
 
-  const when = pickupWindow(drop.pickup_start, drop.pickup_end);
+  const when = delivery === "shipping"
+    ? `Ships to: ${shipAddress}`
+    : `Pickup: ${pickupWindow(drop.pickup_start, drop.pickup_end)} at ${drop.pickup_place}`;
 
   if (email) {
     sendEmail(
       email,
       `Reserved: ${drop.title}`,
-      `You are number ${result.position} for ${drop.title}.\n\nQuantity: ${quantity}\nPickup: ${when} at ${drop.pickup_place}\n${method === "card" ? "Payment: card on hold, charged when you pick up.\n" : "Payment: cash at pickup.\n"}\nManage or cancel your reservation: ${reservationUrl}\n\nDrop details: ${site}/d/${drop.slug}`
+      `You are number ${result.position} for ${drop.title}.\n\nQuantity: ${quantity}\n${when}\n${method === "card" ? `Payment: card on hold, charged when ${delivery === "shipping" ? "it ships" : "you pick up"}.\n` : "Payment: cash at pickup.\n"}\nManage or cancel your reservation: ${reservationUrl}\n\nDrop details: ${site}/d/${drop.slug}`
     );
   }
 
-  if (seller?.notify_on_claim && seller.email && method === "cash") {
+  // Instant seller email only if they turned digests off. Otherwise the
+  // hourly digest picks it up. Card claims wait until payment is confirmed.
+  if (seller?.notify_on_claim && seller.email && !seller.notify_digest && method === "cash") {
     sendEmail(
       seller.email,
       `New reservation: ${name} x${quantity} for ${drop.title}`,
       `${name} just reserved ${quantity} of ${drop.title} (${money(drop.price_cents * quantity)}, cash at pickup).\n\nPhone: ${phone}\n\nSee all claims: ${site}/dashboard/drops/${drop.id}`
     );
+    admin.from("claims").update({ seller_notified_at: new Date().toISOString() }).eq("id", result.claim_id).then();
   }
 
   return NextResponse.json({ position: result.position, token: result.cancel_token, checkoutUrl });

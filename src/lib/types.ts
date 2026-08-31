@@ -12,6 +12,9 @@ export type Profile = {
   avatar_url: string | null;
   notify_on_claim: boolean;
   payouts_enabled: boolean;
+  contact_phone: string | null;
+  social_url: string | null;
+  notify_digest: boolean;
   created_at: string;
 };
 
@@ -28,7 +31,9 @@ export type Drop = {
   claimed: number;
   max_per_buyer: number | null;
   category: string;
-  pickup_place: string;
+  pickup_place: string | null;
+  fulfillment: "pickup" | "shipping" | "both";
+  shipping_cents: number;
   pickup_address: string | null;
   pickup_city: string | null;
   pickup_state: string | null;
@@ -58,6 +63,8 @@ export type Claim = {
   payment_status: "none" | "pending" | "authorized" | "captured" | "cancelled";
   cancel_token: string;
   cancelled_at: string | null;
+  delivery: "pickup" | "shipping";
+  ship_address: string | null;
   created_at: string;
   drops?: Partial<Drop>;
 };

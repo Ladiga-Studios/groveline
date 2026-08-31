@@ -16,10 +16,11 @@ export async function GET(req: Request) {
 
   const { data: claims } = await admin
     .from("claims")
-    .select("id, buyer_email, buyer_name, quantity, cancel_token, drops!inner(title, pickup_place, pickup_address, pickup_city, pickup_start, pickup_end, slug)")
+    .select("id, buyer_email, buyer_name, quantity, cancel_token, delivery, drops!inner(title, pickup_place, pickup_address, pickup_city, pickup_start, pickup_end, slug)")
     .is("reminded_at", null)
     .is("cancelled_at", null)
     .not("buyer_email", "is", null)
+    .eq("delivery", "pickup")
     .gte("drops.pickup_start", now.toISOString())
     .lte("drops.pickup_start", soon.toISOString())
     .limit(500);

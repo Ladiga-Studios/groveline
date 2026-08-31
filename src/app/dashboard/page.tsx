@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase/server";
-import { money, pickupWindow } from "@/lib/format";
+import { money, whenLabel } from "@/lib/format";
 import type { Drop } from "@/lib/types";
 import Image from "next/image";
 import BecomeSeller from "./BecomeSeller";
@@ -27,6 +27,11 @@ export default async function DashboardPage() {
     return <BecomeSeller firstName={profile.name.split(" ")[0]} />;
   }
 
+  const stripeOn = !!process.env.STRIPE_SECRET_KEY && !!(process.env.STRIPE_PRICE_ID_MONTHLY || process.env.STRIPE_PRICE_ID);
+  const { data: billing } = stripeOn
+    ? await supabase.from("billing").select("subscription_status").eq("profile_id", user.id).maybeSingle()
+    : { data: null };
+  const subscribed = ["active", "trialing", "past_due"].includes(billing?.subscription_status ?? "none");
   const [{ data: drops }, { count: subCount }] = await Promise.all([
     supabase
       .from("drops")
@@ -64,6 +69,13 @@ export default async function DashboardPage() {
         Every drop gets one link. Paste it in your Facebook groups, text it to
         regulars, pin it to your page. That link is your storefront.
       </p>
+      {stripeOn && !subscribed && !profile.is_admin && (
+        <p className="mt-2 text-sm">
+          <span className="font-medium">{Math.min(3, drops?.length ?? 0)} of 3 free drops used.</span>{" "}
+          {(drops?.length ?? 0) >= 3 ? "Subscribe to keep posting." : "After that it is $10 a month or $60 a year."}{" "}
+          <Link href="/dashboard/settings" className="text-grove underline">Plans</Link>
+        </p>
+      )}
       <p className="mt-2 text-sm">
         Your public page:{" "}
         <Link href={`/s/${profile.slug}`} className="text-grove underline underline-offset-2">
@@ -105,8 +117,7 @@ export default async function DashboardPage() {
                 <div className="min-w-0">
                   <p className="truncate text-lg font-semibold">{d.title}</p>
                   <p className="text-sm text-muted">
-                    {money(d.price_cents)} each. Pickup{" "}
-                    {pickupWindow(d.pickup_start, d.pickup_end)}. {d.views} views
+                    {money(d.price_cents)} each. {whenLabel(d)}. {d.views} views
                   </p>
                 </div>
                 <div className="text-right">

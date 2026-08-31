@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase/server";
-import { money, pickupWindow } from "@/lib/format";
+import { money, whenLabel } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "My reservations" };
@@ -16,7 +16,7 @@ export default async function ReservationsPage() {
 
   const { data: claims } = await supabase
     .from("claims")
-    .select("*, drops!inner(title, slug, pickup_place, pickup_start, pickup_end, price_cents, profiles!drops_seller_id_fkey(name, farm_name))")
+    .select("*, drops!inner(title, slug, pickup_place, pickup_start, pickup_end, price_cents, fulfillment, profiles!drops_seller_id_fkey(name, farm_name))")
     .eq("buyer_user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(100);
@@ -32,7 +32,7 @@ export default async function ReservationsPage() {
         <div>
           <p className="font-semibold">{c.drops.title} <span className="font-normal text-muted">x{c.quantity}</span></p>
           <p className="text-sm text-muted">
-            {seller?.farm_name || seller?.name}. Pickup {pickupWindow(c.drops.pickup_start, c.drops.pickup_end)} at {c.drops.pickup_place}
+            {seller?.farm_name || seller?.name}. {c.delivery === "shipping" ? "Shipping to you" : `${whenLabel(c.drops)}${c.drops.pickup_place ? ` at ${c.drops.pickup_place}` : ""}`}
           </p>
         </div>
         <p className="text-sm font-medium">
@@ -63,8 +63,9 @@ export default async function ReservationsPage() {
           <div className="mt-3 grid gap-3">{past.map((c) => <Row key={c.id} c={c} />)}</div>
         </>
       )}
-      <div className="mt-10">
-        <Link href="/dashboard/settings" className="text-sm text-muted underline">Account settings</Link>
+      <div className="mt-10 flex gap-4 text-sm">
+        <Link href="/following" className="text-grove underline">Sellers I follow</Link>
+        <Link href="/dashboard/settings" className="text-muted underline">Account settings</Link>
       </div>
     </div>
   );

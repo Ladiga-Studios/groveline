@@ -5,12 +5,14 @@ import { supabaseBrowser } from "@/lib/supabase/client";
 import { slugify, shortId } from "@/lib/format";
 import { useToast } from "@/components/Toast";
 import { STATES } from "@/lib/states";
+import Link from "next/link";
 
 export default function WelcomePage() {
   const [name, setName] = useState("");
   const [town, setTown] = useState("");
   const [usState, setUsState] = useState("AL");
   const [isSeller, setIsSeller] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   const [farmName, setFarmName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -22,6 +24,10 @@ export default function WelcomePage() {
     setError("");
     if (name.trim().length < 2 || town.trim().length < 2) {
       setError("Name and town are both needed.");
+      return;
+    }
+    if (!agreed) {
+      setError("Please agree to the terms and privacy policy.");
       return;
     }
     setBusy(true);
@@ -37,6 +43,7 @@ export default function WelcomePage() {
     const { error: err } = await supabase.from("profiles").insert({
       id: user.id,
       email: user.email ?? null,
+      accepted_terms_at: new Date().toISOString(),
       name: name.trim(),
       town: town.trim(),
       state: usState,
@@ -125,6 +132,13 @@ export default function WelcomePage() {
             />
           </div>
         )}
+        <label className="flex cursor-pointer items-start gap-3 text-sm">
+          <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-[#1e4d2b]" />
+          <span>
+            I agree to the <Link href="/terms" className="text-grove underline" target="_blank">terms</Link> and{" "}
+            <Link href="/privacy" className="text-grove underline" target="_blank">privacy policy</Link>.
+          </span>
+        </label>
         {error && <p className="field-error">{error}</p>}
         <button className="btn btn-primary" disabled={busy}>
           {busy ? "Saving" : "Finish"}

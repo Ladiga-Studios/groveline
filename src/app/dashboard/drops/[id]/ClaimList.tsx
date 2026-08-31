@@ -116,7 +116,7 @@ export default function ClaimList({
     const data = await res.json();
     if (data.payment_status === "captured") {
       setClaims((cs) => cs.map((c) => (c.id === claim.id ? { ...c, payment_status: "captured", paid: true } : c)));
-      toast("Picked up and card charged.", "success");
+      toast(claim.delivery === "shipping" ? "Marked shipped and card charged." : "Picked up and card charged.", "success");
     }
   }
 
@@ -177,6 +177,9 @@ export default function ClaimList({
                   {i + 1}. {c.buyer_name}{" "}
                   <span className="font-normal text-muted">x{c.quantity}</span>
                 </p>
+                {c.delivery === "shipping" && c.ship_address && (
+                  <p className="text-sm">Ship to: {c.ship_address}</p>
+                )}
                 <p className="text-sm text-muted">
                   <a href={`tel:${c.buyer_phone}`} className="underline">
                     {c.buyer_phone}
@@ -196,7 +199,7 @@ export default function ClaimList({
                   aria-pressed={c.picked_up}
                   className={c.picked_up ? "btn btn-grove !min-h-11" : "btn btn-outline !min-h-11"}
                 >
-                  {c.picked_up ? "Picked up" : "Mark picked up"}
+                  {c.delivery === "shipping" ? (c.picked_up ? "Shipped" : "Mark shipped") : c.picked_up ? "Picked up" : "Mark picked up"}
                 </button>
                 {!c.picked_up && (
                   <button

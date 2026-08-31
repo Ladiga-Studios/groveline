@@ -18,7 +18,11 @@ export default function Modal({
   useEffect(() => {
     if (!open) return;
     lastFocused.current = document.activeElement as HTMLElement;
+    const scrollY = window.scrollY;
     document.body.dataset.modalOpen = "true";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
     const card = cardRef.current;
     const focusables = () =>
       card?.querySelectorAll<HTMLElement>(
@@ -46,16 +50,20 @@ export default function Modal({
     return () => {
       document.removeEventListener("keydown", onKey);
       delete document.body.dataset.modalOpen;
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      window.scrollTo(0, scrollY);
       lastFocused.current?.focus();
     };
   }, [open, onClose]);
 
   if (!open) return null;
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <div className="modal-backdrop overflow-y-auto" onClick={onClose}>
       <div
         ref={cardRef}
-        className="modal-card"
+        className="modal-card max-h-[90vh] overflow-y-auto"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"

@@ -48,9 +48,9 @@ Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. In the Stripe dashboard cre
 
 How it works: sellers set up payouts from Settings and money goes straight to their bank. When a buyer pays by card, a hold is placed at reservation and only captured when the seller marks the claim picked up. Removing a claim or the buyer cancelling releases the hold. Leave Stripe blank and everything runs cash-only with no subscription gate.
 
-### 7. Daily jobs
+### 7. Scheduled jobs
 
-`vercel.json` schedules `/api/cron/daily` once a day. It emails pickup reminders to buyers who left an email, and releases card reservations that never finished checkout. Set `CRON_SECRET` in Vercel to lock the route.
+`vercel.json` schedules two routes. `/api/cron/hourly` sends each seller one summary email of new reservations (unless they chose one email per reservation in Settings). `/api/cron/daily` emails pickup reminders to buyers the day before, and releases card reservations that never finished checkout. Set `CRON_SECRET` in Vercel to lock both routes.
 
 ### 8. Make yourself admin
 
@@ -85,7 +85,12 @@ Push to your repo, import in Vercel, add the same environment variables, deploy.
 - Buyers get a reservation page they can cancel from, plus a My reservations list when logged in
 - Sellers get an email on each reservation and cancellation (can be turned off)
 - Card payments through Stripe Connect with a hold at reservation and capture at pickup
-- $10/month subscription after the first free drop, managed through Stripe
+- Subscription after three free drops, $10/month or $60/year, managed through Stripe
+- Shipping as an option per drop, paid by card, charged when the seller marks it shipped
+- Custom links per drop (groveline.io/d/whatever-you-want)
+- Terms and privacy acceptance at signup and on every reservation
+- Seller contact info on their page, hourly reservation digests, one-tap update emails to followers
+- A following page for buyers, and sellers can follow each other
 - Pickup day reminder emails, listing reports, admin takedowns, view counts, post again
 
 ## Deliberately not in v1

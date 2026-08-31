@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Browse drops",
   description:
-    "Search everything for sale near you across 130 categories. Baked goods, produce, meat shares, plants, handmade goods, and plate sales, all claimable in seconds.",
+    "Everything for sale near you across 130 categories. Baked goods, produce, meat shares, plants, handmade goods, and plate sales, claimable in seconds.",
   alternates: { canonical: "/browse" },
 };
 
@@ -28,12 +28,85 @@ function href(p: Params) {
   return qs ? `/browse?${qs}` : "/browse";
 }
 
+function CategoryTree({
+  params,
+  catCounts,
+  total,
+}: {
+  params: Params;
+  catCounts: Map<string, number>;
+  total: number;
+}) {
+  const { q, city, state, cat, group } = params;
+  return (
+    <div>
+      <div className="flex items-baseline justify-between">
+        <h2 className="text-lg font-semibold">Categories</h2>
+        {(cat || group) && (
+          <Link href={href({ q, city, state })} className="text-sm text-grove underline">Clear</Link>
+        )}
+      </div>
+      <Link
+        href={href({ q, city, state })}
+        className={`mt-2 block rounded-lg px-3 py-2 font-medium ${!cat && !group ? "bg-grove text-cream" : "hover:bg-cream-dark"}`}
+      >
+        Everything ({total})
+      </Link>
+      <div className="mt-2 space-y-1">
+        {CATEGORY_GROUPS.map((grp) => {
+          const groupCount = grp.items.reduce((n, i) => n + (catCounts.get(i.value) ?? 0), 0);
+          const isOpen = group === grp.id || (!!cat && grp.items.some((i) => i.value === cat)) || groupCount > 0;
+          return (
+            <details key={grp.id} open={isOpen} className="rounded-lg">
+              <summary
+                className={`flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 font-medium ${groupCount > 0 ? "text-ink" : "text-muted"} ${group === grp.id ? "bg-cream-dark" : "hover:bg-cream-dark"}`}
+              >
+                <span>{grp.label}</span>
+                <span className="text-sm">{groupCount > 0 ? `(${groupCount})` : ""}</span>
+              </summary>
+              <ul className="mb-2 ml-3 space-y-0.5 border-l border-cream-dark pl-3">
+                {groupCount > 0 && (
+                  <li>
+                    <Link
+                      href={href({ q, city, state, group: grp.id })}
+                      className={`block rounded px-2 py-1 text-sm ${group === grp.id && !cat ? "font-semibold text-grove" : "text-ink hover:bg-cream-dark"}`}
+                    >
+                      All {grp.label.toLowerCase()} ({groupCount})
+                    </Link>
+                  </li>
+                )}
+                {grp.items.map((c) => {
+                  const n = catCounts.get(c.value) ?? 0;
+                  return (
+                    <li key={c.value}>
+                      {n > 0 ? (
+                        <Link
+                          href={href({ q, city, state, cat: c.value })}
+                          className={`block rounded px-2 py-1 text-sm ${cat === c.value ? "bg-grove font-semibold text-cream" : "font-medium text-ink hover:bg-cream-dark"}`}
+                        >
+                          {c.label} ({n})
+                        </Link>
+                      ) : (
+                        <span className="block px-2 py-1 text-sm text-muted/60" aria-disabled="true">{c.label}</span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </details>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default async function BrowsePage({ searchParams }: { searchParams: Promise<Params> }) {
-  const { q, city, state, cat, group } = await searchParams;
+  const params = await searchParams;
+  const { q, city, state, cat, group } = params;
   const supabase = await supabaseServer();
   const nowIso = new Date().toISOString();
 
-  // Every active drop's category and location, to build counts for the filters.
   const { data: live } = await supabase
     .from("drops")
     .select("category, pickup_state, pickup_city")
@@ -69,12 +142,13 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
   const results = (drops ?? []) as Drop[];
   const total = live?.length ?? 0;
   const filtering = !!(q || cat || group || city || state);
+  const groupLabel = group ? CATEGORY_GROUPS.find((g) => g.id === group)?.label : undefined;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <h1 className="text-3xl font-semibold">For sale near you</h1>
       <p className="mt-2 text-muted">
-        {total} {total === 1 ? "drop" : "drops"} claimable right now. Reserve in seconds, pick up in person.
+        {total} {total === 1 ? "drop" : "drops"} claimable right now. Reserve in seconds, pick it up or have it shipped.
       </p>
 
       <form action="/browse" method="get" className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -106,74 +180,22 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
       </form>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[260px_1fr]">
-        <aside>
-          <div className="flex items-baseline justify-between">
-            <h2 className="text-lg font-semibold">Categories</h2>
-            {(cat || group) && (
-              <Link href={href({ q, city, state })} className="text-sm text-grove underline">Clear</Link>
-            )}
+        <details className="tag-card !pl-4 p-4 lg:hidden" open={!!(cat || group)}>
+          <summary className="cursor-pointer font-semibold">
+            Categories{cat ? `: ${categoryLabel(cat)}` : groupLabel ? `: ${groupLabel}` : ""}
+          </summary>
+          <div className="mt-3">
+            <CategoryTree params={params} catCounts={catCounts} total={total} />
           </div>
-          <Link
-            href={href({ q, city, state })}
-            className={`mt-2 block rounded-lg px-3 py-2 font-medium ${!cat && !group ? "bg-grove text-cream" : "hover:bg-cream-dark"}`}
-          >
-            Everything ({total})
-          </Link>
-          <div className="mt-2 space-y-1">
-            {CATEGORY_GROUPS.map((grp) => {
-              const groupCount = grp.items.reduce((n, i) => n + (catCounts.get(i.value) ?? 0), 0);
-              const isOpen = group === grp.id || (!!cat && grp.items.some((i) => i.value === cat)) || groupCount > 0;
-              return (
-                <details key={grp.id} open={isOpen} className="rounded-lg">
-                  <summary
-                    className={`flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 font-medium ${
-                      groupCount > 0 ? "text-ink" : "text-muted"
-                    } ${group === grp.id ? "bg-cream-dark" : "hover:bg-cream-dark"}`}
-                  >
-                    <span>{grp.label}</span>
-                    <span className="text-sm">{groupCount > 0 ? `(${groupCount})` : ""}</span>
-                  </summary>
-                  <ul className="mb-2 ml-3 space-y-0.5 border-l border-cream-dark pl-3">
-                    {groupCount > 0 && (
-                      <li>
-                        <Link
-                          href={href({ q, city, state, group: grp.id })}
-                          className={`block rounded px-2 py-1 text-sm ${group === grp.id && !cat ? "font-semibold text-grove" : "text-ink hover:bg-cream-dark"}`}
-                        >
-                          All {grp.label.toLowerCase()} ({groupCount})
-                        </Link>
-                      </li>
-                    )}
-                    {grp.items.map((c) => {
-                      const n = catCounts.get(c.value) ?? 0;
-                      return (
-                        <li key={c.value}>
-                          {n > 0 ? (
-                            <Link
-                              href={href({ q, city, state, cat: c.value })}
-                              className={`block rounded px-2 py-1 text-sm ${cat === c.value ? "bg-grove font-semibold text-cream" : "font-medium text-ink hover:bg-cream-dark"}`}
-                            >
-                              {c.label} ({n})
-                            </Link>
-                          ) : (
-                            <span className="block px-2 py-1 text-sm text-muted/60" aria-disabled="true">
-                              {c.label}
-                            </span>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </details>
-              );
-            })}
-          </div>
+        </details>
+        <aside className="hidden lg:block">
+          <CategoryTree params={params} catCounts={catCounts} total={total} />
         </aside>
 
         <div>
-          {cat && (
+          {(cat || groupLabel) && (
             <p className="mb-4 text-muted">
-              Showing <span className="font-semibold text-ink">{categoryLabel(cat)}</span>
+              Showing <span className="font-semibold text-ink">{cat ? categoryLabel(cat) : groupLabel}</span>
               {city ? ` in ${city}` : state ? ` in ${stateName(state)}` : ""}.
             </p>
           )}

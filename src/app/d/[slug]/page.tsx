@@ -8,7 +8,8 @@ import PhotoGallery from "@/components/PhotoGallery";
 import PickupMap from "@/components/PickupMap";
 import ReportButton from "@/components/ReportButton";
 import Avatar from "@/components/Avatar";
-import { money, pickupWindow } from "@/lib/format";
+import NewsletterForm from "@/components/NewsletterForm";
+import { money, pickupWindow, whenLabel } from "@/lib/format";
 import { categoryLabel } from "@/lib/categories";
 import { fullAddress } from "@/lib/geocode";
 import type { Drop } from "@/lib/types";
@@ -19,7 +20,7 @@ async function getDrop(slug: string): Promise<Drop | null> {
   const supabase = await supabaseServer();
   const { data } = await supabase
     .from("drops")
-    .select("*, profiles!drops_seller_id_fkey(id, name, farm_name, town, state, slug, avatar_url, payouts_enabled)")
+    .select("*, profiles!drops_seller_id_fkey(id, name, farm_name, town, state, slug, avatar_url, payouts_enabled, contact_phone)")
     .eq("slug", slug)
     .maybeSingle();
   return data as Drop | null;
@@ -111,13 +112,15 @@ export default async function DropPage({ params }: { params: Promise<{ slug: str
         <span className="rounded-full bg-cream-dark px-2.5 py-1 text-xs font-medium">{categoryLabel(drop.category)}</span>
       </div>
 
-      <p className="mt-2">Pickup {pickupWindow(drop.pickup_start, drop.pickup_end)}</p>
+      <p className="mt-2">{whenLabel(drop)}{drop.fulfillment !== "pickup" && drop.shipping_cents ? ` (${money(drop.shipping_cents)} shipping)` : ""}</p>
 
       {drop.description && <p className="mt-4 whitespace-pre-line text-lg">{drop.description}</p>}
 
-      <div className="mt-6">
-        <PickupMap lat={drop.pickup_lat} lng={drop.pickup_lng} address={address} place={drop.pickup_place} />
-      </div>
+      {drop.fulfillment !== "shipping" && drop.pickup_place && (
+        <div className="mt-6">
+          <PickupMap lat={drop.pickup_lat} lng={drop.pickup_lng} address={address} place={drop.pickup_place} />
+        </div>
+      )}
 
       <div className="mt-8">
         {ended ? (
@@ -144,6 +147,14 @@ export default async function DropPage({ params }: { params: Promise<{ slug: str
         </div>
         <ReportButton dropId={drop.id} />
       </div>
+
+      {seller && (
+        <section className="tag-card mt-8 p-6">
+          <h2 className="text-lg font-semibold">Get an email when {seller.farm_name || seller.name} posts</h2>
+          <p className="mb-3 mt-1 text-sm text-muted">One email per drop. Unsubscribe any time.{seller.contact_phone ? ` Questions? Text ${seller.contact_phone}.` : ""}</p>
+          <NewsletterForm sellerId={seller.id!} />
+        </section>
+      )}
     </div>
   );
 }

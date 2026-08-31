@@ -1,10 +1,11 @@
 import { notFound, redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase/server";
-import { money, pickupWindow } from "@/lib/format";
+import { money, whenLabel } from "@/lib/format";
 import type { Claim, Drop } from "@/lib/types";
 import Link from "next/link";
 import ClaimList, { InventoryControl } from "./ClaimList";
 import CopyButton from "@/components/CopyButton";
+import NotifyFollowersButton from "./NotifyFollowersButton";
 
 export const dynamic = "force-dynamic";
 
@@ -50,8 +51,7 @@ export default async function DropAdminPage({
     <div className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="text-3xl font-semibold">{drop.title}</h1>
       <p className="mt-1 text-muted">
-        {money(drop.price_cents)} each. Pickup{" "}
-        {pickupWindow(drop.pickup_start, drop.pickup_end)} at {drop.pickup_place}.
+        {money(drop.price_cents)} each. {whenLabel(drop)}{drop.pickup_place ? ` at ${drop.pickup_place}` : ""}.
       </p>
       <p className="mt-3 font-display text-2xl font-semibold text-grove">
         {drop.claimed} of {drop.quantity} claimed
@@ -64,6 +64,7 @@ export default async function DropAdminPage({
         <Link href={`/dashboard/new?from=${drop.id}`} className="btn btn-outline">
           Post again
         </Link>
+        <NotifyFollowersButton slug={drop.slug} />
         <CopyButton text={url} />
         <CopyButton
           text={(claims ?? [])

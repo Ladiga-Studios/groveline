@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Drop } from "@/lib/types";
-import { money, pickupWindow } from "@/lib/format";
+import { money, whenLabel } from "@/lib/format";
 import { categoryLabel } from "@/lib/categories";
 
 export default function DropCard({ drop }: { drop: Drop }) {
@@ -16,13 +16,13 @@ export default function DropCard({ drop }: { drop: Drop }) {
         soldOut ? ", sold out" : `, ${left} left`
       }`}
     >
-      <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-cream-dark">
+      <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-lg bg-cream-dark">
         {cover ? (
           <Image
             src={cover}
             alt=""
             fill
-            sizes="96px"
+            sizes="112px"
             className="object-cover"
             loading="lazy"
           />
@@ -48,9 +48,7 @@ export default function DropCard({ drop }: { drop: Drop }) {
             {drop.pickup_city || drop.profiles.town}
           </p>
         )}
-        <p className="mt-1 text-sm">
-          Pickup {pickupWindow(drop.pickup_start, drop.pickup_end)}
-        </p>
+        <p className="mt-1 text-sm">{whenLabel(drop)}</p>
         <p className="mt-1 flex flex-wrap items-center gap-2 text-sm">
           <span
             className={`font-semibold ${soldOut ? "text-muted" : "text-grove"}`}

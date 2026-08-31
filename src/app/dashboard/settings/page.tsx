@@ -23,6 +23,9 @@ export default function SettingsPage() {
   const [farmName, setFarmName] = useState("");
   const [bio, setBio] = useState("");
   const [notify, setNotify] = useState(true);
+  const [digest, setDigest] = useState(true);
+  const [contactPhone, setContactPhone] = useState("");
+  const [socialUrl, setSocialUrl] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isSeller, setIsSeller] = useState(false);
   const [billing, setBilling] = useState<BillingStatus | null>(null);
@@ -52,6 +55,9 @@ export default function SettingsPage() {
       setFarmName(p.farm_name || "");
       setBio(p.bio || "");
       setNotify(p.notify_on_claim ?? true);
+      setDigest(p.notify_digest ?? true);
+      setContactPhone(p.contact_phone || "");
+      setSocialUrl(p.social_url || "");
       setAvatarUrl(p.avatar_url);
       setIsSeller(p.is_seller);
       setLoaded(true);
@@ -79,7 +85,7 @@ export default function SettingsPage() {
     if (!user) return router.replace("/login");
     const { error } = await supabase
       .from("profiles")
-      .update({ name: name.trim(), town: town.trim(), state: usState, farm_name: farmName.trim() || null, bio: bio.trim() || null, notify_on_claim: notify })
+      .update({ name: name.trim(), town: town.trim(), state: usState, farm_name: farmName.trim() || null, bio: bio.trim() || null, notify_on_claim: notify, notify_digest: digest, contact_phone: contactPhone.trim() || null, social_url: socialUrl.trim() || null })
       .eq("id", user.id);
     setBusy(false);
     toast(error ? "Could not save. Try again." : "Saved.", error ? "error" : "success");
@@ -163,10 +169,36 @@ export default function SettingsPage() {
               <label htmlFor="st-bio" className="field-label">About you <span className="font-normal text-muted">(optional)</span></label>
               <textarea id="st-bio" className="field min-h-24" value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Small farm outside Piedmont. Bread on Saturdays, eggs most weeks." />
             </div>
-            <label className="flex min-h-11 cursor-pointer items-center gap-3">
-              <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} className="h-5 w-5 accent-[#1e4d2b]" />
-              <span>Email me each time someone reserves or cancels</span>
-            </label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="st-phone" className="field-label">Phone for buyers <span className="font-normal text-muted">(optional)</span></label>
+                <input id="st-phone" type="tel" className="field" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="256 555 0100" />
+                <p className="field-hint">Shows on your page so folks can text you.</p>
+              </div>
+              <div>
+                <label htmlFor="st-social" className="field-label">Facebook page or website <span className="font-normal text-muted">(optional)</span></label>
+                <input id="st-social" type="url" className="field" value={socialUrl} onChange={(e) => setSocialUrl(e.target.value)} placeholder="https://facebook.com/millerfarm" />
+              </div>
+            </div>
+            <fieldset className="rounded-xl border-2 border-cream-dark p-4">
+              <legend className="px-1 font-semibold">Reservation emails</legend>
+              <label className="flex min-h-11 cursor-pointer items-center gap-3">
+                <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} className="h-5 w-5 accent-[#1e4d2b]" />
+                <span>Email me when people reserve or cancel</span>
+              </label>
+              {notify && (
+                <div className="mt-2 grid gap-2 pl-8 sm:grid-cols-2">
+                  <label className="flex cursor-pointer items-center gap-2 text-sm">
+                    <input type="radio" name="digest" checked={digest} onChange={() => setDigest(true)} className="accent-[#1e4d2b]" />
+                    One summary email per hour
+                  </label>
+                  <label className="flex cursor-pointer items-center gap-2 text-sm">
+                    <input type="radio" name="digest" checked={!digest} onChange={() => setDigest(false)} className="accent-[#1e4d2b]" />
+                    One email per reservation
+                  </label>
+                </div>
+              )}
+            </fieldset>
           </>
         )}
         <button className="btn btn-primary" disabled={busy}>{busy ? "Saving" : "Save changes"}</button>

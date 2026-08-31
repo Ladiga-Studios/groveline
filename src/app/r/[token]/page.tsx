@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase/server";
-import { money, pickupWindow } from "@/lib/format";
+import { money, whenLabel } from "@/lib/format";
 import { fullAddress } from "@/lib/geocode";
 import PickupMap from "@/components/PickupMap";
 import CancelButton from "./CancelButton";
@@ -48,7 +48,7 @@ export default async function ReservationPage({
       )}
 
       <h1 className="text-3xl font-semibold">
-        {status === "cancelled" ? "Reservation cancelled" : status === "picked_up" ? "Picked up" : status === "unpaid" ? "Almost reserved" : "You are set"}
+        {status === "cancelled" ? "Reservation cancelled" : status === "picked_up" ? (claim.delivery === "shipping" ? "Shipped" : "Picked up") : status === "unpaid" ? "Almost reserved" : "You are set"}
       </h1>
 
       <div className="tag-card mt-6 p-6">
@@ -57,7 +57,7 @@ export default async function ReservationPage({
           {claim.quantity} at {money(d.price_cents)} each, {money(d.price_cents * claim.quantity)} total
         </p>
         <p className="mt-3">Reserved under <span className="font-semibold">{claim.buyer_name}</span>{seller ? ` with ${seller.farm_name || seller.name}` : ""}.</p>
-        <p className="mt-1">Pickup {pickupWindow(d.pickup_start, d.pickup_end)}</p>
+        <p className="mt-1">{claim.delivery === "shipping" ? `Ships to ${claim.ship_address}` : whenLabel(d)}</p>
         <p className="mt-3 text-sm">
           Payment:{" "}
           {claim.payment_status === "captured"
@@ -72,9 +72,11 @@ export default async function ReservationPage({
         </p>
       </div>
 
-      <div className="mt-4">
-        <PickupMap lat={d.pickup_lat} lng={d.pickup_lng} address={fullAddress(d)} place={d.pickup_place} />
-      </div>
+      {claim.delivery !== "shipping" && d.pickup_place && (
+        <div className="mt-4">
+          <PickupMap lat={d.pickup_lat} lng={d.pickup_lng} address={fullAddress(d)} place={d.pickup_place} />
+        </div>
+      )}
 
       <div className="mt-6 flex flex-wrap gap-3">
         {status === "reserved" && !ended && (

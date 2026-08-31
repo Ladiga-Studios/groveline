@@ -219,9 +219,12 @@ export default function LoginPage() {
               </>
             )}
             {mode === "register" && (
-              <button className="text-grove underline underline-offset-2" onClick={() => switchMode("login")}>
-                Already have an account? Log in
-              </button>
+              <>
+                <p className="text-xs text-muted">You will be asked to agree to the terms and privacy policy on the next screen.</p>
+                <button className="text-grove underline underline-offset-2" onClick={() => switchMode("login")}>
+                  Already have an account? Log in
+                </button>
+              </>
             )}
             {mode === "forgot" && (
               <button className="text-grove underline underline-offset-2" onClick={() => switchMode("login")}>

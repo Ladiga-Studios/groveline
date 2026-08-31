@@ -69,6 +69,12 @@ export default async function SellerPage({ params }: { params: Promise<{ slug: s
             {seller.payouts_enabled ? ". Takes cards" : ""}
           </p>
           {seller.bio && <p className="mt-3">{seller.bio}</p>}
+          {(seller.contact_phone || seller.social_url) && (
+            <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+              {seller.contact_phone && <a href={`sms:${seller.contact_phone}`} className="text-grove underline">Text {seller.contact_phone}</a>}
+              {seller.social_url && <a href={seller.social_url} target="_blank" rel="noopener" className="text-grove underline">Facebook page</a>}
+            </p>
+          )}
         </div>
         <div className="flex gap-2">
           <FollowButton sellerId={seller.id} initiallyFollowing={following} loggedIn={!!user} />

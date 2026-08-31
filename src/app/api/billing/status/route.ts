@@ -41,7 +41,8 @@ export async function GET() {
     subscribed,
     subscriptionStatus: billing?.subscription_status ?? "none",
     dropsCount: dropsCount ?? 0,
-    needsSubscription: stripeConfigured && !profile?.is_admin && !subscribed && (dropsCount ?? 0) >= 1,
+    needsSubscription: stripeConfigured && !profile?.is_admin && !subscribed && (dropsCount ?? 0) >= 3,
+    freeLeft: stripeConfigured && !profile?.is_admin && !subscribed ? Math.max(0, 3 - (dropsCount ?? 0)) : null,
     hasStripeAccount: !!billing?.stripe_account_id,
     payoutsEnabled,
   });

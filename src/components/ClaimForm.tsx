@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import Script from "next/script";
 import Image from "next/image";
 import Link from "next/link";
+import { STATES } from "@/lib/states";
 import type { Drop } from "@/lib/types";
 import { money, pickupWindow } from "@/lib/format";
 import { useToast } from "./Toast";
@@ -36,7 +37,12 @@ export default function ClaimForm({
   const [name, setName] = useState(prefill?.name ?? "");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState(prefill?.email ?? "");
-  const [method, setMethod] = useState<"cash" | "card">("cash");
+  const shipOnly = drop.fulfillment === "shipping";
+  const canShip = drop.fulfillment === "both" || shipOnly;
+  const [delivery, setDelivery] = useState<"pickup" | "shipping">(shipOnly ? "shipping" : "pickup");
+  const [method, setMethod] = useState<"cash" | "card">(shipOnly ? "card" : "cash");
+  const [ship, setShip] = useState({ line1: "", city: "", state: "AL", zip: "" });
+  const [agreed, setAgreed] = useState(false);
   const [company, setCompany] = useState("");
   const [renderedAt] = useState(() => Date.now());
   const [turnstileToken, setTurnstileToken] = useState("");
@@ -57,8 +63,16 @@ export default function ClaimForm({
     if (name.trim().length < 2) next.name = "Enter your name.";
     if (phone.replace(/\D/g, "").length < 10) next.phone = "Enter a 10 digit phone number.";
     if (email && !/^\S+@\S+\.\S+$/.test(email)) next.email = "That email does not look right.";
-    if (method === "card" && !email) next.email = "Email is needed for a card receipt.";
+    if ((method === "card" || delivery === "shipping") && !email) next.email = "Email is needed for a card receipt.";
     setErrors(next);
+    if (delivery === "shipping" && (ship.line1.trim().length < 4 || ship.city.trim().length < 2 || ship.zip.trim().length < 5)) {
+      toast("Enter your full shipping address.", "error");
+      return false;
+    }
+    if (!agreed) {
+      toast("Please agree to the terms to reserve.", "error");
+      return false;
+    }
     return Object.keys(next).length === 0;
   }
 
@@ -75,7 +89,10 @@ export default function ClaimForm({
         name: name.trim(),
         phone: phone.trim(),
         email: email.trim() || null,
-        method,
+        method: delivery === "shipping" ? "card" : method,
+        delivery,
+        shipAddress: delivery === "shipping" ? `${ship.line1.trim()}, ${ship.city.trim()}, ${ship.state} ${ship.zip.trim()}` : "",
+        acceptedTerms: agreed,
         company,
         renderedAt,
         turnstileToken,
@@ -157,7 +174,38 @@ export default function ClaimForm({
         <p className="field-hint">We will email your pickup details and a reminder.</p>
       </div>
 
-      {acceptsCard && (
+      {canShip && !shipOnly && (
+        <fieldset>
+          <legend className="field-label">How you will get it</legend>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {(["pickup", "shipping"] as const).map((d) => (
+              <label key={d} className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-3 ${delivery === d ? "border-leaf bg-cream" : "border-cream-dark bg-white"}`}>
+                <input type="radio" name="delivery" value={d} checked={delivery === d} onChange={() => { setDelivery(d); if (d === "shipping") setMethod("card"); }} className="mt-1 accent-[#1e4d2b]" />
+                <span>
+                  <span className="block font-semibold">{d === "pickup" ? "Pick it up" : `Ship it to me${drop.shipping_cents ? `, +${money(drop.shipping_cents)}` : ""}`}</span>
+                  <span className="block text-sm text-muted">{d === "pickup" ? pickupWindow(drop.pickup_start, drop.pickup_end) : "Paid by card, charged when it ships."}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
+
+      {delivery === "shipping" && (
+        <fieldset className="flex flex-col gap-3">
+          <legend className="field-label">Ship to</legend>
+          <input className="field" placeholder="Street address" value={ship.line1} onChange={(e) => setShip({ ...ship, line1: e.target.value })} autoComplete="street-address" aria-label="Street address" />
+          <div className="grid grid-cols-6 gap-2">
+            <input className="field col-span-3" placeholder="City" value={ship.city} onChange={(e) => setShip({ ...ship, city: e.target.value })} autoComplete="address-level2" aria-label="City" />
+            <select className="field col-span-2" value={ship.state} onChange={(e) => setShip({ ...ship, state: e.target.value })} aria-label="State">
+              {STATES.map(([c, n]) => <option key={c} value={c}>{n}</option>)}
+            </select>
+            <input className="field col-span-1 !px-2" placeholder="Zip" value={ship.zip} onChange={(e) => setShip({ ...ship, zip: e.target.value })} inputMode="numeric" autoComplete="postal-code" aria-label="Zip" />
+          </div>
+        </fieldset>
+      )}
+
+      {acceptsCard && delivery === "pickup" && (
         <fieldset>
           <legend className="field-label">How you will pay</legend>
           <div className="grid gap-2 sm:grid-cols-2">
@@ -176,6 +224,15 @@ export default function ClaimForm({
         </fieldset>
       )}
 
+      <label className="flex cursor-pointer items-start gap-3 text-sm">
+        <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-[#1e4d2b]" />
+        <span>
+          A reservation is my word that I am coming. I agree to the{" "}
+          <Link href="/terms" className="text-grove underline" target="_blank">terms</Link> and{" "}
+          <Link href="/privacy" className="text-grove underline" target="_blank">privacy policy</Link>.
+        </span>
+      </label>
+
       <div className="hp-field" aria-hidden="true">
         <label htmlFor="claim-company">Company</label>
         <input id="claim-company" tabIndex={-1} autoComplete="off" value={company} onChange={(e) => setCompany(e.target.value)} />
@@ -189,7 +246,13 @@ export default function ClaimForm({
       )}
 
       <button className="btn btn-primary w-full text-lg" disabled={busy || (!!TURNSTILE_SITE_KEY && !turnstileToken)}>
-        {busy ? "Reserving" : method === "card" ? `Reserve and hold ${money(drop.price_cents * qty)}` : `Reserve ${qty} for ${money(drop.price_cents * qty)}`}
+        {busy
+          ? "Reserving"
+          : delivery === "shipping"
+            ? `Reserve and hold ${money(drop.price_cents * qty + (drop.shipping_cents || 0))}`
+            : method === "card"
+              ? `Reserve and hold ${money(drop.price_cents * qty)}`
+              : `Reserve ${qty} for ${money(drop.price_cents * qty)}`}
       </button>
       <p className="text-center text-sm text-muted">
         {acceptsCard ? "No account needed. Cancel any time before pickup." : "Pay cash at pickup. No account needed."}

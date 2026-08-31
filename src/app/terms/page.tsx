@@ -42,10 +42,22 @@ export default function TermsPage() {
           </p>
         </section>
         <section>
+          <h2 className="text-xl font-semibold">Payments and shipping</h2>
+          <p className="mt-2">
+            Card payments are processed by Stripe and paid to the seller&apos;s own
+            account. Groveline does not hold your money. A card is held at
+            reservation and charged when the seller marks the order picked up or
+            shipped. Shipping is arranged and carried out by the seller, and any
+            problem with a shipped order is between the buyer and the seller,
+            though we will help where we can.
+          </p>
+        </section>
+        <section>
           <h2 className="text-xl font-semibold">Fees</h2>
           <p className="mt-2">
-            Cash reservations are free. When card payments launch, Groveline
-            keeps 5 percent of card orders and that is the whole fee.
+            A seller&apos;s first three drops are free. After that, selling is a
+            subscription of $10 a month or $60 a year. Groveline never takes a
+            percentage of a sale. Buying is always free.
           </p>
         </section>
         <section>
