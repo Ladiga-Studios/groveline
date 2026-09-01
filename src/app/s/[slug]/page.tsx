@@ -84,7 +84,10 @@ export default async function ShopPage({ params }: { params: Promise<{ slug: str
         <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
             <div className="flex flex-col gap-5 sm:flex-row sm:gap-7">
-              <div className="w-fit shrink-0 rounded-full bg-cream p-1.5 shadow-lift">
+              {/* self-start matters: as a flex child this would otherwise
+                  stretch to the row's height, and a stretched rounded-full
+                  box is a pill. */}
+              <div className="w-fit shrink-0 self-start rounded-full bg-cream p-1.5 shadow-lift">
                 <Avatar url={s.avatar_url} name={s.name} size={112} />
               </div>
               <div className="min-w-0">

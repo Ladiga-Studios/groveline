@@ -220,6 +220,10 @@ a.tag-card:focus-visible {
 }
 .modal-card {
   background: var(--color-cream);
+  /* Set explicitly: a modal opened from inside a dark band (the shop
+     header, say) would otherwise inherit that band's cream text and
+     render invisible on this cream card. */
+  color: var(--color-ink);
   border-radius: 18px;
   padding: 1.75rem;
   width: 100%;

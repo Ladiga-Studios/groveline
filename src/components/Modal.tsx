@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 export default function Modal({
   open,
@@ -14,6 +15,9 @@ export default function Modal({
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const lastFocused = useRef<HTMLElement | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!open) return;
@@ -58,8 +62,12 @@ export default function Modal({
     };
   }, [open, onClose]);
 
-  if (!open) return null;
-  return (
+  if (!open || !mounted) return null;
+
+  /* Rendered into <body> rather than in place. A modal opened from inside
+     a sticky header, a transformed element, or an overflow-hidden card
+     would otherwise be clipped or stacked behind its own backdrop. */
+  return createPortal(
     <div className="modal-backdrop overflow-y-auto" onClick={onClose}>
       <div
         ref={cardRef}
@@ -90,6 +98,7 @@ export default function Modal({
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
