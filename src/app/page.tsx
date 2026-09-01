@@ -108,57 +108,58 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* What sells here */}
+      <section className="mx-auto max-w-6xl px-4 pb-16 pt-10" aria-labelledby="what">
+        <h2 id="what" className="text-3xl font-semibold">What people are selling</h2>
+        <p className="mt-3 max-w-2xl text-lg">
+          If you make it, grow it, or cook it in batches, there is a place for it here. Pick the one that
+          sounds like you.
+        </p>
+        <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
+          {[
+            { img: "/illustrations/goods.jpg", alt: "Bread, tomatoes, eggs, and a jar of preserves", t: "From the kitchen and the garden", d: "Sourdough, cakes, cookies. Tomatoes, greens, sweet corn. Eggs by the dozen. Jam, honey, pickles, hot sauce.", g: "kitchen" },
+            { img: "/illustrations/workshop.jpg", alt: "A woodworker sanding a cutting board, finished boards stacked beside him", t: "From the workshop", d: "Cutting boards and signs. Soap, candles, wax melts. Quilts, crochet, pottery, leather. If your hands made it, it fits.", g: "workshop" },
+            { img: "/illustrations/plants.jpg", alt: "A plant stand with seedlings, houseplants, and cut flowers", t: "From the greenhouse", d: "Seedlings and vegetable starts in spring. Cut flowers and bouquets all summer. Wreaths and Christmas trees when it turns cold.", g: "greenhouse" },
+            { img: "/illustrations/plates.jpg", alt: "A volunteer handing a plate of food across a table", t: "From the fire hall", d: "Plate sales, Boston butts, fish fries, bake sales. Know how many to cook before you light the grill.", g: "fundraisers" },
+          ].map((c, i) => (
+            <Reveal key={c.t} delay={i * 70}>
+              <Link href={`/for/${c.g}`} className="tag-card block h-full overflow-hidden !pl-0">
+                <Image src={c.img} alt={c.alt} width={600} height={450} className="aspect-[4/3] w-full object-cover" sizes="(max-width: 640px) 100vw, 300px" />
+                <div className="p-3 sm:p-4">
+                  <h3 className="text-sm font-semibold sm:text-base">{c.t}</h3>
+                  <p className="mt-1 hidden text-sm text-muted sm:block">{c.d}</p>
+                </div>
+              </Link>
+            </Reveal>
+          ))}
+        </div>
+        <p className="mt-6 text-muted">
+          Pottery and tumblers, jewelry, signs and decor, gift boxes. Beef and pork shares, deer
+          processing, hay and firewood, dog treats, fresh lemonade. There are more than 130 categories,
+          and yours is almost certainly one of them.
+        </p>
+      </section>
+
       {/* Live drops, when there are any */}
       {fresh.length > 0 && (
-        <section className="mx-auto max-w-6xl px-4 pb-16 pt-10" aria-labelledby="fresh">
-          <div className="flex items-baseline justify-between">
-            <h2 id="fresh" className="text-3xl font-semibold">
-              Claimable right now
-            </h2>
-            <Link href="/browse" className="font-medium text-grove underline underline-offset-2">
-              See everything
-            </Link>
-          </div>
-          <div className="mt-6 grid gap-4 lg:grid-cols-2">
-            {fresh.map((d) => (
-              <DropCard key={d.id} drop={d} />
-            ))}
+        <section className="bg-cream-dark/50 px-4 py-16" aria-labelledby="fresh">
+          <div className="mx-auto max-w-6xl">
+            <div className="flex items-baseline justify-between">
+              <h2 id="fresh" className="text-3xl font-semibold">
+                Claimable right now
+              </h2>
+              <Link href="/browse" className="font-medium text-grove underline underline-offset-2">
+                See everything
+              </Link>
+            </div>
+            <div className="mt-6 grid gap-4 lg:grid-cols-2">
+              {fresh.map((d) => (
+                <DropCard key={d.id} drop={d} />
+              ))}
+            </div>
           </div>
         </section>
       )}
-
-      {/* What sells here */}
-      <section className="bg-cream-dark/50">
-        <div className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="what">
-          <h2 id="what" className="text-3xl font-semibold">What people are selling</h2>
-          <p className="mt-3 max-w-2xl text-lg">
-            If you make it, grow it, or cook it in batches, there is a place for it here. Pick the one that
-            sounds like you.
-          </p>
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
-            {[
-              { img: "/illustrations/goods.jpg", alt: "Bread, tomatoes, eggs, and a jar of preserves", t: "From the kitchen and the garden", d: "Sourdough, cakes, cookies. Tomatoes, greens, sweet corn. Eggs by the dozen. Jam, honey, pickles, hot sauce.", g: "kitchen" },
-              { img: "/illustrations/handmade.jpg", alt: "A woman arranging soap and candles at a market table", t: "From the workshop", d: "Soap, candles, wax melts. Cutting boards and signs. Quilts, crochet, pottery, leather. If your hands made it, it fits.", g: "workshop" },
-              { img: "/illustrations/plants.jpg", alt: "A plant stand with seedlings, houseplants, and cut flowers", t: "From the greenhouse", d: "Seedlings and vegetable starts in spring. Cut flowers and bouquets all summer. Wreaths and Christmas trees when it turns cold.", g: "greenhouse" },
-              { img: "/illustrations/plates.jpg", alt: "A volunteer handing a plate of food across a table", t: "From the fire hall", d: "Plate sales, Boston butts, fish fries, bake sales. Know how many to cook before you light the grill.", g: "fundraisers" },
-            ].map((c, i) => (
-              <Reveal key={c.t} delay={i * 70}>
-                <Link href={`/for/${c.g}`} className="tag-card block h-full overflow-hidden !pl-0">
-                  <Image src={c.img} alt={c.alt} width={600} height={450} className="aspect-[4/3] w-full object-cover" sizes="(max-width: 640px) 100vw, 300px" />
-                  <div className="p-3 sm:p-4">
-                    <h3 className="text-sm font-semibold sm:text-base">{c.t}</h3>
-                    <p className="mt-1 hidden text-sm text-muted sm:block">{c.d}</p>
-                  </div>
-                </Link>
-              </Reveal>
-            ))}
-          </div>
-          <p className="mt-6 text-muted">
-            Beef and pork shares, deer processing, hay and firewood, chicks, dog treats, fresh lemonade.
-            There are more than 130 categories, and yours is almost certainly one of them.
-          </p>
-        </div>
-      </section>
 
       {/* How selling works */}
       <section className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="how">

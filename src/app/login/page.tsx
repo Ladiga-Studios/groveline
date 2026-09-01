@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { useToast } from "@/components/Toast";
 
@@ -126,8 +125,8 @@ export default function LoginPage() {
 
   return (
     <div className="pattern-bg">
-      <div className="mx-auto grid max-w-4xl items-center gap-8 px-4 py-14 lg:grid-cols-2">
-        <div className="order-2 lg:order-1">
+      <div className="mx-auto max-w-md px-4 py-14">
+        <div>
           <div className="on-pattern">
             <h1 className="text-3xl font-semibold">
               {mode === "register"
@@ -239,16 +238,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="order-1 flex justify-center lg:order-2" aria-hidden="true">
-          <Image
-            src="/illustrations/phone.jpg"
-            alt=""
-            width={1254}
-            height={1254}
-            className="w-full max-w-xs"
-            priority
-          />
-        </div>
       </div>
     </div>
   );

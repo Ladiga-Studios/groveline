@@ -75,8 +75,8 @@ export default async function SellPage() {
           </div>
         </div>
         <Image
-          src="/illustrations/workshop.jpg"
-          alt="A woodworker sanding down a cutting board in a small, sunlit shop"
+          src="/illustrations/handmade.jpg"
+          alt="A woman arranging soap and candles on a market table"
           width={1254}
           height={1254}
           className="mx-auto w-full max-w-md rounded-2xl"

@@ -55,10 +55,14 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     ["art-prints", "Art & prints"], ["signs-decor", "Signs & decor"], ["tumblers", "Tumblers & cups"],
     ["other-handmade", "Other handmade"],
   ]),
-  g("farm", "Farm & animals", [
-    ["hay-straw", "Hay & straw"], ["feed", "Feed"], ["chicks-poultry", "Chicks & poultry"], ["livestock", "Livestock"],
-    ["rabbits", "Rabbits"], ["compost-manure", "Compost & manure"], ["firewood", "Firewood"],
-    ["farm-equipment", "Farm equipment"], ["other-farm", "Other farm"],
+  /* No live animals: see PROHIBITED in src/lib/policy.ts. Poultry and
+     livestock sales carry their own state and federal rules, and the
+     reservation flow isn't built for them. Everything else a farm sells
+     stays. */
+  g("farm", "Farm & supplies", [
+    ["hay-straw", "Hay & straw"], ["feed", "Feed"], ["compost-manure", "Compost & manure"],
+    ["firewood", "Firewood"], ["farm-equipment", "Farm equipment"], ["hatching-eggs", "Hatching eggs"],
+    ["other-farm", "Other farm"],
   ]),
   g("seasonal", "Seasonal & holiday", [
     ["christmas-trees", "Christmas trees"], ["holiday-baskets", "Holiday baskets"], ["fall-decor", "Fall decor"],

@@ -38,8 +38,8 @@ export const FOR_PAGES: ForPage[] = [
     tagline: "Soap, candles, woodwork, crafts",
     intro:
       "You make twenty bars at a time, or six cutting boards, or a run of candles for the holidays. Batches. That is exactly what a drop is.",
-    image: "/illustrations/handmade.jpg",
-    imageAlt: "A woman arranging soap and candles at a market table",
+    image: "/illustrations/workshop.jpg",
+    imageAlt: "A woodworker sanding a cutting board, finished boards stacked beside him",
     groups: ["handmade"],
     points: [
       { t: "Ten photos per drop", d: "Handmade sells on the details. Show the grain, the wrapper, the color options. Drag them in from your desktop or tap from your phone." },
