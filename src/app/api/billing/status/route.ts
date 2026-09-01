@@ -11,15 +11,13 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: "Not logged in" }, { status: 401 });
 
   const admin = supabaseAdmin();
-  const { data: myShops } = await admin.from("shops").select("id").eq("owner_id", user.id);
-  const shopIds = (myShops ?? []).map((x) => x.id);
-  const [{ data: profile }, { data: billing }, { count: dropsCount }] = await Promise.all([
-    admin.from("profiles").select("is_admin, payouts_enabled").eq("id", user.id).maybeSingle(),
+  const [{ data: profile }, { data: billing }] = await Promise.all([
+    admin.from("profiles").select("is_admin, payouts_enabled, drops_created").eq("id", user.id).maybeSingle(),
     admin.from("billing").select("*").eq("profile_id", user.id).maybeSingle(),
-    shopIds.length
-      ? admin.from("drops").select("*", { count: "exact", head: true }).in("seller_id", shopIds)
-      : Promise.resolve({ count: 0 }),
   ]);
+  // Lifetime count, not a live row count: deleting a drop or a shop must
+  // not hand back a free slot.
+  const dropsCount = profile?.drops_created ?? 0;
 
   const stripe = getStripe();
   const stripeConfigured = !!stripe;
@@ -66,10 +64,10 @@ export async function GET() {
     yearlyAvailable: !!process.env.STRIPE_PRICE_ID_YEARLY,
     subscribed,
     subscriptionStatus: billing?.subscription_status ?? "none",
-    dropsCount: dropsCount ?? 0,
+    dropsCount,
     plansConfigured,
-    needsSubscription: plansConfigured && !profile?.is_admin && !subscribed && (dropsCount ?? 0) >= 3,
-    freeLeft: plansConfigured && !profile?.is_admin && !subscribed ? Math.max(0, 3 - (dropsCount ?? 0)) : null,
+    needsSubscription: plansConfigured && !profile?.is_admin && !subscribed && dropsCount >= 3,
+    freeLeft: plansConfigured && !profile?.is_admin && !subscribed ? Math.max(0, 3 - dropsCount) : null,
     hasStripeAccount: !!billing?.stripe_account_id,
     payoutsEnabled,
   });

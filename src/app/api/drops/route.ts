@@ -21,13 +21,14 @@ export async function POST(req: Request) {
   // Subscription gate: three drops free across all shops, then a plan. Off if Stripe isn't set up.
   const admin = supabaseAdmin();
   if (process.env.STRIPE_SECRET_KEY && (process.env.STRIPE_PRICE_ID_MONTHLY || process.env.STRIPE_PRICE_ID)) {
-    const [{ data: profile }, { data: billing }, { count }] = await Promise.all([
-      admin.from("profiles").select("is_admin").eq("id", user.id).maybeSingle(),
+    // drops_created is a lifetime counter that deletions don't reduce, so
+    // deleting a drop (or a whole shop) can't buy another free one.
+    const [{ data: profile }, { data: billing }] = await Promise.all([
+      admin.from("profiles").select("is_admin, drops_created").eq("id", user.id).maybeSingle(),
       admin.from("billing").select("subscription_status").eq("profile_id", user.id).maybeSingle(),
-      admin.from("drops").select("*", { count: "exact", head: true }).in("seller_id", shops.map((x) => x.id)),
     ]);
     const subscribed = ["active", "trialing", "past_due"].includes(billing?.subscription_status ?? "none");
-    if (!profile?.is_admin && !subscribed && (count ?? 0) >= 3) {
+    if (!profile?.is_admin && !subscribed && (profile?.drops_created ?? 0) >= 3) {
       return NextResponse.json({ error: "subscribe" }, { status: 402 });
     }
   }
