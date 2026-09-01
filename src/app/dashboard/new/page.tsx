@@ -113,7 +113,7 @@ export default function NewDropPage() {
     const startAt = shipOnly ? new Date(`${pickup.date}T00:00`) : new Date(`${pickup.date}T${pickup.start}`);
     const endAt = shipOnly ? new Date(`${pickup.date}T23:59`) : new Date(`${pickup.date}T${pickup.end}`);
     if (endAt <= startAt) return setError("The end time needs to come after the start time.");
-    if (endAt < new Date()) return setError("That date has already come and gone. Try a date ahead of today.");
+    if (endAt < new Date()) return setError("That date has already passed. Pick one that hasn't happened yet.");
 
     setBusy(true);
     const body = new FormData();

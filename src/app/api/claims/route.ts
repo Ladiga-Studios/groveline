@@ -246,7 +246,7 @@ export async function POST(req: Request) {
     sendEmail(
       email,
       `Reserved: ${drop.title}`,
-      `You are number ${result.position} for ${drop.title}.\n\nQuantity: ${quantity}\n${when}\n${method === "card" ? (captureModeFor(drop.pickup_end) === "manual" ? `Payment: card on hold, charged when ${delivery === "shipping" ? "it ships" : "you pick up"}.\n` : "Payment: card charged now. Refunded automatically if you or the seller cancel before pickup.\n") : "Payment: cash at pickup.\n"}\nManage or cancel your reservation: ${reservationUrl}\n\nDrop details: ${site}/d/${drop.slug}`
+      `You're set for ${quantity} of ${drop.title}, number ${result.position} on the list.\n\n${when}\n${method === "card" ? (captureModeFor(drop.pickup_end) === "manual" ? `Payment: card on hold, charged when ${delivery === "shipping" ? "it ships" : "you pick up"}.\n` : "Payment: card charged now. Refunded automatically if you or the seller cancel before pickup.\n") : "Payment: cash at pickup.\n"}\nManage or cancel your reservation: ${reservationUrl}\n\nDrop details: ${site}/d/${drop.slug}`
     );
   }
 
