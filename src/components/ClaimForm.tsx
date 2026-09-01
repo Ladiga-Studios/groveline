@@ -240,9 +240,12 @@ export default function ClaimForm({
         </span>
       </label>
 
+      {/* Trap for bots that fill every field. Named so browsers never
+          autofill it: no "company", "name", "email", or anything else
+          autofill recognizes. */}
       <div className="hp-field" aria-hidden="true">
-        <label htmlFor="claim-company">Company</label>
-        <input id="claim-company" tabIndex={-1} autoComplete="off" value={company} onChange={(e) => setCompany(e.target.value)} />
+        <label htmlFor="gl-leave-blank">Leave this blank</label>
+        <input id="gl-leave-blank" name="gl_leave_blank" tabIndex={-1} autoComplete="off" value={company} onChange={(e) => setCompany(e.target.value)} />
       </div>
 
       {TURNSTILE_SITE_KEY && (

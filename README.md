@@ -112,6 +112,7 @@ Push to your repo, import in Vercel, add the same environment variables, deploy.
 - Public profile page for every account showing their shops and who they follow
 - Printable pickup sheet (PDF) and spreadsheet export per drop
 - Themed landing pages: /for/kitchen, /for/workshop, /for/greenhouse, /for/fundraisers
+- Support page at /support with a contact form that saves to the database and emails `SUPPORT_EMAIL` (falls back to `ADMIN_EMAIL`), with reply-to set to the sender. Spam protection is a time-on-page check, Turnstile when configured, and a per-IP limit. No honeypot, because browser autofill fills honeypots and loses real messages.
 - Share to Facebook buttons that hand the post over with photo, title, price, and description
 - Pickup day reminder emails, listing reports, admin takedowns, view counts, post again
 

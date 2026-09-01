@@ -1,6 +1,6 @@
 /* One place to send email. Silently does nothing if Resend isn't set up,
    so email is always a courtesy and never blocks the thing it's about. */
-export async function sendEmail(to: string, subject: string, text: string) {
+export async function sendEmail(to: string, subject: string, text: string, replyTo?: string) {
   if (!process.env.RESEND_API_KEY || !to) return;
   try {
     const { Resend } = await import("resend");
@@ -10,6 +10,7 @@ export async function sendEmail(to: string, subject: string, text: string) {
       to,
       subject,
       text,
+      ...(replyTo ? { replyTo } : {}),
     });
   } catch {
     /* courtesy only */

@@ -20,6 +20,7 @@ export default function Footer() {
           <Link href="/pricing" className="hover:underline">Pricing</Link>
           <Link href="/reservations" className="hover:underline">My reservations</Link>
           <Link href="/login" className="hover:underline">Log in</Link>
+          <Link href="/support" className="hover:underline">Support</Link>
           <Link href="/privacy" className="hover:underline">Privacy</Link>
           <Link href="/terms" className="hover:underline">Terms</Link>
         </nav>

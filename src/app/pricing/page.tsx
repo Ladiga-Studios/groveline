@@ -57,9 +57,16 @@ export default async function PricingPage() {
         {stripeOn ? (
           <PlanButtons loggedIn={!!user} subscribed={subscribed} yearlyAvailable={yearly} />
         ) : (
-          <div className="tag-card p-6">
-            <p className="font-semibold">Plans open soon.</p>
-            <p className="mt-1 text-sm text-muted">Everything is free while we get set up. Post away.</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="tag-card p-6">
+              <p className="font-display text-4xl font-semibold text-grove">$10<span className="text-lg font-normal text-muted"> / month</span></p>
+              <p className="mt-1 text-sm text-muted">Month to month. Stop whenever.</p>
+            </div>
+            <div className="tag-card border-leaf p-6">
+              <p className="font-display text-4xl font-semibold text-grove">$60<span className="text-lg font-normal text-muted"> / year</span></p>
+              <p className="mt-1 text-sm text-muted">Two months free. Set it and forget it.</p>
+            </div>
+            <p className="text-sm text-muted sm:col-span-2">Checkout is being connected. Your first three drops are free in the meantime, so go ahead and post.</p>
           </div>
         )}
       </div>

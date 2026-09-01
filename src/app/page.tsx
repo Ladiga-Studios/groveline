@@ -170,9 +170,9 @@ export default async function Home() {
         <Reveal>
           <Image
             src="/illustrations/steps.jpg"
-            alt="Writing a price tag, sending a link, and checking off a pickup list"
-            width={2172}
-            height={724}
+            alt="Posting a drop on a phone, sharing the card, and handing over a basket against a checked-off list"
+            width={1672}
+            height={941}
             className="mt-8 w-full rounded-2xl"
             sizes="(max-width: 1152px) 100vw, 1152px"
           />

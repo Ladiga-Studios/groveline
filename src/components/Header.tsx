@@ -65,6 +65,7 @@ export default function Header({ user }: { user: HeaderUser }) {
         { href: "/following", label: "Sellers I follow" },
         { href: `/u/${user.slug}`, label: "My profile" },
         { href: "/dashboard/settings", label: "Settings" },
+        { href: "/support", label: "Get help" },
         ...(user.isAdmin ? [{ href: "/admin", label: "Admin" }] : []),
       ]
     : [];
@@ -79,6 +80,9 @@ export default function Header({ user }: { user: HeaderUser }) {
               {l.label}
             </Link>
           ))}
+          {user && user.shopCount > 0 && (
+            <Link href="/dashboard/new" className="btn btn-primary !min-h-11 !px-5">Post a drop</Link>
+          )}
           {user ? (
             <div ref={acctRef} className="relative">
               <button
@@ -134,6 +138,9 @@ export default function Header({ user }: { user: HeaderUser }) {
             ))}
             {user ? (
               <>
+                {user.shopCount > 0 && (
+                  <Link href="/dashboard/new" onClick={() => setOpen(false)} className="btn btn-primary mt-2">Post a drop</Link>
+                )}
                 <div className="mt-2 flex items-center gap-3 border-t border-cream-dark px-3 pt-3">
                   <Avatar url={user.avatarUrl} name={user.name} size={36} />
                   <span className="font-semibold">{user.name}</span>

@@ -17,6 +17,7 @@ export default async function AdminPage() {
   const { data: me } = await admin.from("profiles").select("is_admin").eq("id", user.id).maybeSingle();
   if (!me?.is_admin) redirect("/");
 
+  const { data: messages } = await admin.from("support_messages").select("id, name, email, topic, message, created_at, handled").order("created_at", { ascending: false }).limit(30);
   const [{ data: reports }, { data: drops }, { count: sellers }, { count: buyers }, { count: claims }] = await Promise.all([
     admin.from("reports").select("*, drops(title, slug, status)").eq("resolved", false).order("created_at", { ascending: false }).limit(50),
     admin.from("drops").select("id, title, slug, status, created_at, views, claimed, quantity, shops!drops_seller_id_fkey(name)").order("created_at", { ascending: false }).limit(40),
@@ -36,6 +37,21 @@ export default async function AdminPage() {
           </div>
         ))}
       </dl>
+
+      <h2 className="mt-8 text-xl font-semibold">Support messages</h2>
+      {!messages?.length ? (
+        <p className="tag-card mt-3 p-4 text-muted">Nothing in the inbox.</p>
+      ) : (
+        <div className="mt-3 grid gap-3">
+          {messages.map((m) => (
+            <div key={m.id} className="tag-card p-4">
+              <p className="text-sm text-muted">{new Date(m.created_at).toLocaleString("en-US")} · {m.topic}</p>
+              <p className="mt-1 font-semibold">{m.name} <a href={`mailto:${m.email}`} className="font-normal text-grove underline">{m.email}</a></p>
+              <p className="mt-1 whitespace-pre-line text-sm">{m.message}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       <h2 className="mt-8 text-xl font-semibold">Reports that need a look</h2>
       {!reports?.length ? (
