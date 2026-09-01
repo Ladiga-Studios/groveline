@@ -125,20 +125,22 @@ export default function LoginPage() {
     <div className="pattern-bg">
       <div className="mx-auto grid max-w-4xl items-center gap-8 px-4 py-14 lg:grid-cols-2">
         <div className="order-2 lg:order-1">
-          <h1 className="text-3xl font-semibold">
-            {mode === "register"
-              ? "Create your free account"
-              : mode === "forgot"
-                ? "Reset your password"
-                : "Log in"}
-          </h1>
-          <p className="mt-2 text-muted">
-            {mode === "register"
-              ? "One account covers buying and selling. Selling is free to start."
-              : mode === "forgot"
-                ? "Enter your email and we will send you a link to set a new password."
-                : "Welcome back."}
-          </p>
+          <div className="on-pattern">
+            <h1 className="text-3xl font-semibold">
+              {mode === "register"
+                ? "Let's get you set up"
+                : mode === "forgot"
+                  ? "Reset your password"
+                  : "Welcome back"}
+            </h1>
+            <p className="mt-2 text-muted">
+              {mode === "register"
+                ? "One account covers buying and selling both. Selling is free to start."
+                : mode === "forgot"
+                  ? "Pop in your email and we'll send a link to set a new one."
+                  : "Good to see you again."}
+            </p>
+          </div>
 
           <form onSubmit={submit} className="tag-card mt-6 flex flex-col gap-4 p-6" noValidate>
             <div>
@@ -207,7 +209,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-4 flex flex-col gap-2 text-center">
+          <div className="on-pattern mt-4 flex flex-col gap-2 text-center">
             {mode === "login" && (
               <>
                 <button className="text-grove underline underline-offset-2" onClick={() => switchMode("register")}>

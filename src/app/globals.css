@@ -314,11 +314,17 @@ body[data-modal-open="true"] {
   overflow: hidden;
 }
 .pattern-bg {
-  background-image: url("/illustrations/pattern.jpg");
-  background-size: 340px;
+  background-image:
+    linear-gradient(rgba(250, 246, 239, 0.45), rgba(250, 246, 239, 0.45)),
+    url("/illustrations/pattern.jpg");
+  background-size: auto, 340px;
   background-repeat: repeat;
   background-position: top left;
 }
-.pattern-bg::before {
-  content: "";
+/* A soft backing for text that sits on the pattern, so it stays readable. */
+.on-pattern {
+  background: rgba(250, 246, 239, 0.9);
+  backdrop-filter: blur(4px);
+  border-radius: var(--radius-tag);
+  padding: 1rem 1.25rem;
 }

@@ -71,8 +71,10 @@ export default function WelcomePage() {
   return (
     <div className="pattern-bg">
     <div className="mx-auto max-w-md px-4 py-14">
-      <h1 className="text-3xl font-semibold">Just a couple more things</h1>
-      <p className="mt-2 text-muted">A few basics and you're all set.</p>
+      <div className="on-pattern">
+        <h1 className="text-3xl font-semibold">Just a couple more things</h1>
+        <p className="mt-2 text-muted">A few basics and you&apos;re all set.</p>
+      </div>
       <form onSubmit={submit} className="tag-card mt-6 flex flex-col gap-4 p-6" noValidate>
         <div>
           <label htmlFor="w-name" className="field-label">
