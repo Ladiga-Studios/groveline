@@ -17,6 +17,7 @@ export default function Footer() {
           <Link href="/browse" className="hover:underline">Browse drops</Link>
           <Link href="/sellers" className="hover:underline">Sellers</Link>
           <Link href="/sell" className="hover:underline">Start selling</Link>
+          <Link href="/pricing" className="hover:underline">Pricing</Link>
           <Link href="/reservations" className="hover:underline">My reservations</Link>
           <Link href="/login" className="hover:underline">Log in</Link>
           <Link href="/privacy" className="hover:underline">Privacy</Link>

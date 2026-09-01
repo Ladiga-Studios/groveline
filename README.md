@@ -46,6 +46,16 @@ Free, and reuses the same Cloudflare account already handling your DNS. In the C
 
 Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. In the Stripe dashboard create one product (the seller subscription) with two recurring prices, $10 monthly and $60 yearly, and put their ids (start with `price_`) in `STRIPE_PRICE_ID_MONTHLY` and `STRIPE_PRICE_ID_YEARLY`. Yearly is optional; leave it blank to offer monthly only. Add a webhook endpoint at `https://groveline.io/api/stripe/webhook` listening for `checkout.session.completed`, `checkout.session.expired`, `customer.subscription.updated`, `customer.subscription.deleted`, and `account.updated`. Enable Stripe Connect (Express) in your Stripe settings so sellers can onboard.
 
+Stripe dashboard checklist for card payments to work:
+
+1. Settings, Connect, click Get started and complete the platform profile (your business info, what you're building). Stripe won't let sellers onboard until this is done.
+2. Settings, Connect, Branding: add the Groveline name, icon, and green so sellers see it during onboarding.
+3. Developers, Webhooks: add `https://groveline.io/api/stripe/webhook` with the five events listed above. Copy the signing secret into `STRIPE_WEBHOOK_SECRET`.
+4. Flip the dashboard to Live mode and make sure the keys in Vercel are the live ones (`sk_live_...`), not test keys.
+5. Post a real drop, turn on card payments in Settings, complete the Express onboarding yourself, and reserve it with a real card from another browser. Then mark it picked up and watch the charge land.
+
+Promo codes: in the Stripe dashboard go to Product catalog, Coupons, and create one (for example $10 off, duration Once, which equals one free month on the monthly plan). Then on that coupon click Add promotion code and set the code buyers type, like `LADIGA`. Sellers can enter it on `/pricing` or in Stripe's own box at checkout.
+
 Connected accounts are Express by default (a short in-app signup for sellers). Stripe bills the platform about $2 per month for each Express account that gets a payout that month. Set `STRIPE_CONNECT_TYPE=standard` to switch to Standard accounts, which have no monthly fee but ask the seller to create a full Stripe login. Either way Stripe's card processing fee (about 2.9% plus 30 cents) comes out of each card payment, and Groveline takes nothing.
 
 How it works: sellers set up payouts from Settings and money goes straight to their bank. When a buyer pays by card, a hold is placed at reservation and only captured when the seller marks the claim picked up. Removing a claim or the buyer cancelling releases the hold. Leave Stripe blank and everything runs cash-only with no subscription gate.

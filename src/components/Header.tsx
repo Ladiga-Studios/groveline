@@ -10,6 +10,7 @@ const links = [
   { href: "/browse", label: "Browse drops" },
   { href: "/sellers", label: "Sellers" },
   { href: "/sell", label: "Start selling" },
+  { href: "/pricing", label: "Pricing" },
 ];
 
 export type HeaderUser = { name: string; avatarUrl: string | null; slug: string; shopCount: number; isAdmin: boolean } | null;

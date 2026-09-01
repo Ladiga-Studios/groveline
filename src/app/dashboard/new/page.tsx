@@ -229,7 +229,7 @@ export default function NewDropPage() {
           <li>Card payments straight to your bank, if you want them</li>
           <li>Pickup day checklists, waitlists, reminders</li>
         </ul>
-        <p className="mt-4 text-center text-sm text-muted">Billing runs through Stripe. Switch plans or cancel any time from Settings.</p>
+        <p className="mt-4 text-center text-sm text-muted">Billing runs through Stripe. Have a code? Use it on the <a href="/pricing" className="text-grove underline">pricing page</a>. Switch plans or cancel any time from Settings.</p>
       </div>
     );
   }

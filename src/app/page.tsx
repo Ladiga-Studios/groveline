@@ -132,8 +132,8 @@ export default async function Home() {
         <div className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="what">
           <h2 id="what" className="text-3xl font-semibold">What people are selling</h2>
           <p className="mt-3 max-w-2xl text-lg">
-            If you make it, grow it, or cook it in batches, there is a place for it here. A dozen loaves
-            works the same as a whole hog. Pick the one that sounds like you.
+            If you make it, grow it, or cook it in batches, there is a place for it here. Pick the one that
+            sounds like you.
           </p>
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[

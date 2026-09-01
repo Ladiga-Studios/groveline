@@ -76,7 +76,7 @@ export default async function DashboardPage() {
         <p className="mt-2 text-sm">
           <span className="font-medium">{Math.min(3, totalDrops ?? 0)} of 3 free drops used.</span>{" "}
           {(totalDrops ?? 0) >= 3 ? "Pick a plan to keep posting." : "After that, it's $10 a month or $60 a year."}{" "}
-          <Link href="/dashboard/settings" className="text-grove underline">Plans</Link>
+          <Link href="/pricing" className="text-grove underline">See plans</Link>
         </p>
       )}
       <p className="mt-2 text-sm">
