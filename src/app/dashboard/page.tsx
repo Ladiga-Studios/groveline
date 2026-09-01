@@ -68,12 +68,12 @@ export default async function DashboardPage() {
       </div>
 
       <p className="mt-3 text-sm text-muted">
-        Every drop gets one link. Paste it in your Facebook groups, text it to regulars, pin it to your page. That link is your storefront.
+        Every drop gets one link of its own. Paste it in your Facebook groups, text it to your regulars, pin it wherever. That link does the selling for you.
       </p>
       {stripeOn && !subscribed && !profile.is_admin && (
         <p className="mt-2 text-sm">
           <span className="font-medium">{Math.min(3, totalDrops ?? 0)} of 3 free drops used.</span>{" "}
-          {(totalDrops ?? 0) >= 3 ? "Subscribe to keep posting." : "After that it is $10 a month or $60 a year."}{" "}
+          {(totalDrops ?? 0) >= 3 ? "Pick a plan to keep posting." : "After that, it's $10 a month or $60 a year."}{" "}
           <Link href="/dashboard/settings" className="text-grove underline">Plans</Link>
         </p>
       )}
@@ -86,7 +86,7 @@ export default async function DashboardPage() {
         <div className="tag-card mt-8 p-8 text-center">
           <Image src="/illustrations/sprout.jpg" alt="" width={1254} height={1254} className="mx-auto h-32 w-auto" />
           <p className="mt-4 font-display text-xl font-semibold">Nothing posted yet.</p>
-          <p className="mt-2 text-muted">Your first drop takes about a minute. Post it tonight, share the link, and see what happens Saturday.</p>
+          <p className="mt-2 text-muted">Your first drop takes about a minute. Post it tonight, share the link, and see what Saturday brings.</p>
           <Link href="/dashboard/new" className="btn btn-primary mt-4">Post your first drop</Link>
         </div>
       ) : (

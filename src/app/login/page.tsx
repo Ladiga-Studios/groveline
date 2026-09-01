@@ -63,7 +63,7 @@ export default function LoginPage() {
     setError("");
     setNotice("");
     if (!/^\S+@\S+\.\S+$/.test(email)) {
-      setError("Enter a valid email address.");
+      setError("That email doesn't quite look right.");
       return;
     }
     if (mode !== "forgot" && password.length < 8) {
@@ -106,7 +106,7 @@ export default function LoginPage() {
       });
       setBusy(false);
       if (err) {
-        setError("Email or password is not right. Try again or reset it below.");
+        setError("That email or password doesn't match. Try again, or reset your password below.");
         return;
       }
       await goWhereTheyBelong();
@@ -117,8 +117,8 @@ export default function LoginPage() {
       redirectTo: `${window.location.origin}/auth/reset`,
     });
     setBusy(false);
-    if (err) setError("Could not send the reset email. Try again in a minute.");
-    else setNotice("If that email has an account, a reset link is on the way.");
+    if (err) setError("Couldn't send that reset email. Try again shortly.");
+    else setNotice("If that email has an account, a reset link is headed its way.");
   }
 
   return (
@@ -200,7 +200,7 @@ export default function LoginPage() {
               {busy
                 ? "One second"
                 : mode === "register"
-                  ? "Create account"
+                  ? "Create my account"
                   : mode === "forgot"
                     ? "Send reset link"
                     : "Log in"}
@@ -211,7 +211,7 @@ export default function LoginPage() {
             {mode === "login" && (
               <>
                 <button className="text-grove underline underline-offset-2" onClick={() => switchMode("register")}>
-                  New here? Create a free account
+                  New here? Create your free account
                 </button>
                 <button className="text-sm text-muted underline" onClick={() => switchMode("forgot")}>
                   Forgot your password?
@@ -222,13 +222,13 @@ export default function LoginPage() {
               <>
                 <p className="text-xs text-muted">You will be asked to agree to the terms and privacy policy on the next screen.</p>
                 <button className="text-grove underline underline-offset-2" onClick={() => switchMode("login")}>
-                  Already have an account? Log in
+                  Already have one? Log in
                 </button>
               </>
             )}
             {mode === "forgot" && (
               <button className="text-grove underline underline-offset-2" onClick={() => switchMode("login")}>
-                Back to log in
+                Back to logging in
               </button>
             )}
           </div>

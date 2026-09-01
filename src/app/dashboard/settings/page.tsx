@@ -66,7 +66,7 @@ export default function SettingsPage() {
   async function save(e: React.FormEvent) {
     e.preventDefault();
     if (name.trim().length < 2 || town.trim().length < 2) {
-      toast("Name and town are both needed.", "error");
+      toast("Name and town both need something.", "error");
       return;
     }
     setBusy(true);
@@ -80,7 +80,7 @@ export default function SettingsPage() {
       .update({ name: name.trim(), town: town.trim(), state: usState, notify_on_claim: notify, notify_digest: digest })
       .eq("id", user.id);
     setBusy(false);
-    toast(error ? "Could not save. Try again." : "Saved.", error ? "error" : "success");
+    toast(error ? "Couldn't save that. Try again." : "Saved.", error ? "error" : "success");
   }
 
   async function uploadAvatar(file: File) {
@@ -93,8 +93,8 @@ export default function SettingsPage() {
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
       setAvatarUrl(data.url);
-      toast("Profile photo updated.", "success");
-    } else toast(data.error || "Could not upload.", "error");
+      toast("That's a good look. Photo updated.", "success");
+    } else toast(data.error || "Couldn't upload that. Try again.", "error");
   }
 
   async function go(path: string, body?: object) {
@@ -107,7 +107,7 @@ export default function SettingsPage() {
     setBusy(false);
     const data = await res.json().catch(() => ({}));
     if (data.url) window.location.href = data.url;
-    else toast(data.error || "Something went wrong.", "error");
+    else toast(data.error || "Something didn't go through.", "error");
   }
 
   async function logOut() {
@@ -120,16 +120,16 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-xl px-4 py-10">
-      <h1 className="text-3xl font-semibold">Settings</h1>
+      <h1 className="text-3xl font-semibold">Your account</h1>
       {isSeller && (
-        <p className="mt-2 text-sm text-muted">Shop names, photos, bios, and contact info live under <a href="/dashboard/shops" className="text-grove underline">My shops</a>. This page is your own account.</p>
+        <p className="mt-2 text-sm text-muted">Shop names, photos, bios, and contact info live over in <a href="/dashboard/shops" className="text-grove underline">My shops</a>. This page is just you, the person.</p>
       )}
 
       <section className="tag-card mt-6 flex items-center gap-5 p-6">
         <Avatar url={avatarUrl} name={name} size={72} />
         <div>
-          <p className="font-semibold">Profile photo</p>
-          <p className="text-sm text-muted">This is you, the person. Each shop has its own photo too.</p>
+          <p className="font-semibold">Your photo</p>
+          <p className="text-sm text-muted">This is just you. Each shop you run gets its own separate photo.</p>
           <label className="btn btn-outline mt-2 !min-h-10 cursor-pointer">
             {avatarBusy ? "Uploading" : avatarUrl ? "Change photo" : "Add a photo"}
             <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadAvatar(e.target.files[0])} disabled={avatarBusy} />
@@ -139,7 +139,7 @@ export default function SettingsPage() {
 
       <form onSubmit={save} className="tag-card mt-4 flex flex-col gap-4 p-6" noValidate>
         <div>
-          <label htmlFor="st-name" className="field-label">Your name</label>
+          <label htmlFor="st-name" className="field-label">What we call you</label>
           <input id="st-name" className="field" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
         </div>
         <div className="grid grid-cols-2 gap-4">
@@ -157,7 +157,7 @@ export default function SettingsPage() {
         {isSeller && (
           <>
             <fieldset className="rounded-xl border-2 border-cream-dark p-4">
-              <legend className="px-1 font-semibold">Reservation emails</legend>
+              <legend className="px-1 font-semibold">When someone reserves something</legend>
               <label className="flex min-h-11 cursor-pointer items-center gap-3">
                 <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} className="h-5 w-5 accent-[#1e4d2b]" />
                 <span>Email me when people reserve or cancel</span>
@@ -166,11 +166,11 @@ export default function SettingsPage() {
                 <div className="mt-2 grid gap-2 pl-8 sm:grid-cols-2">
                   <label className="flex cursor-pointer items-center gap-2 text-sm">
                     <input type="radio" name="digest" checked={digest} onChange={() => setDigest(true)} className="accent-[#1e4d2b]" />
-                    One summary email per hour
+                    One roundup email per hour
                   </label>
                   <label className="flex cursor-pointer items-center gap-2 text-sm">
                     <input type="radio" name="digest" checked={!digest} onChange={() => setDigest(false)} className="accent-[#1e4d2b]" />
-                    One email per reservation
+                    A separate email for each one
                   </label>
                 </div>
               )}
@@ -185,13 +185,15 @@ export default function SettingsPage() {
           <section className="tag-card mt-4 p-6">
             <h2 className="text-lg font-semibold">Card payments</h2>
             <p className="mt-1 text-sm text-muted">
-              Let buyers pay by card when they reserve. The money goes straight to your bank through Stripe, never through Groveline. A hold goes on their card at reservation and it is charged when you mark them picked up, so no-shows never cost anyone.
+              Let buyers pay by card right when they reserve. The money goes straight to your bank through
+              Stripe, it never passes through us. We put a hold on their card at reservation and only charge it
+              once you mark them picked up, so a no-show never costs anyone anything.
             </p>
             {billing.payoutsEnabled ? (
-              <p className="mt-3 font-medium text-grove">Card payments are on. Buyers see the option at checkout.</p>
+              <p className="mt-3 font-medium text-grove">Card payments are live. Buyers will see the option when they reserve.</p>
             ) : (
               <button className="btn btn-grove mt-3" onClick={() => go("/api/stripe/connect")} disabled={busy}>
-                {billing.hasStripeAccount ? "Finish payout setup" : "Set up card payments"}
+                {billing.hasStripeAccount ? "Finish setting up payouts" : "Turn on card payments"}
               </button>
             )}
           </section>
@@ -199,7 +201,7 @@ export default function SettingsPage() {
           <section className="tag-card mt-4 p-6">
             <h2 className="text-lg font-semibold">Subscription</h2>
             <p className="mt-1 text-sm text-muted">
-              {billing.subscribed ? "Active. Switch plans, update your card, or cancel any time." : "Your first drop is free. After that it is $10 a month or $60 a year."}
+              {billing.subscribed ? "You're all set. Switch plans, update your card, or cancel whenever." : "Your first drop is free. After that, it's $10 a month or $60 a year."}
             </p>
             {billing.subscribed ? (
               <button className="btn btn-outline mt-3" onClick={() => go("/api/stripe/portal")} disabled={busy}>Manage billing</button>

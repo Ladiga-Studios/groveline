@@ -28,11 +28,11 @@ export default async function FollowingPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-3xl font-semibold">Sellers I follow</h1>
-      <p className="mt-1 text-muted">You get an email every time one of them posts.</p>
+      <h1 className="text-3xl font-semibold">Who you're following</h1>
+      <p className="mt-1 text-muted">An email lands in your inbox every time one of them posts something new.</p>
       {sellers.length === 0 ? (
         <div className="tag-card mt-6 p-6">
-          <p className="text-muted">You are not following anyone yet. Find your people.</p>
+          <p className="text-muted">Not following anyone yet. Go find your people.</p>
           <Link href="/sellers" className="btn btn-primary mt-3">Browse sellers</Link>
         </div>
       ) : (
@@ -45,7 +45,7 @@ export default async function FollowingPage() {
                 <div className="min-w-0">
                   <p className="truncate font-semibold">{s.name}</p>
                   <p className="text-sm text-muted">{s.town}, {s.state}</p>
-                  <p className={`text-sm font-medium ${n > 0 ? "text-grove" : "text-muted"}`}>{n > 0 ? `${n} claimable now` : "Nothing active"}</p>
+                  <p className={`text-sm font-medium ${n > 0 ? "text-grove" : "text-muted"}`}>{n > 0 ? `${n} up for grabs now` : "Nothing posted right now"}</p>
                 </div>
               </Link>
             );

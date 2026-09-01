@@ -36,7 +36,7 @@ export default function PickupFields({
   return (
     <div className="flex flex-col gap-5">
       <fieldset>
-        <legend className="field-label">How buyers get it</legend>
+        <legend className="field-label">How do folks get this from you</legend>
         <div className="grid gap-2 sm:grid-cols-3">
           {([["pickup", "Pickup only"], ["both", "Pickup or shipping"], ["shipping", "Shipping only"]] as const).map(([v, l]) => (
             <label key={v} className={`flex cursor-pointer items-center gap-2 rounded-xl border-2 p-3 ${value.fulfillment === v ? "border-leaf bg-cream" : "border-cream-dark bg-white"} ${v !== "pickup" && !canShip ? "opacity-50" : ""}`}>
@@ -46,7 +46,7 @@ export default function PickupFields({
           ))}
         </div>
         {!canShip && (
-          <p className="field-hint">Shipping needs card payments. Turn them on in Settings and shipping unlocks here.</p>
+          <p className="field-hint">Shipping needs card payments turned on first. Do that in Settings and this unlocks.</p>
         )}
       </fieldset>
 
@@ -57,19 +57,19 @@ export default function PickupFields({
             <span aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 font-semibold text-muted">$</span>
             <input id={`${prefix}-shipping`} type="number" inputMode="decimal" min="0" step="0.01" className="field pl-8" value={value.shipping} onChange={set("shipping")} placeholder="8" />
           </div>
-          <p className="field-hint">Shipped orders are paid by card and charged when you mark them shipped.</p>
+          <p className="field-hint">Buyers pay by card, and it charges once you mark the order shipped.</p>
         </div>
       )}
 
       {pickup && (
         <>
           <div>
-            <label htmlFor={`${prefix}-place`} className="field-label">Pickup place</label>
+            <label htmlFor={`${prefix}-place`} className="field-label">Where should people meet you</label>
             <input id={`${prefix}-place`} className="field" value={value.place} onChange={set("place")} placeholder="Piedmont Farmers Market, or My driveway" />
-            <p className="field-hint">The name buyers will recognize.</p>
+            <p className="field-hint">Whatever your buyers would recognize right away.</p>
           </div>
           <div>
-            <label htmlFor={`${prefix}-address`} className="field-label">Street address <span className="font-normal text-muted">(optional, shows a map)</span></label>
+            <label htmlFor={`${prefix}-address`} className="field-label">Street address <span className="font-normal text-muted">(optional, we'll drop a map in)</span></label>
             <input id={`${prefix}-address`} className="field" value={value.address} onChange={set("address")} placeholder="123 Main St" autoComplete="street-address" />
           </div>
         </>
@@ -77,7 +77,7 @@ export default function PickupFields({
 
       <div className="grid grid-cols-6 gap-3">
         <div className="col-span-3">
-          <label htmlFor={`${prefix}-city`} className="field-label">{pickup ? "City" : "Ships from (city)"}</label>
+          <label htmlFor={`${prefix}-city`} className="field-label">{pickup ? "City" : "Shipping from"}</label>
           <input id={`${prefix}-city`} className="field" value={value.city} onChange={set("city")} placeholder="Piedmont" autoComplete="address-level2" />
         </div>
         <div className="col-span-2">
@@ -95,7 +95,7 @@ export default function PickupFields({
       {pickup ? (
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <label htmlFor={`${prefix}-date`} className="field-label">Pickup date</label>
+            <label htmlFor={`${prefix}-date`} className="field-label">What date</label>
             <input id={`${prefix}-date`} type="date" className="field" value={value.date} min={minDate} onChange={set("date")} />
           </div>
           <div>
@@ -109,9 +109,9 @@ export default function PickupFields({
         </div>
       ) : (
         <div className="sm:w-56">
-          <label htmlFor={`${prefix}-date`} className="field-label">Last day to order</label>
+          <label htmlFor={`${prefix}-date`} className="field-label">Last day to get an order in</label>
           <input id={`${prefix}-date`} type="date" className="field" value={value.date} min={minDate} onChange={set("date")} />
-          <p className="field-hint">The drop comes down after this day.</p>
+          <p className="field-hint">The drop closes itself once this day passes.</p>
         </div>
       )}
     </div>

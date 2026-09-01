@@ -85,19 +85,19 @@ export default function EditDropPage() {
     setError("");
     const priceCents = Math.round(parseFloat(price) * 100);
     const qty = parseInt(quantity, 10);
-    if (!title.trim()) return setError("The drop needs a name.");
-    if (!priceCents || priceCents <= 0) return setError("Enter a price.");
-    if (!qty || qty <= 0) return setError("Enter how many.");
+    if (!title.trim()) return setError("This still needs a name.");
+    if (!priceCents || priceCents <= 0) return setError("What's it going for?");
+    if (!qty || qty <= 0) return setError("How many total?");
     if (qty < claimed)
       return setError(
-        `${claimed} are already claimed, so the total cannot go below ${claimed}.`
+        `${claimed} of these are already claimed, so the total can't drop below that.`
       );
     const shipOnly = pickup.fulfillment === "shipping";
-    if (!shipOnly && !pickup.place.trim()) return setError("Enter a pickup place.");
-    if (!pickup.city.trim()) return setError("Enter the city.");
+    if (!shipOnly && !pickup.place.trim()) return setError("Where should people get this?");
+    if (!pickup.city.trim()) return setError("Which city is this in?");
     const startAt = shipOnly ? new Date(`${pickup.date}T00:00`) : new Date(`${pickup.date}T${pickup.start}`);
     const endAt = shipOnly ? new Date(`${pickup.date}T23:59`) : new Date(`${pickup.date}T${pickup.end}`);
-    if (endAt <= startAt) return setError("Pickup end time needs to be after the start time.");
+    if (endAt <= startAt) return setError("The end time needs to land after the start time.");
 
     setBusy(true);
     const body = new FormData();
@@ -123,10 +123,10 @@ export default function EditDropPage() {
     setBusy(false);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      setError(data.error || "Could not save. Try again.");
+      setError(data.error || "That didn't save. Try again.");
       return;
     }
-    toast("Saved.", "success");
+    toast("Saved. Looking good.", "success");
     router.push(`/dashboard/drops/${id}`);
     router.refresh();
   }
@@ -138,10 +138,10 @@ export default function EditDropPage() {
     setBusy(false);
     setConfirmDelete(false);
     if (delErr) {
-      toast("Could not delete the drop.", "error");
+      toast("Couldn't delete that. Try again.", "error");
       return;
     }
-    toast("Drop deleted.", "success");
+    toast("Gone. That drop is deleted.", "success");
     router.push("/dashboard");
     router.refresh();
   }
@@ -158,11 +158,11 @@ export default function EditDropPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="text-3xl font-semibold">Edit drop</h1>
+      <h1 className="text-3xl font-semibold">Touch it up</h1>
       {claimed > 0 && (
         <p className="mt-2 text-sm text-muted">
-          {claimed} already claimed. People reserved at the price they saw, so
-          only raise the price for a good reason.
+          {claimed} people have already claimed this at the price they saw, so
+          go easy on raising it unless there's a real reason to.
         </p>
       )}
 
@@ -281,7 +281,7 @@ export default function EditDropPage() {
 
       <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)} title="Delete this drop?">
         <p className="mb-4">
-          It comes down everywhere immediately and the link stops working. This cannot be undone.
+          It disappears everywhere right away and the link stops working. There's no getting it back after this.
         </p>
         <div className="flex gap-3">
           <button className="btn btn-primary grow" onClick={deleteDrop} disabled={busy}>

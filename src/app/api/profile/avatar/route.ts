@@ -14,7 +14,7 @@ export async function POST(req: Request) {
 
   const form = await req.formData();
   const file = form.get("avatar") as File | null;
-  if (!file) return NextResponse.json({ error: "No photo" }, { status: 400 });
+  if (!file) return NextResponse.json({ error: "Pick a photo first." }, { status: 400 });
 
   const base64 = Buffer.from(await file.arrayBuffer()).toString("base64");
   const check = await moderateDropSubmission({
@@ -30,10 +30,10 @@ export async function POST(req: Request) {
   const { error: upErr } = await supabase.storage
     .from("drop-photos")
     .upload(path, file, { cacheControl: "31536000", contentType: "image/jpeg" });
-  if (upErr) return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+  if (upErr) return NextResponse.json({ error: "That upload didn't work. Try again." }, { status: 500 });
   const url = supabase.storage.from("drop-photos").getPublicUrl(path).data.publicUrl;
 
   const { error } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
-  if (error) return NextResponse.json({ error: "Could not save" }, { status: 500 });
+  if (error) return NextResponse.json({ error: "That didn't save. Try again." }, { status: 500 });
   return NextResponse.json({ url });
 }

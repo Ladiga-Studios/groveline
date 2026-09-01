@@ -16,7 +16,7 @@ export default async function EditShopPage({ params }: { params: Promise<{ id: s
   if (!shop) notFound();
   return (
     <div className="mx-auto max-w-lg px-4 py-10">
-      <h1 className="text-3xl font-semibold">Edit shop</h1>
+      <h1 className="text-3xl font-semibold">Touch up this shop</h1>
       <div className="mt-6"><ShopForm shop={shop} /></div>
     </div>
   );

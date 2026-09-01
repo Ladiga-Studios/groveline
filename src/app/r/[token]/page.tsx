@@ -41,14 +41,14 @@ export default async function ReservationPage({
   return (
     <div className="mx-auto max-w-xl px-4 py-10">
       {paid && !claim.cancelled_at && (
-        <p className="tag-card mb-4 p-4 font-medium text-grove">Card hold placed. You are only charged when you pick up.</p>
+        <p className="tag-card mb-4 p-4 font-medium text-grove">Card hold's in place. You're only actually charged once you pick up.</p>
       )}
       {cancelled && claim.payment_status === "pending" && (
-        <p className="tag-card mb-4 p-4 text-muted">Card payment was not completed. Your spot is held for about an hour if you want to try again, otherwise it opens back up.</p>
+        <p className="tag-card mb-4 p-4 text-muted">Looks like the card payment didn't go through. Your spot's held for about an hour if you want another shot, otherwise it opens back up.</p>
       )}
 
       <h1 className="text-3xl font-semibold">
-        {status === "cancelled" ? "Reservation cancelled" : status === "picked_up" ? (claim.delivery === "shipping" ? "Shipped" : "Picked up") : status === "unpaid" ? "Almost reserved" : "You are set"}
+        {status === "cancelled" ? "This one's cancelled" : status === "picked_up" ? (claim.delivery === "shipping" ? "It's on its way" : "You got it") : status === "unpaid" ? "Almost there" : "You're all set"}
       </h1>
 
       <div className="tag-card mt-6 p-6">
@@ -61,13 +61,13 @@ export default async function ReservationPage({
         <p className="mt-3 text-sm">
           Payment:{" "}
           {claim.payment_status === "captured"
-            ? "paid by card"
+            ? "paid by card, all set"
             : claim.payment_status === "authorized"
-              ? "card on hold, charged at pickup"
+              ? "card on hold, charges at pickup"
               : claim.payment_status === "pending"
-                ? "card not completed"
+                ? "card payment didn't finish"
                 : claim.payment_status === "cancelled"
-                  ? "card hold released"
+                  ? "card hold released, you're good"
                   : "cash at pickup"}
         </p>
       </div>
@@ -82,9 +82,9 @@ export default async function ReservationPage({
         {status === "reserved" && !ended && (
           <CancelButton token={token} hasCardHold={claim.payment_status === "authorized"} />
         )}
-        <Link href={`/d/${d.slug}`} className="btn btn-grove">See the drop</Link>
+        <Link href={`/d/${d.slug}`} className="btn btn-grove">Back to the drop</Link>
       </div>
-      <p className="mt-4 text-sm text-muted">Save this page. It is your reservation, no login needed.</p>
+      <p className="mt-4 text-sm text-muted">Hang onto this page, it's your whole reservation and you don't need a login for it.</p>
     </div>
   );
 }

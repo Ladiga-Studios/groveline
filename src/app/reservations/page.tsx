@@ -44,13 +44,13 @@ export default async function ReservationsPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-3xl font-semibold">My reservations</h1>
-      <p className="mt-1 text-muted">Everything you have reserved while logged in.</p>
+      <h1 className="text-3xl font-semibold">What you've got coming</h1>
+      <p className="mt-1 text-muted">Everything you've reserved while logged into this account.</p>
 
-      <h2 className="mt-8 text-xl font-semibold">Coming up</h2>
+      <h2 className="mt-8 text-xl font-semibold">On the way</h2>
       {upcoming.length === 0 ? (
         <div className="tag-card mt-3 p-6">
-          <p className="text-muted">Nothing coming up. Browse what is claimable near you.</p>
+          <p className="text-muted">Nothing on your list yet. Go see what's up for grabs nearby.</p>
           <Link href="/browse" className="btn btn-primary mt-3">Browse drops</Link>
         </div>
       ) : (
@@ -59,7 +59,7 @@ export default async function ReservationsPage() {
 
       {past.length > 0 && (
         <>
-          <h2 className="mt-10 text-xl font-semibold">Past</h2>
+          <h2 className="mt-10 text-xl font-semibold">Already done</h2>
           <div className="mt-3 grid gap-3">{past.map((c) => <Row key={c.id} c={c} />)}</div>
         </>
       )}

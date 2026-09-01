@@ -31,12 +31,12 @@ export default async function UnsubscribePage({
   return (
     <div className="mx-auto max-w-md px-4 py-20 text-center">
       <h1 className="text-3xl font-semibold">
-        {ok ? "You are unsubscribed." : "Something went wrong."}
+        {ok ? "You're unsubscribed." : "That didn't quite work."}
       </h1>
       <p className="mt-3 text-muted">
         {ok
-          ? "No more new drop emails from this seller. If you also follow them with an account, unfollow on their page to stop those too."
-          : "That unsubscribe link did not work. Try the link from the email again."}
+          ? "No more emails from this seller. If you're also following them with an account, unfollow on their page and that'll stop too."
+          : "That unsubscribe link isn't working right now. Try the link from the email one more time."}
       </p>
       <Link href="/browse" className="btn btn-primary mt-6">
         Browse drops

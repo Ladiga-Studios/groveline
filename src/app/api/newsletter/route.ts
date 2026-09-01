@@ -20,7 +20,7 @@ export async function POST(req: Request) {
       { onConflict: "seller_id,email" }
     );
   if (error) {
-    return NextResponse.json({ error: "Could not subscribe" }, { status: 500 });
+    return NextResponse.json({ error: "That didn't go through. Try again." }, { status: 500 });
   }
   return NextResponse.json({ ok: true });
 }

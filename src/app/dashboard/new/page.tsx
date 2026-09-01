@@ -100,19 +100,19 @@ export default function NewDropPage() {
     setError("");
     const priceCents = Math.round(parseFloat(price) * 100);
     const qty = parseInt(quantity, 10);
-    if (!title.trim()) return setError("Give it a name, like Sourdough loaves.");
-    if (!category) return setError("Pick a category so buyers can find it.");
-    if (!priceCents || priceCents <= 0) return setError("Enter a price.");
-    if (!qty || qty <= 0) return setError("Enter how many you have.");
+    if (!title.trim()) return setError("It needs a name, something like Sourdough loaves.");
+    if (!category) return setError("Pick a category so folks can actually find this.");
+    if (!priceCents || priceCents <= 0) return setError("What's it going for?");
+    if (!qty || qty <= 0) return setError("How many do you have?");
     const shipOnly = pickup.fulfillment === "shipping";
-    if (!shipOnly && !pickup.place.trim()) return setError("Enter a pickup place.");
-    if (!pickup.city.trim()) return setError("Enter the city.");
-    if (!pickup.date) return setError(shipOnly ? "Pick the last day to order." : "Pick a pickup date.");
-    if (pickup.fulfillment !== "pickup" && !(parseFloat(pickup.shipping) >= 0)) return setError("Enter a shipping charge (0 is fine).");
+    if (!shipOnly && !pickup.place.trim()) return setError("Where should people pick this up?");
+    if (!pickup.city.trim()) return setError("Which city is this in?");
+    if (!pickup.date) return setError(shipOnly ? "When's the last day to order?" : "Pick a pickup date.");
+    if (pickup.fulfillment !== "pickup" && !(parseFloat(pickup.shipping) >= 0)) return setError("What's the shipping charge? Zero works fine too.");
     const startAt = shipOnly ? new Date(`${pickup.date}T00:00`) : new Date(`${pickup.date}T${pickup.start}`);
     const endAt = shipOnly ? new Date(`${pickup.date}T23:59`) : new Date(`${pickup.date}T${pickup.end}`);
-    if (endAt <= startAt) return setError("Pickup end time needs to be after the start time.");
-    if (endAt < new Date()) return setError("That date has already passed. Pick a future date.");
+    if (endAt <= startAt) return setError("The end time needs to come after the start time.");
+    if (endAt < new Date()) return setError("That date has already come and gone. Try a date ahead of today.");
 
     setBusy(true);
     const body = new FormData();
@@ -141,7 +141,7 @@ export default function NewDropPage() {
     }
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      setError(data.error || "Could not create the drop. Try again.");
+      setError(data.error || "That didn't go through. Give it another try.");
       return;
     }
     const data = await res.json();
@@ -161,11 +161,11 @@ export default function NewDropPage() {
   if (created) {
     return (
       <div className="mx-auto max-w-md px-4 py-14">
-        <h1 className="text-3xl font-semibold text-grove">Your drop is live.</h1>
-        <p className="mt-2">Nobody can buy what they never see. Here is what to do right now, it takes about a minute.</p>
+        <h1 className="text-3xl font-semibold text-grove">You're live.</h1>
+        <p className="mt-2">Nobody can claim what they never see, so here's what to do next. Takes about a minute.</p>
         <ol className="mt-5 list-none space-y-4">
           <li className="tag-card p-4">
-            <p className="font-semibold">1. Grab your link</p>
+            <p className="font-semibold">1. Grab the link</p>
             <p className="mt-1 break-all font-mono text-sm text-muted">{created.url}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <FacebookShareButton url={created.url} label="Post to Facebook" />
@@ -177,19 +177,21 @@ export default function NewDropPage() {
           <li className="tag-card p-4">
             <p className="font-semibold">2. Paste it where your buyers already are</p>
             <p className="mt-1 text-sm text-muted">
-              Post to Facebook opens Facebook with your link ready to go. The post shows your first photo, the title, the price, and the first lines of your description by itself. Add a sentence in your own words and hit post.
+              Post to Facebook opens Facebook with your link already loaded in. It pulls in your first photo, the
+              title, the price, and the start of your description on its own. Add a line in your own words and
+              you're posted.
             </p>
           </li>
           <li className="tag-card p-4">
-            <p className="font-semibold">3. That is it</p>
+            <p className="font-semibold">3. That's really it</p>
             <p className="mt-1 text-sm text-muted">
-              Your followers and email subscribers were notified automatically. Claims show up on your dashboard as they come in.
+              Your followers and email subscribers already got the news, that happened by itself. Watch the claims come in on your dashboard.
             </p>
           </li>
         </ol>
         <div className="mt-6 flex gap-3">
-          <a href={created.url} className="btn btn-grove">See your drop</a>
-          <button className="btn btn-outline" onClick={() => router.push("/dashboard")}>Go to my drops</button>
+          <a href={created.url} className="btn btn-grove">See how it looks</a>
+          <button className="btn btn-outline" onClick={() => router.push("/dashboard")}>Back to my drops</button>
         </div>
       </div>
     );
@@ -198,16 +200,17 @@ export default function NewDropPage() {
   if (gate?.needsSubscription) {
     return (
       <div className="mx-auto max-w-lg px-4 py-14">
-        <h1 className="text-3xl font-semibold">Your first three drops were on us.</h1>
+        <h1 className="text-3xl font-semibold">You've used up your three free drops.</h1>
         <p className="mt-3 text-lg">
-          To keep posting, pick a plan. No cut of your sales, cash or card, no matter how much you sell. Cancel any time.
+          Pick a plan and keep going. We never take a cut of what you sell, cash or card, no matter how much
+          comes through. Cancel whenever you want.
         </p>
         <div className={`mt-6 grid gap-4 ${gate.yearlyAvailable ? "sm:grid-cols-2" : ""}`}>
           <div className="tag-card p-6">
             <p className="font-display text-4xl font-semibold text-grove">$10<span className="text-lg font-normal text-muted"> / month</span></p>
             <p className="mt-1 text-sm text-muted">Month to month.</p>
             <button className="btn btn-outline mt-5 w-full" onClick={() => subscribe("month")} disabled={busy}>
-              {busy ? "One second" : "Go monthly"}
+              {busy ? "One second" : "Start monthly"}
             </button>
           </div>
           {gate.yearlyAvailable && (
@@ -215,7 +218,7 @@ export default function NewDropPage() {
               <p className="font-display text-4xl font-semibold text-grove">$60<span className="text-lg font-normal text-muted"> / year</span></p>
               <p className="mt-1 text-sm text-muted">Two months free. Set it and forget it.</p>
               <button className="btn btn-primary mt-5 w-full" onClick={() => subscribe("year")} disabled={busy}>
-                {busy ? "One second" : "Go yearly"}
+                {busy ? "One second" : "Start yearly"}
               </button>
             </div>
           )}
@@ -226,14 +229,14 @@ export default function NewDropPage() {
           <li>Card payments straight to your bank, if you want them</li>
           <li>Pickup day checklists, waitlists, reminders</li>
         </ul>
-        <p className="mt-4 text-center text-sm text-muted">Billing is handled by Stripe. You can switch plans or cancel from Settings.</p>
+        <p className="mt-4 text-center text-sm text-muted">Billing runs through Stripe. Switch plans or cancel any time from Settings.</p>
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="text-3xl font-semibold">Post a drop</h1>
+      <h1 className="text-3xl font-semibold">What have you got</h1>
       <p className="mt-2 text-muted">
         A few details and some photos. About a minute.
         {gate?.freeLeft !== null && gate?.freeLeft !== undefined && gate.freeLeft > 0 && ` This is one of your ${gate.freeLeft} free drop${gate.freeLeft === 1 ? "" : "s"}.`}
@@ -241,10 +244,10 @@ export default function NewDropPage() {
 
       <form onSubmit={submit} className="mt-8 flex flex-col gap-8" noValidate>
         <section className="tag-card p-6">
-          <h2 className="text-lg font-semibold">The basics</h2>
+          <h2 className="text-lg font-semibold">What are you selling</h2>
           <div className="mt-4 flex flex-col gap-5">
             <div>
-              <label htmlFor="d-title" className="field-label">What are you selling</label>
+              <label htmlFor="d-title" className="field-label">Give it a name</label>
               <input id="d-title" className="field" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Sourdough loaves" />
             </div>
             <div>
@@ -253,15 +256,15 @@ export default function NewDropPage() {
             </div>
             <div>
               <label htmlFor="d-desc" className="field-label">Description <span className="font-normal text-muted">(optional)</span></label>
-              <textarea id="d-desc" className="field min-h-24" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Fresh sourdough, baked Friday night. Limit 2 per person." />
+              <textarea id="d-desc" className="field min-h-24" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Fresh sourdough, baked Friday night, limit 2 per person." />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="d-qty" className="field-label">How many</label>
+                <label htmlFor="d-qty" className="field-label">How many you've got</label>
                 <input id="d-qty" type="number" inputMode="numeric" min="1" className="field" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="12" />
               </div>
               <div>
-                <label htmlFor="d-price" className="field-label">Price each</label>
+                <label htmlFor="d-price" className="field-label">Going rate, each</label>
                 <div className="relative">
                   <span aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 font-semibold text-muted">$</span>
                   <input id="d-price" type="number" inputMode="decimal" min="0" step="0.01" className="field pl-8" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="9" />
@@ -280,7 +283,7 @@ export default function NewDropPage() {
 
         <section className="tag-card p-6">
           <h2 className="text-lg font-semibold">Your link <span className="font-normal text-muted">(optional)</span></h2>
-          <p className="mt-1 text-sm text-muted">Make it easy to say out loud at the booth. Letters, numbers, and dashes.</p>
+          <p className="mt-1 text-sm text-muted">Something easy to say out loud at the booth beats a string of random letters. Leave it blank and we'll make one.</p>
           <div className="mt-3 flex items-center gap-2">
             <span className="shrink-0 text-sm text-muted">groveline.io/d/</span>
             <input className="field" value={customSlug} onChange={(e) => setCustomSlug(e.target.value)} placeholder="saturday-sourdough" />
@@ -288,8 +291,8 @@ export default function NewDropPage() {
         </section>
 
         <section className="tag-card p-6">
-          <h2 className="text-lg font-semibold">Photos <span className="font-normal text-muted">(strongly recommended)</span></h2>
-          <p className="mt-1 text-sm text-muted">Drops with a photo sell out faster. Natural light works best.</p>
+          <h2 className="text-lg font-semibold">Show it off <span className="font-normal text-muted">(seriously, add a photo)</span></h2>
+          <p className="mt-1 text-sm text-muted">Drops with a real photo sell out faster, every time. Natural light does most of the work for you.</p>
           <div className="mt-4">
             <PhotoPicker files={photos} onChange={setPhotos} />
           </div>
@@ -298,7 +301,7 @@ export default function NewDropPage() {
         {error && <p className="field-error" role="alert">{error}</p>}
 
         <button className="btn btn-primary text-lg" disabled={busy || gate === null}>
-          {busy ? "Creating" : "Create drop"}
+          {busy ? "Posting" : "Post it"}
         </button>
       </form>
     </div>

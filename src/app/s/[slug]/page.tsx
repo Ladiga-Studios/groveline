@@ -96,23 +96,23 @@ export default async function ShopPage({ params }: { params: Promise<{ slug: str
       </dl>
 
       <section className="mt-8" aria-labelledby="active-drops">
-        <h2 id="active-drops" className="text-2xl font-semibold">Claimable now</h2>
+        <h2 id="active-drops" className="text-2xl font-semibold">Up for grabs right now</h2>
         {active && active.length > 0 ? (
           <div className="mt-4 grid gap-4">{(active as Drop[]).map((d) => <DropCard key={d.id} drop={d} />)}</div>
         ) : (
-          <p className="tag-card mt-4 p-6 text-muted">Nothing active right now. Follow or join the email list below to catch the next one.</p>
+          <p className="tag-card mt-4 p-6 text-muted">Nothing posted at the moment. Follow along or drop your email below so you don't miss the next one.</p>
         )}
       </section>
 
       <section className="tag-card mt-8 p-6" aria-labelledby="newsletter">
-        <h2 id="newsletter" className="text-xl font-semibold">Get an email when {s.name} posts a drop</h2>
-        <p className="mb-4 mt-1 text-sm text-muted">One email per drop, nothing else. Unsubscribe any time.</p>
+        <h2 id="newsletter" className="text-xl font-semibold">Hear about it the moment {s.name} posts</h2>
+        <p className="mb-4 mt-1 text-sm text-muted">One email per drop, that's it. Unsubscribe whenever you want.</p>
         <NewsletterForm sellerId={s.id} />
       </section>
 
       {past && past.length > 0 && (
         <section className="mt-10" aria-labelledby="past-drops">
-          <h2 id="past-drops" className="text-xl font-semibold text-muted">Recent drops</h2>
+          <h2 id="past-drops" className="text-xl font-semibold text-muted">What they've posted before</h2>
           <div className="mt-4 grid gap-3 opacity-80">{(past as Drop[]).map((d) => <DropCard key={d.id} drop={d} />)}</div>
         </section>
       )}

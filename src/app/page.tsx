@@ -75,12 +75,13 @@ export default async function Home() {
       <section className="mx-auto max-w-6xl px-4 pb-10 pt-10 sm:pt-14">
         <div className="max-w-3xl">
           <h1 className="font-display text-4xl font-semibold leading-tight text-grove sm:text-5xl">
-            Sell the batch. Skip the comment section.
+            You made a batch. Let's find it a home.
           </h1>
           <p className="mt-4 max-w-2xl text-lg">
-            Groveline is a reservation list for people who sell in batches around here. Bread, eggs, beef,
-            honey, soap, seedlings, plate sales. You post what you have. Folks claim it in fifteen seconds.
-            You hand it over at the market, your driveway, or the post office.
+            Groveline is where people who sell in batches post what they have, so neighbors can claim it
+            before it's gone. Bread, eggs, beef, honey, soap, seedlings, plate sales, whatever you make.
+            Reserving takes about fifteen seconds. Handing it over happens the old way, in person, at the
+            market, on your porch, or wherever you say to meet.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/browse" className="btn btn-primary text-lg">
@@ -91,12 +92,12 @@ export default async function Home() {
             </Link>
           </div>
           <p className="mt-4 text-sm text-muted">
-            Buying takes no account. Your first three drops as a seller are free.
+            No account needed to buy anything. Your first three drops as a seller are on the house.
           </p>
         </div>
         <Image
           src="/illustrations/hero.jpg"
-          alt="A market stand handing a bag of produce to a neighbor, rolling hills behind"
+          alt="A seller handing over a bag of produce to a neighbor, hills rolling behind them"
           width={2172}
           height={724}
           priority
@@ -127,9 +128,10 @@ export default async function Home() {
       {/* What sells here */}
       <section className="bg-cream-dark/50">
         <div className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="what">
-          <h2 id="what" className="text-3xl font-semibold">What sells here</h2>
+          <h2 id="what" className="text-3xl font-semibold">What people are selling</h2>
           <p className="mt-3 max-w-2xl text-lg">
-            Anything you make or grow in batches. Same tool whether it is a dozen loaves or a whole hog.
+            If you make it, grow it, or cook it in batches, there is a place for it here. A dozen loaves
+            works the same as a whole hog. Pick the one that sounds like you.
           </p>
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[
@@ -150,16 +152,18 @@ export default async function Home() {
             ))}
           </div>
           <p className="mt-6 text-muted">
-            Also: beef and pork shares, deer processing, hay and firewood, chicks, dog treats, lemonade. There are 130 categories. Yours is in there.
+            Beef and pork shares, deer processing, hay and firewood, chicks, dog treats, fresh lemonade.
+            There are more than 130 categories, and yours is almost certainly one of them.
           </p>
         </div>
       </section>
 
       {/* How selling works */}
       <section className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="how">
-        <h2 id="how" className="text-3xl font-semibold">How selling works</h2>
+        <h2 id="how" className="text-3xl font-semibold">How it works</h2>
         <p className="mt-2 max-w-2xl text-muted">
-          You already know how to sell. This just takes the bookkeeping off your plate.
+          You already know how to sell your own stuff. This just handles the part you never wanted to do,
+          which is keeping track of who ordered what.
         </p>
         <Reveal>
           <Image
@@ -173,9 +177,9 @@ export default async function Home() {
         </Reveal>
         <ol className="mt-8 grid gap-6 sm:grid-cols-3">
           {[
-            { t: "Post it", d: "What it is, how many, what it costs, where and when to get it. Add photos. A minute on your phone, standing in the kitchen." },
-            { t: "Share it", d: "You get one link. Put it in the Facebook groups you already post in. It turns into a card with your photo and price. The count updates by itself, so nobody has to ask what is left." },
-            { t: "Hand it out", d: "People reserve with a name and a phone number. Saturday morning, your list is your checklist. Tap each name as they pay. Somebody no-shows? Remove them and it goes back up for grabs." },
+            { t: "Post it", d: "What it is, how many you have, what it costs, and where or when to pick it up. Add a few photos. Takes about a minute, standing right in the kitchen." },
+            { t: "Share it", d: "You get one link. Drop it in the Facebook groups you already use. It shows up as a card with your photo and price, and the count updates on its own, so nobody has to ask what's left." },
+            { t: "Hand it out", d: "People reserve with a name and a phone number. Saturday morning, your list is your checklist. Check names off as they pay. If someone doesn't show, take them off and it opens back up for the next person." },
           ].map((step, i) => (
             <Reveal key={step.t} delay={i * 90}>
               <li className="tag-card h-full p-5">
@@ -201,14 +205,15 @@ export default async function Home() {
               sizes="(max-width: 1024px) 100vw, 560px"
             />
             <div>
-              <h2 id="home" className="text-3xl font-semibold">A booth is optional</h2>
+              <h2 id="home" className="text-3xl font-semibold">You don't need a booth for this</h2>
               <p className="mt-4 text-lg">
-                Half the best sellers around here have never set up at a market. They have a porch, a cooler,
-                and a Facebook group. Post your drop, put the cooler out, and the list takes care of the rest.
+                Some of the best sellers around here have never set foot in a market. They've got a porch,
+                a cooler, and a Facebook group, and that's plenty. Post your drop, set the cooler out front,
+                and let the list do the remembering for you.
               </p>
               <p className="mt-3 text-lg">
-                Want to reach past your county? Turn on shipping and buyers pay by card when they order. You
-                print the label, they get the box.
+                Want to reach past your own town? Turn on shipping and buyers can pay by card right when they
+                order. You print a label, they get a box.
               </p>
             </div>
           </div>
@@ -220,14 +225,15 @@ export default async function Home() {
         <div className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="list">
           <div className="grid items-center gap-10 lg:grid-cols-2">
             <div>
-              <h2 id="list" className="text-3xl font-semibold">Your regulars, on a list that builds itself</h2>
+              <h2 id="list" className="text-3xl font-semibold">Your regulars find you on their own</h2>
               <p className="mt-4 text-lg text-cream/90">
-                Every seller has a signup box on their page. Anybody can drop an email in. Folks with an
-                account can follow you too. When you post, all of them get an email. You did not have to send it.
+                Every shop has a signup box right on its page. Anyone can drop their email in, no account
+                needed, and people who do have an account can follow you too. Post a new drop and everyone
+                on that list hears about it automatically. You never have to remember to tell them.
               </p>
               <p className="mt-3 text-lg text-cream/90">
-                Fifty people hearing about your bread the second it is up beats hoping Facebook shows your post
-                to twelve of them.
+                Fifty people finding out about your bread the second it's ready beats hoping Facebook feels
+                like showing your post to twelve of them.
               </p>
             </div>
             <Reveal>
@@ -248,18 +254,18 @@ export default async function Home() {
       <section className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="shop">
         <div className="grid items-center gap-10 lg:grid-cols-2">
           <div>
-            <h2 id="shop" className="text-3xl font-semibold">If you are here to buy</h2>
+            <h2 id="shop" className="text-3xl font-semibold">Here to shop instead?</h2>
             <ul className="mt-4 space-y-2 text-lg">
-              <li>Tap a drop, pick how many, leave your name and number. That is a reservation.</li>
-              <li>No account. No app. Pay cash when you pick up, or by card if the seller takes it.</li>
-              <li>Plans change? Your reservation page has a cancel button, and the seller gets a heads up.</li>
-              <li>Make a free account if you want to follow sellers and see everything you have reserved in one place.</li>
+              <li>Tap a drop, pick how many you want, leave your name and number. That's the whole reservation.</li>
+              <li>No account, no app to download. Pay cash at pickup, or by card if the seller offers it.</li>
+              <li>Plans change? Your reservation page has a cancel button built right in, and the seller gets a heads up.</li>
+              <li>Want more? A free account lets you follow sellers and see everything you've reserved in one spot.</li>
             </ul>
-            <Link href="/browse" className="btn btn-primary mt-6">See what is for sale near you</Link>
+            <Link href="/browse" className="btn btn-primary mt-6">See what's for sale near you</Link>
           </div>
           <Image
             src="/illustrations/phone.jpg"
-            alt="A hand holding a phone showing a reservation"
+            alt="Someone holding up a phone with a reservation on the screen"
             width={1254}
             height={1254}
             className="mx-auto w-full max-w-sm rounded-2xl"
@@ -271,9 +277,10 @@ export default async function Home() {
       {/* Pricing */}
       <section className="bg-cream-dark/50">
         <div className="mx-auto max-w-6xl px-4 py-16 text-center" aria-labelledby="go">
-          <h2 id="go" className="text-3xl font-semibold">What it costs</h2>
+          <h2 id="go" className="text-3xl font-semibold">What it actually costs</h2>
           <p className="mx-auto mt-3 max-w-xl text-lg">
-            Your first three drops are free. After that it is $10 a month or $60 a year. We never take a cut of a sale, cash or card.
+            Your first three drops are free, no card required. After that, it's $10 a month or $60 a year,
+            flat. We never take a cut of what you sell, whether someone pays cash or card.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link href={viewer.isSeller ? "/dashboard/new" : viewer.loggedIn ? "/dashboard" : "/login?mode=register"} className="btn btn-primary text-lg">

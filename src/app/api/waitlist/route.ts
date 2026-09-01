@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     .from("waitlist_entries")
     .insert({ drop_id, phone });
   if (error) {
-    return NextResponse.json({ error: "Could not join" }, { status: 500 });
+    return NextResponse.json({ error: "Couldn't add you to the waitlist. Try again." }, { status: 500 });
   }
   return NextResponse.json({ ok: true });
 }

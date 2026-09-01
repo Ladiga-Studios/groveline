@@ -49,8 +49,8 @@ export async function POST(req: Request) {
   const delivery = body.delivery === "shipping" ? "shipping" : "pickup";
   const method = delivery === "shipping" || body.method === "card" ? "card" : "cash";
   const shipAddress = (body.shipAddress ?? "").trim().slice(0, 300);
-  if (!body.acceptedTerms) return NextResponse.json({ error: "Please agree to the terms." }, { status: 400 });
-  if (delivery === "shipping" && shipAddress.length < 10) return NextResponse.json({ error: "Enter a full shipping address." }, { status: 400 });
+  if (!body.acceptedTerms) return NextResponse.json({ error: "Give the terms a quick check first." }, { status: 400 });
+  if (delivery === "shipping" && shipAddress.length < 10) return NextResponse.json({ error: "That shipping address needs a bit more to it." }, { status: 400 });
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     req.headers.get("x-real-ip") ||
@@ -90,13 +90,13 @@ export async function POST(req: Request) {
   const ownerId = shop?.owner_id as string | undefined;
 
   if (method === "card" && !seller?.payouts_enabled) {
-    return NextResponse.json({ error: "This seller only takes cash." }, { status: 400 });
+    return NextResponse.json({ error: "This seller only takes cash for now." }, { status: 400 });
   }
   if (delivery === "shipping" && drop.fulfillment === "pickup") {
-    return NextResponse.json({ error: "This drop is pickup only." }, { status: 400 });
+    return NextResponse.json({ error: "This one is pickup only, no shipping." }, { status: 400 });
   }
   if (delivery === "pickup" && drop.fulfillment === "shipping") {
-    return NextResponse.json({ error: "This drop ships only." }, { status: 400 });
+    return NextResponse.json({ error: "This one ships only, no pickup option." }, { status: 400 });
   }
   const shippingCents = delivery === "shipping" ? drop.shipping_cents || 0 : 0;
 
@@ -113,8 +113,8 @@ export async function POST(req: Request) {
     p_terms: true,
   });
   if (error) {
-    if (error.message.includes("not_enough")) return NextResponse.json({ error: "Not enough left" }, { status: 409 });
-    return NextResponse.json({ error: "Could not reserve" }, { status: 500 });
+    if (error.message.includes("not_enough")) return NextResponse.json({ error: "Somebody just grabbed the last one" }, { status: 409 });
+    return NextResponse.json({ error: "That reservation didn't go through" }, { status: 500 });
   }
   const result = data as { position: number; claim_id: string; cancel_token: string };
 
@@ -134,7 +134,7 @@ export async function POST(req: Request) {
       .maybeSingle();
     if (!stripe || !billing?.stripe_account_id) {
       await admin.rpc("release_claim", { p_claim: result.claim_id });
-      return NextResponse.json({ error: "Card payments unavailable right now" }, { status: 503 });
+      return NextResponse.json({ error: "Card payments aren't working right now, try cash instead" }, { status: 503 });
     }
     try {
       const session = await stripe.checkout.sessions.create({
@@ -162,7 +162,7 @@ export async function POST(req: Request) {
       checkoutUrl = session.url;
     } catch {
       await admin.rpc("release_claim", { p_claim: result.claim_id });
-      return NextResponse.json({ error: "Could not start card payment" }, { status: 500 });
+      return NextResponse.json({ error: "Couldn't get the card payment started" }, { status: 500 });
     }
   }
 

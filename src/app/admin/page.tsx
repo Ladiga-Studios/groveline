@@ -37,9 +37,9 @@ export default async function AdminPage() {
         ))}
       </dl>
 
-      <h2 className="mt-8 text-xl font-semibold">Open reports</h2>
+      <h2 className="mt-8 text-xl font-semibold">Reports that need a look</h2>
       {!reports?.length ? (
-        <p className="tag-card mt-3 p-4 text-muted">Nothing reported.</p>
+        <p className="tag-card mt-3 p-4 text-muted">Nothing reported. Quiet day.</p>
       ) : (
         <div className="mt-3 grid gap-3">
           {reports.map((r) => {
@@ -58,7 +58,7 @@ export default async function AdminPage() {
         </div>
       )}
 
-      <h2 className="mt-10 text-xl font-semibold">Recent drops</h2>
+      <h2 className="mt-10 text-xl font-semibold">What's been posted lately</h2>
       <div className="mt-3 grid gap-2">
         {(drops ?? []).map((d) => {
           const s = Array.isArray(d.shops) ? d.shops[0] : d.shops;

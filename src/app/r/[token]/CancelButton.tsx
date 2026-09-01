@@ -16,23 +16,23 @@ export default function CancelButton({ token, hasCardHold }: { token: string; ha
     setBusy(false);
     setOpen(false);
     if (res.ok) {
-      toast("Cancelled. Thanks for letting the seller know.", "success");
+      toast("Cancelled. Appreciate you letting them know.", "success");
       router.refresh();
     } else {
-      toast("Could not cancel. It may be too close to pickup.", "error");
+      toast("Couldn't cancel that. It might be too close to pickup time.", "error");
     }
   }
 
   return (
     <>
-      <button className="btn btn-outline" onClick={() => setOpen(true)}>Cancel my reservation</button>
+      <button className="btn btn-outline" onClick={() => setOpen(true)}>Can't make it? Cancel</button>
       <Modal open={open} onClose={() => setOpen(false)} title="Cancel this reservation?">
         <p className="mb-4">
-          Your items go back up for someone else.{hasCardHold ? " The hold on your card is released, you will not be charged." : ""} The seller gets a heads up.
+          Your spot opens right back up for someone else.{hasCardHold ? " The hold on your card releases, so you won't be charged a thing." : ""} The seller gets a heads up too.
         </p>
         <div className="flex gap-3">
-          <button className="btn btn-primary grow" onClick={cancel} disabled={busy}>{busy ? "Cancelling" : "Yes, cancel it"}</button>
-          <button className="btn btn-outline" onClick={() => setOpen(false)}>Keep it</button>
+          <button className="btn btn-primary grow" onClick={cancel} disabled={busy}>{busy ? "One second" : "Yes, cancel it"}</button>
+          <button className="btn btn-outline" onClick={() => setOpen(false)}>Never mind</button>
         </div>
       </Modal>
     </>

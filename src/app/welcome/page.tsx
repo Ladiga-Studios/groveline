@@ -23,11 +23,11 @@ export default function WelcomePage() {
     e.preventDefault();
     setError("");
     if (name.trim().length < 2 || town.trim().length < 2) {
-      setError("Name and town are both needed.");
+      setError("Name and town both need something in them.");
       return;
     }
     if (!agreed) {
-      setError("Please agree to the terms and privacy policy.");
+      setError("Give the terms and privacy policy a quick check.");
       return;
     }
     setBusy(true);
@@ -53,7 +53,7 @@ export default function WelcomePage() {
     });
     setBusy(false);
     if (err) {
-      setError("Could not save. Try again.");
+      setError("That didn't save. Try again.");
       return;
     }
     if (isSeller) {
@@ -71,8 +71,8 @@ export default function WelcomePage() {
   return (
     <div className="pattern-bg">
     <div className="mx-auto max-w-md px-4 py-14">
-      <h1 className="text-3xl font-semibold">Almost there</h1>
-      <p className="mt-2 text-muted">A few basics and you are in.</p>
+      <h1 className="text-3xl font-semibold">Just a couple more things</h1>
+      <p className="mt-2 text-muted">A few basics and you're all set.</p>
       <form onSubmit={submit} className="tag-card mt-6 flex flex-col gap-4 p-6" noValidate>
         <div>
           <label htmlFor="w-name" className="field-label">
@@ -122,7 +122,7 @@ export default function WelcomePage() {
             onChange={(e) => setIsSeller(e.target.checked)}
             className="h-5 w-5 accent-[#1e4d2b]"
           />
-          <span className="font-medium">I want to sell on Groveline</span>
+          <span className="font-medium">I'd like to sell on Groveline too</span>
         </label>
         {isSeller && (
           <div>
@@ -148,7 +148,7 @@ export default function WelcomePage() {
         </label>
         {error && <p className="field-error">{error}</p>}
         <button className="btn btn-primary" disabled={busy}>
-          {busy ? "Saving" : "Finish"}
+          {busy ? "One second" : "All done"}
         </button>
       </form>
     </div>

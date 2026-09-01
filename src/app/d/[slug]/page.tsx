@@ -131,7 +131,7 @@ export default async function DropPage({ params }: { params: Promise<{ slug: str
           <div className="tag-card p-6">
             <p className="font-display text-xl font-semibold">This pickup time has passed.</p>
             <p className="mt-2 text-muted">
-              {seller ? `Follow ${seller.name} or join their email list to catch the next one.` : "Check the browse page for what is claimable now."}
+              {seller ? `Follow ${seller.name} or join their email list so you catch the next one.` : "Head over to browse to see what's still up for grabs."}
             </p>
             <Link href="/browse" className="btn btn-primary mt-4">See what is claimable now</Link>
           </div>
@@ -154,8 +154,8 @@ export default async function DropPage({ params }: { params: Promise<{ slug: str
 
       {seller && (
         <section className="tag-card mt-8 p-6">
-          <h2 className="text-lg font-semibold">Get an email when {seller.name} posts</h2>
-          <p className="mb-3 mt-1 text-sm text-muted">One email per drop. Unsubscribe any time.{seller.contact_phone ? ` Questions? Text ${seller.contact_phone}.` : ""}</p>
+          <h2 className="text-lg font-semibold">Want to know next time {seller.name} posts?</h2>
+          <p className="mb-3 mt-1 text-sm text-muted">One email per drop, nothing else, and you can unsubscribe whenever.{seller.contact_phone ? ` Got a question? Text ${seller.contact_phone}.` : ""}</p>
           <NewsletterForm sellerId={seller.id!} />
         </section>
       )}

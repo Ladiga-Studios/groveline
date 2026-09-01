@@ -5,10 +5,10 @@ export default function NotFound() {
     <div className="mx-auto max-w-xl px-4 py-24 text-center">
       <p className="font-display text-6xl font-semibold text-leaf">404</p>
       <h1 className="mt-3 text-2xl font-semibold">
-        This page is not here.
+        Can't find this one.
       </h1>
       <p className="mt-2 text-muted">
-        The drop may have ended, or the link may be off by a letter.
+        The drop might've ended, or the link could be off by a letter somewhere.
       </p>
       <div className="mt-6 flex justify-center gap-3">
         <Link href="/browse" className="btn btn-primary">

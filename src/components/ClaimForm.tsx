@@ -7,6 +7,7 @@ import { STATES } from "@/lib/states";
 import type { Drop } from "@/lib/types";
 import { money, pickupWindow } from "@/lib/format";
 import { useToast } from "./Toast";
+import Sprout from "./Sprout";
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
@@ -60,17 +61,17 @@ export default function ClaimForm({
 
   function validate(): boolean {
     const next: Errors = {};
-    if (name.trim().length < 2) next.name = "Enter your name.";
-    if (phone.replace(/\D/g, "").length < 10) next.phone = "Enter a 10 digit phone number.";
-    if (email && !/^\S+@\S+\.\S+$/.test(email)) next.email = "That email does not look right.";
-    if ((method === "card" || delivery === "shipping") && !email) next.email = "Email is needed for a card receipt.";
+    if (name.trim().length < 2) next.name = "Let us know your name.";
+    if (phone.replace(/\D/g, "").length < 10) next.phone = "That phone number looks a digit short.";
+    if (email && !/^\S+@\S+\.\S+$/.test(email)) next.email = "That email doesn't quite look right.";
+    if ((method === "card" || delivery === "shipping") && !email) next.email = "We need an email for your card receipt.";
     setErrors(next);
     if (delivery === "shipping" && (ship.line1.trim().length < 4 || ship.city.trim().length < 2 || ship.zip.trim().length < 5)) {
-      toast("Enter your full shipping address.", "error");
+      toast("Looks like the shipping address needs a bit more.", "error");
       return false;
     }
     if (!agreed) {
-      toast("Please agree to the terms to reserve.", "error");
+      toast("Give the terms a quick check to reserve.", "error");
       return false;
     }
     return Object.keys(next).length === 0;
@@ -106,33 +107,36 @@ export default function ClaimForm({
       }
       setBusy(false);
       setClaim({ position: data.position, token: data.token });
-      toast("Reserved. See you at pickup.", "success");
+      toast("You're in. See you soon.", "success");
       return;
     }
     setBusy(false);
-    if (res.status === 409) toast("Not enough left. Refresh to see what is available.", "error");
-    else if (res.status === 403) toast("Could not verify you're not a robot. Refresh and try again.", "error");
+    if (res.status === 409) toast("Somebody just beat you to the last one. Refresh to see what's left.", "error");
+    else if (res.status === 403) toast("Couldn't confirm you're human. Refresh and give it another go.", "error");
     else {
       const data = await res.json().catch(() => ({}));
-      toast(data.error || "Could not reserve. Try again.", "error");
+      toast(data.error || "That didn't go through. Try again in a moment.", "error");
     }
   }
 
   if (claim) {
     return (
       <div className="tag-card p-6" role="status">
-        <p className="font-display text-2xl font-semibold text-grove">You are number {claim.position}.</p>
-        <p className="mt-2">
-          {qty} {qty === 1 ? "item" : "items"} reserved under <span className="font-semibold">{name}</span>. Pay cash at pickup.
+        <div className="flex items-center gap-2">
+          <Sprout size={24} className="text-leaf" />
+          <p className="font-display text-2xl font-semibold text-grove">You're number {claim.position}.</p>
+        </div>
+        <p className="mt-3">
+          {qty} {qty === 1 ? "item" : "items"} reserved under <span className="font-semibold">{name}</span>. Pay cash when you pick up.
         </p>
         <p className="mt-2">
           Pickup is {pickupWindow(drop.pickup_start, drop.pickup_end)} at <span className="font-semibold">{drop.pickup_place}</span>.
         </p>
         <p className="mt-3 text-sm text-muted">
-          Give your name at the table and you are set.{email ? " We emailed you the details." : ""}
+          Just give your name at the table and you're all set.{email ? " We sent the details to your email too." : ""}
         </p>
         <Link href={`/r/${claim.token}`} className="btn btn-outline mt-4">
-          View or cancel my reservation
+          View or cancel this reservation
         </Link>
       </div>
     );
@@ -143,26 +147,26 @@ export default function ClaimForm({
   return (
     <form onSubmit={submit} className="tag-card flex flex-col gap-4 p-6" noValidate>
       <div>
-        <span className="field-label" id="qty-label">How many</span>
+        <span className="field-label" id="qty-label">How many do you want</span>
         <div className="inline-flex items-center gap-1 rounded-full border-2 border-cream-dark bg-white p-1" role="group" aria-labelledby="qty-label">
           <button type="button" className="grid h-11 w-11 place-items-center rounded-full text-xl font-semibold hover:bg-cream-dark" onClick={() => setQty(Math.max(1, qty - 1))} aria-label="Fewer" disabled={qty <= 1}>&minus;</button>
           <span className="w-10 text-center text-lg font-semibold" aria-live="polite">{qty}</span>
           <button type="button" className="grid h-11 w-11 place-items-center rounded-full text-xl font-semibold hover:bg-cream-dark" onClick={() => setQty(Math.min(maxQty, qty + 1))} aria-label="More" disabled={qty >= maxQty}>+</button>
         </div>
-        {drop.max_per_buyer && <p className="field-hint">Limit {drop.max_per_buyer} per person.</p>}
+        {drop.max_per_buyer && <p className="field-hint">Up to {drop.max_per_buyer} per person, so everybody gets a turn.</p>}
       </div>
 
       <div>
-        <label htmlFor="claim-name" className="field-label">Your name</label>
+        <label htmlFor="claim-name" className="field-label">What's your name</label>
         <input id="claim-name" className="field" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" aria-invalid={!!errors.name} />
         {errors.name && <p className="field-error">{errors.name}</p>}
       </div>
 
       <div>
-        <label htmlFor="claim-phone" className="field-label">Phone number</label>
+        <label htmlFor="claim-phone" className="field-label">Best number to reach you</label>
         <input id="claim-phone" type="tel" className="field" value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" inputMode="tel" aria-invalid={!!errors.phone} />
         {errors.phone && <p className="field-error">{errors.phone}</p>}
-        <p className="field-hint">So the seller can reach you if plans change.</p>
+        <p className="field-hint">Only used if plans change on either end.</p>
       </div>
 
       <div>
@@ -171,19 +175,19 @@ export default function ClaimForm({
         </label>
         <input id="claim-email" type="email" className="field" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" aria-invalid={!!errors.email} />
         {errors.email && <p className="field-error">{errors.email}</p>}
-        <p className="field-hint">We will email your pickup details and a reminder.</p>
+        <p className="field-hint">We'll send your pickup details, plus a reminder the day before.</p>
       </div>
 
       {canShip && !shipOnly && (
         <fieldset>
-          <legend className="field-label">How you will get it</legend>
+          <legend className="field-label">How do you want it</legend>
           <div className="grid gap-2 sm:grid-cols-2">
             {(["pickup", "shipping"] as const).map((d) => (
               <label key={d} className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-3 ${delivery === d ? "border-leaf bg-cream" : "border-cream-dark bg-white"}`}>
                 <input type="radio" name="delivery" value={d} checked={delivery === d} onChange={() => { setDelivery(d); if (d === "shipping") setMethod("card"); }} className="mt-1 accent-[#1e4d2b]" />
                 <span>
-                  <span className="block font-semibold">{d === "pickup" ? "Pick it up" : `Ship it to me${drop.shipping_cents ? `, +${money(drop.shipping_cents)}` : ""}`}</span>
-                  <span className="block text-sm text-muted">{d === "pickup" ? pickupWindow(drop.pickup_start, drop.pickup_end) : "Paid by card, charged when it ships."}</span>
+                  <span className="block font-semibold">{d === "pickup" ? "I'll pick it up" : `Ship it to me${drop.shipping_cents ? `, +${money(drop.shipping_cents)}` : ""}`}</span>
+                  <span className="block text-sm text-muted">{d === "pickup" ? pickupWindow(drop.pickup_start, drop.pickup_end) : "Paid by card, only charged once it's on its way."}</span>
                 </span>
               </label>
             ))}
@@ -193,7 +197,7 @@ export default function ClaimForm({
 
       {delivery === "shipping" && (
         <fieldset className="flex flex-col gap-3">
-          <legend className="field-label">Ship to</legend>
+          <legend className="field-label">Where should it go</legend>
           <input className="field" placeholder="Street address" value={ship.line1} onChange={(e) => setShip({ ...ship, line1: e.target.value })} autoComplete="street-address" aria-label="Street address" />
           <div className="grid grid-cols-6 gap-2">
             <input className="field col-span-3" placeholder="City" value={ship.city} onChange={(e) => setShip({ ...ship, city: e.target.value })} autoComplete="address-level2" aria-label="City" />
@@ -207,15 +211,15 @@ export default function ClaimForm({
 
       {acceptsCard && delivery === "pickup" && (
         <fieldset>
-          <legend className="field-label">How you will pay</legend>
+          <legend className="field-label">How do you want to pay</legend>
           <div className="grid gap-2 sm:grid-cols-2">
             {(["cash", "card"] as const).map((m) => (
               <label key={m} className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-3 ${method === m ? "border-leaf bg-cream" : "border-cream-dark bg-white"}`}>
                 <input type="radio" name="method" value={m} checked={method === m} onChange={() => setMethod(m)} className="mt-1 accent-[#1e4d2b]" />
                 <span>
-                  <span className="block font-semibold">{m === "cash" ? "Cash at pickup" : "Card now"}</span>
+                  <span className="block font-semibold">{m === "cash" ? "Cash when I pick up" : "Card, right now"}</span>
                   <span className="block text-sm text-muted">
-                    {m === "cash" ? "Bring exact change if you can." : "A hold goes on your card. You are only charged when you pick up."}
+                    {m === "cash" ? "Exact change is always appreciated." : "We place a hold now. You're only actually charged at pickup."}
                   </span>
                 </span>
               </label>
@@ -227,7 +231,7 @@ export default function ClaimForm({
       <label className="flex cursor-pointer items-start gap-3 text-sm">
         <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-[#1e4d2b]" />
         <span>
-          A reservation is my word that I am coming. I agree to the{" "}
+          Reserving means I'm actually planning to come. I agree to the{" "}
           <Link href="/terms" className="text-grove underline" target="_blank">terms</Link> and{" "}
           <Link href="/privacy" className="text-grove underline" target="_blank">privacy policy</Link>.
         </span>
@@ -247,7 +251,7 @@ export default function ClaimForm({
 
       <button className="btn btn-primary w-full text-lg" disabled={busy || (!!TURNSTILE_SITE_KEY && !turnstileToken)}>
         {busy
-          ? "Reserving"
+          ? "Hang on"
           : delivery === "shipping"
             ? `Reserve and hold ${money(drop.price_cents * qty + (drop.shipping_cents || 0))}`
             : method === "card"
@@ -255,7 +259,7 @@ export default function ClaimForm({
               : `Reserve ${qty} for ${money(drop.price_cents * qty)}`}
       </button>
       <p className="text-center text-sm text-muted">
-        {acceptsCard ? "No account needed. Cancel any time before pickup." : "Pay cash at pickup. No account needed."}
+        {acceptsCard ? "No account needed, and you can cancel any time before pickup." : "Pay with cash at pickup. No account needed."}
       </p>
     </form>
   );
@@ -271,7 +275,7 @@ function WaitlistForm({ dropId }: { dropId: string }) {
     e.preventDefault();
     setError("");
     if (phone.replace(/\D/g, "").length < 10) {
-      setError("Enter a 10 digit phone number.");
+      setError("That number looks a digit short.");
       return;
     }
     setBusy(true);
@@ -282,28 +286,28 @@ function WaitlistForm({ dropId }: { dropId: string }) {
     });
     setBusy(false);
     if (res.ok) setDone(true);
-    else setError("Could not join the waitlist. Try again.");
+    else setError("That didn't go through. Give it another try.");
   }
 
   if (done) {
     return (
       <div className="tag-card p-6" role="status">
-        <p className="font-semibold text-grove">You are on the waitlist.</p>
-        <p className="mt-1 text-sm">If more becomes available, the seller can let you know.</p>
+        <p className="font-semibold text-grove">You're on the list.</p>
+        <p className="mt-1 text-sm">If more turns up, the seller will reach out and let you know.</p>
       </div>
     );
   }
   return (
     <form onSubmit={submit} className="tag-card flex flex-col gap-3 p-6" noValidate>
       <Image src="/illustrations/basket.jpg" alt="" width={1254} height={1254} className="mx-auto h-24 w-auto" />
-      <p className="text-center font-display text-xl font-semibold">This drop is sold out.</p>
-      <p className="text-sm text-muted">Leave your number and the seller can reach you if more opens up.</p>
+      <p className="text-center font-display text-xl font-semibold">This one's sold out.</p>
+      <p className="text-sm text-muted">Leave your number and the seller can reach out if more comes available.</p>
       <div>
         <label htmlFor="wl-phone" className="field-label">Phone number</label>
         <input id="wl-phone" type="tel" className="field" value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" autoComplete="tel" aria-invalid={!!error} />
         {error && <p className="field-error">{error}</p>}
       </div>
-      <button className="btn btn-grove" disabled={busy}>{busy ? "Joining" : "Join the waitlist"}</button>
+      <button className="btn btn-grove" disabled={busy}>{busy ? "One second" : "Join the waitlist"}</button>
     </form>
   );
 }

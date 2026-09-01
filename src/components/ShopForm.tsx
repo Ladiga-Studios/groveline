@@ -40,8 +40,8 @@ export default function ShopForm({
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    if (name.trim().length < 2) return setError("Give the shop a name.");
-    if (town.trim().length < 2) return setError("Enter a town.");
+    if (name.trim().length < 2) return setError("The shop needs a name to go by.");
+    if (town.trim().length < 2) return setError("Which town are you in?");
     setBusy(true);
     const body = new FormData();
     body.set("name", name.trim());
@@ -55,7 +55,7 @@ export default function ShopForm({
     const res = await fetch(shop ? `/api/shops/${shop.id}` : "/api/shops", { method: shop ? "PUT" : "POST", body });
     setBusy(false);
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) return setError(data.error || "Could not save.");
+    if (!res.ok) return setError(data.error || "That didn't save. Give it another try.");
     toast(shop ? "Saved." : "Shop created.", "success");
     if (onDone) onDone(shop?.id ?? data.id);
     else {
@@ -69,8 +69,8 @@ export default function ShopForm({
       <div className="flex items-center gap-4">
         <Avatar url={preview} name={name || "Shop"} size={64} />
         <div>
-          <p className="font-semibold">Shop photo</p>
-          <p className="text-sm text-muted">Your logo, your booth, or your face. Shows on your page and every drop.</p>
+          <p className="font-semibold">A face for the shop</p>
+          <p className="text-sm text-muted">Your logo, your booth, or an actual photo of you. It shows up on your page and every drop you post.</p>
           <label className="btn btn-outline mt-2 !min-h-10 cursor-pointer">
             {preview ? "Change photo" : "Add a photo"}
             <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && pick(e.target.files[0])} />
@@ -78,7 +78,7 @@ export default function ShopForm({
         </div>
       </div>
       <div>
-        <label htmlFor="sh-name" className="field-label">Shop name</label>
+        <label htmlFor="sh-name" className="field-label">What do you go by</label>
         <input id="sh-name" className="field" value={name} onChange={(e) => setName(e.target.value)} placeholder="Miller Farm, or Sarah's Sourdough" />
       </div>
       <div>
@@ -101,7 +101,7 @@ export default function ShopForm({
         </div>
       </div>
       <div>
-        <label htmlFor="sh-bio" className="field-label">About <span className="font-normal text-muted">(optional)</span></label>
+        <label htmlFor="sh-bio" className="field-label">Tell people a little about it <span className="font-normal text-muted">(optional)</span></label>
         <textarea id="sh-bio" className="field min-h-24" value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Small farm outside town. Bread on Saturdays, eggs most weeks." />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -115,7 +115,7 @@ export default function ShopForm({
         </div>
       </div>
       {error && <p className="field-error" role="alert">{error}</p>}
-      <button className="btn btn-primary" disabled={busy}>{busy ? "Saving" : shop ? "Save shop" : "Create shop"}</button>
+      <button className="btn btn-primary" disabled={busy}>{busy ? "Saving" : shop ? "Save changes" : "Create my shop"}</button>
     </form>
   );
 }

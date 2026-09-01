@@ -53,7 +53,7 @@ export default async function DropAdminPage({
     <div className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="text-3xl font-semibold">{drop.title}</h1>
       <p className="mt-1 text-muted">
-        {money(drop.price_cents)} each. {whenLabel(drop)}{drop.pickup_place ? ` at ${drop.pickup_place}` : ""}.
+        {money(drop.price_cents)} each, {whenLabel(drop)}{drop.pickup_place ? ` at ${drop.pickup_place}` : ""}.
       </p>
       <p className="mt-3 font-display text-2xl font-semibold text-grove">
         {drop.claimed} of {drop.quantity} claimed

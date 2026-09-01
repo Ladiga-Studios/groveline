@@ -28,12 +28,12 @@ export default function PhotoPicker({
     if (incoming.length === 0) return;
     const room = MAX_PHOTOS - total;
     if (room <= 0) {
-      toast(`You can add up to ${MAX_PHOTOS} photos.`, "error");
+      toast(`${MAX_PHOTOS} photos is the max for now.`, "error");
       return;
     }
     const toAdd = incoming.slice(0, room);
     if (incoming.length > toAdd.length) {
-      toast(`Only added ${toAdd.length}. You can add up to ${MAX_PHOTOS} photos.`, "info");
+      toast(`Added ${toAdd.length}. That brings you to the ${MAX_PHOTOS} photo limit.`, "info");
     }
     setProcessing(true);
     const resized = await Promise.all(toAdd.map((f) => resizeImageFile(f)));
@@ -74,10 +74,10 @@ export default function PhotoPicker({
           <rect x="5" y="23" width="22" height="4" rx="2" fill="currentColor" opacity="0.25" />
         </svg>
         <p className="mt-2 font-semibold">
-          {processing ? "Preparing photos" : "Drag photos here, or tap to choose"}
+          {processing ? "Getting your photos ready" : "Drag some in, or tap to choose from your phone"}
         </p>
         <p className="mt-1 text-sm text-muted">
-          Up to {MAX_PHOTOS} photos. {total} of {MAX_PHOTOS} added.
+          Up to {MAX_PHOTOS} photos. You've got {total} in so far.
         </p>
         <input
           ref={inputRef}

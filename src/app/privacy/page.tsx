@@ -10,7 +10,7 @@ export default function PrivacyPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">
       <h1 className="text-3xl font-semibold">Privacy</h1>
-      <p className="mt-2 text-muted">Plain language, because that is how we do everything.</p>
+      <p className="mt-2 text-muted">Written the same plain way as everything else here.</p>
 
       <div className="mt-8 space-y-6">
         <section>

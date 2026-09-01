@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Browse drops",
   description:
-    "Everything for sale near you across 130 categories. Baked goods, produce, meat shares, plants, handmade goods, and plate sales, claimable in seconds.",
+    "See what your neighbors are selling right now. Baked goods, produce, meat shares, plants, handmade goods, plate sales, and more, all reservable in seconds.",
   alternates: { canonical: "/browse" },
 };
 
@@ -146,9 +146,9 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <h1 className="text-3xl font-semibold">For sale near you</h1>
+      <h1 className="text-3xl font-semibold">What's around right now</h1>
       <p className="mt-2 text-muted">
-        {total} {total === 1 ? "drop" : "drops"} claimable right now. Reserve in seconds, pick it up or have it shipped.
+        {total} {total === 1 ? "drop" : "drops"} up for grabs this minute. Reserve in a few taps, then pick it up or have it shipped.
       </p>
 
       <form action="/browse" method="get" className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -156,7 +156,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
         {group && <input type="hidden" name="group" value={group} />}
         <div className="grow">
           <label htmlFor="browse-q" className="sr-only">Search drops</label>
-          <input id="browse-q" name="q" className="field" placeholder="Search sourdough, tomatoes, soap..." defaultValue={q ?? ""} />
+          <input id="browse-q" name="q" className="field" placeholder="Try sourdough, tomatoes, soap..." defaultValue={q ?? ""} />
         </div>
         <div>
           <label htmlFor="browse-state" className="sr-only">State</label>
@@ -204,8 +204,8 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
               <p className="font-display text-xl font-semibold">Nothing here right now.</p>
               <p className="mt-2 text-muted">
                 {filtering
-                  ? "Nothing matches those filters. Try widening your search, or check back soon."
-                  : "Sellers post through the week, most pickups happen on weekends. Check back soon, or be the first to post."}
+                  ? "Nothing matches those filters yet. Try loosening one up, or check back a little later."
+                  : "Sellers tend to post through the week, with most pickups landing on the weekend. Check back soon, or go ahead and be the first."}
               </p>
               <div className="mt-4 flex justify-center gap-3">
                 {filtering && <Link href="/browse" className="btn btn-outline">Clear filters</Link>}

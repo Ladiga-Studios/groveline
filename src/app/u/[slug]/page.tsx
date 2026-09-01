@@ -46,17 +46,17 @@ export default async function UserPage({ params }: { params: Promise<{ slug: str
         <Avatar url={p.avatar_url} name={p.name} size={88} />
         <div className="grow">
           <h1 className="text-3xl font-semibold">{p.name}</h1>
-          <p className="mt-1 text-muted">{p.town}, {stateName(p.state)}. On Groveline since {since}.</p>
+          <p className="mt-1 text-muted">{p.town}, {stateName(p.state)}. Been here since {since}.</p>
         </div>
         {isMe && <Link href="/dashboard/settings" className="btn btn-outline">Edit profile</Link>}
       </div>
 
       <section className="mt-8">
-        <h2 className="text-xl font-semibold">{isMe ? "My shops" : "Shops"}</h2>
+        <h2 className="text-xl font-semibold">{isMe ? "My shops" : `${p.name}'s shops`}</h2>
         {shops && shops.length > 0 ? (
           <div className="mt-3 grid gap-3 sm:grid-cols-2">{shops.map((s) => <ShopRow key={s.id} s={s} />)}</div>
         ) : (
-          <p className="tag-card mt-3 p-4 text-muted">{isMe ? "You do not have a shop yet." : "No shops yet."}{isMe && <> <Link href="/dashboard" className="text-grove underline">Start one</Link>.</>}</p>
+          <p className="tag-card mt-3 p-4 text-muted">{isMe ? "No shop yet." : "Nothing here yet."}{isMe && <> <Link href="/dashboard" className="text-grove underline">Start one</Link>, it only takes a minute.</>}</p>
         )}
       </section>
 
@@ -65,7 +65,7 @@ export default async function UserPage({ params }: { params: Promise<{ slug: str
         {following.length > 0 ? (
           <div className="mt-3 grid gap-3 sm:grid-cols-2">{following.map((s) => <ShopRow key={s.id} s={s} />)}</div>
         ) : (
-          <p className="tag-card mt-3 p-4 text-muted">Not following anyone yet.</p>
+          <p className="tag-card mt-3 p-4 text-muted">{isMe ? "You haven't followed anyone yet." : `${p.name} isn't following anyone yet.`}</p>
         )}
       </section>
     </div>

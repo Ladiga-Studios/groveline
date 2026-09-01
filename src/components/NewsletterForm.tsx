@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useToast } from "./Toast";
+import Sprout from "./Sprout";
 
 export default function NewsletterForm({ sellerId }: { sellerId: string }) {
   const [email, setEmail] = useState("");
@@ -13,7 +14,7 @@ export default function NewsletterForm({ sellerId }: { sellerId: string }) {
     e.preventDefault();
     setError("");
     if (!/^\S+@\S+\.\S+$/.test(email)) {
-      setError("Enter a valid email address.");
+      setError("That email doesn't quite look right.");
       return;
     }
     setBusy(true);
@@ -25,16 +26,17 @@ export default function NewsletterForm({ sellerId }: { sellerId: string }) {
     setBusy(false);
     if (res.ok) {
       setDone(true);
-      toast("You are on the list.", "success");
+      toast("You're in.", "success");
     } else {
-      setError("Something went wrong. Try again.");
+      setError("That didn't go through. Mind trying again?");
     }
   }
 
   if (done) {
     return (
-      <p className="font-medium text-grove">
-        You are on the list. You will get an email when they post a new drop.
+      <p className="flex items-center gap-2 font-medium text-grove">
+        <Sprout size={20} className="text-leaf" />
+        You&apos;re on the list. We&apos;ll email you the moment something new goes up.
       </p>
     );
   }
@@ -56,7 +58,7 @@ export default function NewsletterForm({ sellerId }: { sellerId: string }) {
         {error && <p className="field-error">{error}</p>}
       </div>
       <button className="btn btn-primary" disabled={busy}>
-        {busy ? "Joining" : "Get new drop emails"}
+        {busy ? "One second" : "Get new drop emails"}
       </button>
     </form>
   );

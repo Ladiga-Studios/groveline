@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     details: (body.details ?? "").slice(0, 1000) || null,
     reporter_email: body.email?.slice(0, 200) || null,
   });
-  if (error) return NextResponse.json({ error: "Could not report" }, { status: 500 });
+  if (error) return NextResponse.json({ error: "That report didn't send. Try again." }, { status: 500 });
 
   if (process.env.ADMIN_EMAIL) {
     const { data: drop } = await admin.from("drops").select("title, slug").eq("id", body.drop_id).maybeSingle();

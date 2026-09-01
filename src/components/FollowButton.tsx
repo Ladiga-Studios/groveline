@@ -42,15 +42,15 @@ export default function FollowButton({
         .eq("buyer_id", user.id)
         .eq("seller_id", sellerId);
       setFollowing(false);
-      toast("Unfollowed.");
+      toast("Unfollowed. No hard feelings.");
     } else {
       const { error } = await supabase
         .from("follows")
         .insert({ buyer_id: user.id, seller_id: sellerId });
-      if (error) toast("Could not follow. Try again.", "error");
+      if (error) toast("That didn't work. Try again in a moment.", "error");
       else {
         setFollowing(true);
-        toast("Following. Their drops will show in your feed.", "success");
+        toast("Following. You'll hear about what they post next.", "success");
       }
     }
     setBusy(false);
@@ -72,8 +72,9 @@ export default function FollowButton({
         title="Log in to follow sellers"
       >
         <p className="mb-4">
-          A free account lets you follow sellers and see their new drops in one
-          place. You never need an account just to reserve something.
+          A free account lets you follow sellers and see everything they post
+          in one place. You never need one just to reserve something, this is
+          only if you want to keep up.
         </p>
         <div className="flex gap-3">
           <button

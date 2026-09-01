@@ -26,8 +26,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   const requested = cleanSlug(String(form.get("slug") ?? ""));
   const photo = form.get("avatar") as File | null;
 
-  if (name.length < 2) return NextResponse.json({ error: "Give the shop a name." }, { status: 400 });
-  if (town.length < 2) return NextResponse.json({ error: "Enter a town." }, { status: 400 });
+  if (name.length < 2) return NextResponse.json({ error: "The shop needs a name." }, { status: 400 });
+  if (town.length < 2) return NextResponse.json({ error: "Which town is this in?" }, { status: 400 });
 
   const textCheck = await moderateDropSubmission({ title: name, description: bio ?? "", images: [] });
   if (!textCheck.ok) return NextResponse.json({ error: textCheck.message }, { status: 422 });
@@ -35,20 +35,20 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   const update: Record<string, unknown> = { name, town, state, bio, contact_phone: contactPhone, social_url: socialUrl };
   if (requested && requested !== existing.slug) {
     const { data: taken } = await supabase.from("shops").select("id").eq("slug", requested).neq("id", id).maybeSingle();
-    if (taken) return NextResponse.json({ error: "That link is taken. Try another." }, { status: 400 });
+    if (taken) return NextResponse.json({ error: "That link's already spoken for. Try another." }, { status: 400 });
     update.slug = requested;
   }
   if (photo && photo.size > 0) {
     const base64 = Buffer.from(await photo.arrayBuffer()).toString("base64");
     const check = await moderateDropSubmission({ title: "shop photo", description: "", images: [{ base64, mediaType: photo.type || "image/jpeg" }] });
-    if (!check.ok) return NextResponse.json({ error: "That photo doesn't meet our guidelines." }, { status: 422 });
+    if (!check.ok) return NextResponse.json({ error: "That photo doesn't meet our guidelines. Try a different one." }, { status: 422 });
     const path = `${user.id}/shop-${Date.now()}.jpg`;
     const { error: upErr } = await supabase.storage.from("drop-photos").upload(path, photo, { contentType: "image/jpeg", cacheControl: "31536000" });
-    if (upErr) return NextResponse.json({ error: "Photo upload failed." }, { status: 500 });
+    if (upErr) return NextResponse.json({ error: "That photo didn't upload. Try again." }, { status: 500 });
     update.avatar_url = supabase.storage.from("drop-photos").getPublicUrl(path).data.publicUrl;
   }
 
   const { error } = await supabase.from("shops").update(update).eq("id", id);
-  if (error) return NextResponse.json({ error: "Could not save." }, { status: 500 });
+  if (error) return NextResponse.json({ error: "That didn't save. Try again." }, { status: 500 });
   return NextResponse.json({ ok: true, slug: (update.slug as string) ?? existing.slug });
 }
