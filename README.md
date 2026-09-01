@@ -75,6 +75,18 @@ Connected accounts are Standard: the seller pays Stripe fees, Stripe carries unr
 
 How it works: sellers set up payouts from Settings and money goes straight to their bank. When a buyer pays by card, a hold is placed at reservation and only captured when the seller marks the claim picked up. Removing a claim or the buyer cancelling releases the hold. Leave Stripe blank and everything runs cash-only with no subscription gate.
 
+### Safeguards around money
+
+- Pickup within 6 days: card is held at reservation, captured when the seller marks picked up or shipped. Further out: charged at reservation (holds expire at 7 days), refunded automatically on cancellation before pickup.
+- Buyer cancels: hold released or charge refunded automatically.
+- Seller removes a claim: same, and the buyer is emailed.
+- Seller cancels a whole drop (`/api/drops/[id]/cancel`, requires a reason): every live reservation released, every payment undone, every buyer emailed the reason. Already-picked-up orders stand.
+- Seller edits pickup time or place with reservations open: every buyer emailed the new details with their cancel link.
+- Seller marks shipped: optional tracking number, emailed to the buyer.
+- Seller refund button on any captured payment.
+- Daily job releases any hold still hanging a day after pickup passed and tells both sides.
+- Pickup sheet records the time each order was marked handed over.
+
 ### 7. Scheduled jobs
 
 `vercel.json` schedules two routes. `/api/cron/hourly` sends each seller one summary email of new reservations (unless they chose one email per reservation in Settings). `/api/cron/daily` emails pickup reminders to buyers the day before, and releases card reservations that never finished checkout. Set `CRON_SECRET` in Vercel to lock both routes.

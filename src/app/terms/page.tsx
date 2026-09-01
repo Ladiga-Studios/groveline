@@ -64,6 +64,23 @@ export default function TermsPage() {
         </section>
 
         <section>
+          <h2 className="text-xl font-semibold">Cancellations and refunds</h2>
+          <p className="mt-2">Here is exactly what happens, so nobody has to wonder:</p>
+          <ul className="mt-2 list-disc space-y-1 pl-5">
+            <li><span className="font-semibold">A buyer cancels before pickup.</span> Their spot opens up. Any card hold is released; any card charge is refunded in full, automatically. After pickup, there is nothing to cancel.</li>
+            <li><span className="font-semibold">A seller cancels a drop.</span> Every reservation is released, every card hold released or charge refunded automatically, and every buyer is emailed the seller&apos;s reason. Orders already handed over stand.</li>
+            <li><span className="font-semibold">A seller changes the time or place.</span> Every buyer is emailed the new details with a cancel link, and can back out with no charge.</li>
+            <li><span className="font-semibold">Card holds.</span> If pickup is within a week, the card is held and only charged at handoff. If pickup is further out, the card is charged when you reserve and refunded automatically if either side cancels before pickup. Buyers are told which applies before they pay.</li>
+            <li><span className="font-semibold">Nobody marks it picked up.</span> A day after the pickup window passes, any unresolved card hold is released and both sides are told. Sellers who handed goods over and forgot to mark it settle with the buyer directly.</li>
+            <li><span className="font-semibold">Refunds after pickup.</span> Those are the seller&apos;s call. Sellers have a refund button for any card payment. Groveline does not decide who was right.</li>
+            <li><span className="font-semibold">Disputes and chargebacks.</span> Every card payment is on the seller&apos;s own Stripe account. A chargeback goes to the seller, and Stripe, not Groveline, handles it. The pickup sheet records when each order was marked handed over, and shipped orders carry a tracking number, so sellers have a record.</li>
+          </ul>
+          <p className="mt-2">
+            Groveline automates these steps so that neither side has to chase the other. Groveline does not take sides, does not hold funds, and does not arbitrate. If something goes wrong beyond what is listed here, it is between the buyer and the seller.
+          </p>
+        </section>
+
+        <section>
           <h2 className="text-xl font-semibold">Fees</h2>
           <p className="mt-2">
             A seller&apos;s first three drops are free. After that, selling is a subscription of $10 a month or

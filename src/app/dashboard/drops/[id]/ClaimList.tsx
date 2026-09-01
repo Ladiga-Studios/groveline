@@ -98,16 +98,27 @@ export default function ClaimList({
   const [claims, setClaims] = useState(initialClaims);
   const [status, setStatus] = useState<"active" | "closed" | "removed">(dropStatus);
   const [confirmClose, setConfirmClose] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [shipping, setShipping] = useState<Claim | null>(null);
+  const [tracking, setTracking] = useState("");
+  const [refunding, setRefunding] = useState<Claim | null>(null);
   const [removing, setRemoving] = useState<Claim | null>(null);
+  const [busy, setBusy] = useState(false);
   const toast = useToast();
 
-  async function togglePickedUp(claim: Claim) {
+  async function togglePickedUp(claim: Claim, trk?: string) {
     const next = !claim.picked_up;
+    if (next && claim.delivery === "shipping" && trk === undefined) {
+      setTracking("");
+      setShipping(claim);
+      return;
+    }
     setClaims((cs) => cs.map((c) => (c.id === claim.id ? { ...c, picked_up: next } : c)));
     const res = await fetch(`/api/claims/${claim.id}/pickup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ picked_up: next }),
+      body: JSON.stringify({ picked_up: next, ...(trk !== undefined ? { tracking: trk } : {}) }),
     });
     if (!res.ok) {
       setClaims((cs) => cs.map((c) => (c.id === claim.id ? { ...c, picked_up: !next } : c)));
@@ -116,10 +127,44 @@ export default function ClaimList({
       return;
     }
     const data = await res.json();
+    if (trk !== undefined) setClaims((cs) => cs.map((c) => (c.id === claim.id ? { ...c, tracking: trk || null } : c)));
     if (data.payment_status === "captured") {
       setClaims((cs) => cs.map((c) => (c.id === claim.id ? { ...c, payment_status: "captured", paid: true } : c)));
       toast(claim.delivery === "shipping" ? "Shipped, and the card just went through." : "Picked up, and the card just went through.", "success");
     }
+  }
+
+  async function cancelDrop() {
+    setBusy(true);
+    const res = await fetch(`/api/drops/${dropId}/cancel`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason: cancelReason }),
+    });
+    setBusy(false);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      toast(data.error || "Couldn't cancel. Try again.", "error");
+      return;
+    }
+    setCancelOpen(false);
+    setStatus("closed");
+    setClaims((cs) => cs.map((c) => (c.picked_up ? c : { ...c, cancelled_at: new Date().toISOString() })).filter((c) => !c.cancelled_at));
+    toast(`Cancelled. ${data.notified} ${data.notified === 1 ? "buyer" : "buyers"} emailed${data.refunded ? `, ${data.refunded} refunded` : ""}${data.released ? `, ${data.released} ${data.released === 1 ? "hold" : "holds"} released` : ""}.`, "success");
+  }
+
+  async function refund(claim: Claim) {
+    setBusy(true);
+    const res = await fetch(`/api/claims/${claim.id}/refund`, { method: "POST" });
+    setBusy(false);
+    setRefunding(null);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      toast(data.error || "Couldn't refund.", "error");
+      return;
+    }
+    setClaims((cs) => cs.map((c) => (c.id === claim.id ? { ...c, payment_status: "refunded" } : c)));
+    toast("Refunded. They'll see it in a few days.", "success");
   }
 
   async function removeClaim(claim: Claim) {
@@ -189,10 +234,13 @@ export default function ClaimList({
                   {c.method === "cash"
                     ? "Cash at pickup"
                     : c.payment_status === "captured"
-                      ? "Paid by card"
+                      ? c.capture_mode === "automatic" && !c.picked_up ? "Paid by card, refundable until pickup" : "Paid by card"
                       : c.payment_status === "authorized"
                         ? "Card on hold, charges at pickup"
-                        : "Card not completed"}
+                        : c.payment_status === "refunded"
+                          ? "Refunded"
+                          : "Card not completed"}
+                  {c.tracking ? ` · Tracking ${c.tracking}` : ""}
                 </p>
               </div>
               <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end sm:gap-1">
@@ -203,14 +251,18 @@ export default function ClaimList({
                 >
                   {c.delivery === "shipping" ? (c.picked_up ? "Shipped" : "Mark shipped") : c.picked_up ? "Picked up" : "Mark it picked up"}
                 </button>
-                {!c.picked_up && (
-                  <button
-                    onClick={() => setRemoving(c)}
-                    className="px-2 py-1 text-xs text-muted underline"
-                  >
-                    Take them off
-                  </button>
-                )}
+                <div className="flex gap-3">
+                  {!c.picked_up && (
+                    <button onClick={() => setRemoving(c)} className="px-2 py-1 text-xs text-muted underline">
+                      Take them off
+                    </button>
+                  )}
+                  {c.payment_status === "captured" && (
+                    <button onClick={() => setRefunding(c)} className="px-2 py-1 text-xs text-muted underline">
+                      Refund
+                    </button>
+                  )}
+                </div>
               </div>
             </li>
           ))}

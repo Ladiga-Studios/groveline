@@ -3,6 +3,7 @@ import { supabaseAdmin, supabaseServer } from "@/lib/supabase/server";
 import { getStripe, siteUrl } from "@/lib/stripe";
 import { sendEmail } from "@/lib/email";
 import { pickupWindow, money } from "@/lib/format";
+import { captureModeFor } from "@/lib/payments";
 
 async function verifyTurnstile(token: string, ip: string | null) {
   if (!process.env.TURNSTILE_SECRET_KEY) return true;
@@ -136,6 +137,10 @@ export async function POST(req: Request) {
       await admin.rpc("release_claim", { p_claim: result.claim_id });
       return NextResponse.json({ error: "Card payments aren't working right now, try cash instead" }, { status: 503 });
     }
+    // Hold the card if pickup is within a week, charge it now if further out
+    // (holds expire). Either way it's refundable until the handoff.
+    const captureMode = captureModeFor(drop.pickup_end);
+    await admin.from("claims").update({ capture_mode: captureMode }).eq("id", result.claim_id);
     try {
       // Direct charge: the checkout is created ON the seller's connected
       // account, so the charge, the statement descriptor, the Stripe fee,
@@ -153,8 +158,8 @@ export async function POST(req: Request) {
             : []),
         ],
         payment_intent_data: {
-          capture_method: "manual",
-          metadata: { claim_id: result.claim_id },
+          capture_method: captureMode,
+          metadata: { claim_id: result.claim_id, capture_mode: captureMode },
         },
         metadata: { claim_id: result.claim_id },
         customer_email: email || undefined,
@@ -179,7 +184,7 @@ export async function POST(req: Request) {
     sendEmail(
       email,
       `Reserved: ${drop.title}`,
-      `You are number ${result.position} for ${drop.title}.\n\nQuantity: ${quantity}\n${when}\n${method === "card" ? `Payment: card on hold, charged when ${delivery === "shipping" ? "it ships" : "you pick up"}.\n` : "Payment: cash at pickup.\n"}\nManage or cancel your reservation: ${reservationUrl}\n\nDrop details: ${site}/d/${drop.slug}`
+      `You are number ${result.position} for ${drop.title}.\n\nQuantity: ${quantity}\n${when}\n${method === "card" ? (captureModeFor(drop.pickup_end) === "manual" ? `Payment: card on hold, charged when ${delivery === "shipping" ? "it ships" : "you pick up"}.\n` : "Payment: card charged now. Refunded automatically if you or the seller cancel before pickup.\n") : "Payment: cash at pickup.\n"}\nManage or cancel your reservation: ${reservationUrl}\n\nDrop details: ${site}/d/${drop.slug}`
     );
   }
 

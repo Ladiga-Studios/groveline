@@ -7,6 +7,7 @@ import Link from "next/link";
 import { STATES } from "@/lib/states";
 import type { Drop } from "@/lib/types";
 import { money, pickupWindow, formatPhone } from "@/lib/format";
+import { captureModeFor } from "@/lib/payments";
 import { useToast } from "./Toast";
 import Sprout from "./Sprout";
 
@@ -34,6 +35,7 @@ export default function ClaimForm({
   const left = drop.quantity - drop.claimed;
   const soldOut = left <= 0 || drop.status !== "active";
   const maxQty = Math.min(left, drop.max_per_buyer ?? left);
+  const chargeNow = captureModeFor(drop.pickup_end) === "automatic";
 
   const [qty, setQty] = useState(1);
   const [name, setName] = useState(prefill?.name ?? "");
@@ -203,7 +205,7 @@ export default function ClaimForm({
                 <input type="radio" name="delivery" value={d} checked={delivery === d} onChange={() => { setDelivery(d); if (d === "shipping") setMethod("card"); }} className="mt-1 accent-[#1e4d2b]" />
                 <span>
                   <span className="block font-semibold">{d === "pickup" ? "I'll pick it up" : `Ship it to me${drop.shipping_cents ? `, +${money(drop.shipping_cents)}` : ""}`}</span>
-                  <span className="block text-sm text-muted">{d === "pickup" ? pickupWindow(drop.pickup_start, drop.pickup_end) : "Paid by card, only charged once it's on its way."}</span>
+                  <span className="block text-sm text-muted">{d === "pickup" ? pickupWindow(drop.pickup_start, drop.pickup_end) : chargeNow ? "Paid by card now, refunded if the seller can't ship." : "Paid by card, only charged once it's on its way."}</span>
                 </span>
               </label>
             ))}
@@ -235,7 +237,11 @@ export default function ClaimForm({
                 <span>
                   <span className="block font-semibold">{m === "cash" ? "Cash when I pick up" : "Card, right now"}</span>
                   <span className="block text-sm text-muted">
-                    {m === "cash" ? "Exact change is always appreciated." : "We place a hold now. You're only actually charged at pickup."}
+                    {m === "cash"
+                      ? "Exact change is always appreciated."
+                      : chargeNow
+                        ? "Charged now since pickup is over a week out. Refunded in full if you or the seller cancel before then."
+                        : "We place a hold now. You're only actually charged at pickup."}
                   </span>
                 </span>
               </label>

@@ -68,8 +68,16 @@ export default async function ReservationPage({
                 ? "card payment didn't finish"
                 : claim.payment_status === "cancelled"
                   ? "card hold released, you're good"
-                  : "cash at pickup"}
+                  : claim.payment_status === "refunded"
+                    ? "refunded to your card"
+                    : "cash at pickup"}
         </p>
+        {claim.tracking && <p className="mt-1 text-sm">Tracking: <span className="font-mono">{claim.tracking}</span></p>}
+        {d.cancel_reason && (
+          <p className="mt-3 rounded-lg bg-cream p-3 text-sm">
+            <span className="font-semibold">The seller cancelled this drop.</span> Their note: {d.cancel_reason}
+          </p>
+        )}
       </div>
 
       {claim.delivery !== "shipping" && d.pickup_place && (

@@ -33,22 +33,22 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const rows = claims ?? [];
   const when = drop.fulfillment === "shipping" ? `Order by ${shortDate(drop.pickup_end)}` : `${pickupWindow(drop.pickup_start, drop.pickup_end)}${drop.pickup_place ? ` at ${drop.pickup_place}` : ""}`;
   const payLabel = (c: (typeof rows)[number]) =>
-    c.method === "cash" ? "Cash" : c.payment_status === "captured" ? "Card, paid" : c.payment_status === "authorized" ? "Card on hold" : "Card, incomplete";
+    c.method === "cash" ? "Cash" : c.payment_status === "captured" ? "Card, paid" : c.payment_status === "authorized" ? "Card on hold" : c.payment_status === "refunded" ? "Refunded" : "Card, incomplete";
   const safeName = drop.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
 
   if (format === "xlsx") {
     const data = [
-      ["#", "Name", "Phone", "Email", "Qty", "Total", "Payment", "Delivery", "Ship to", "Done", "Reserved"],
+      ["#", "Name", "Phone", "Email", "Qty", "Total", "Payment", "Delivery", "Ship to", "Done", "Done at", "Tracking", "Reserved"],
       ...rows.map((c, i) => [
         i + 1, c.buyer_name, formatPhone(c.buyer_phone), c.buyer_email ?? "", c.quantity, (drop.price_cents * c.quantity) / 100, payLabel(c),
-        c.delivery === "shipping" ? "Ship" : "Pickup", c.ship_address ?? "", c.picked_up ? "Yes" : "", new Date(c.created_at).toLocaleString("en-US"),
+        c.delivery === "shipping" ? "Ship" : "Pickup", c.ship_address ?? "", c.picked_up ? "Yes" : "", c.picked_up_at ? new Date(c.picked_up_at).toLocaleString("en-US") : "", c.tracking ?? "", new Date(c.created_at).toLocaleString("en-US"),
       ]),
       [],
       ["Total items", rows.reduce((n, c) => n + c.quantity, 0)],
       ["Total value", rows.reduce((n, c) => n + (drop.price_cents * c.quantity) / 100, 0)],
     ];
     const ws = XLSX.utils.aoa_to_sheet(data);
-    ws["!cols"] = [3, 24, 16, 26, 5, 9, 16, 9, 34, 6, 20].map((w) => ({ wch: w }));
+    ws["!cols"] = [3, 24, 16, 26, 5, 9, 16, 9, 34, 6, 20, 24, 20].map((w) => ({ wch: w }));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Claims");
     const info = XLSX.utils.aoa_to_sheet([["Drop", drop.title], ["Shop", shop?.name ?? ""], ["Price", (drop.price_cents / 100)], ["When", when], ["Claimed", `${drop.claimed} of ${drop.quantity}`]]);
@@ -106,6 +106,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     if (y - rowH < M + 30) newPage();
     page.drawRectangle({ x: M + 2, y: y - 3, width: 11, height: 11, borderColor: ink, borderWidth: 0.9 });
     if (c.picked_up) text("X", M + 4.5, 9, bold, green);
+    if (c.picked_up_at) {
+      const t = new Date(c.picked_up_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      page.drawText(t, { x: W - M - 40, y: y + 1, size: 7, font, color: muted });
+    }
     text(String(i + 1), M + 36, 10);
     text(c.buyer_name.slice(0, 28), M + 56, 10, bold);
     text(formatPhone(c.buyer_phone), M + 216, 10);

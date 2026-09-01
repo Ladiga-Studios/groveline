@@ -27,6 +27,7 @@ it ships, new changes get a new file.
 - 0008_shops.sql
 - 0009_support_messages.sql
 - 0010_follow_emails.sql
+- 0011_safeguards.sql
 
 ## History
 
@@ -41,3 +42,4 @@ it ships, new changes get a new file.
 - 0008: shops table (one account, many seller profiles), drops/follows/subscribers repointed to shops, owns_shop helper, policies rewritten, remove_claim and seller_stats updated
 - 0009: support_messages table for the support form
 - 0010: follow_emails on profiles, a per-person switch for new-drop emails from followed shops
+- 0011: picked_up_at, tracking, capture_mode on claims; cancel_reason and cancelled_at on drops

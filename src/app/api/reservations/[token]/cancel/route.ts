@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
-import { getStripe, siteUrl } from "@/lib/stripe";
+import { siteUrl } from "@/lib/stripe";
+import { undoPayment } from "@/lib/payments";
 import { sendEmail } from "@/lib/email";
 
 /* Buyer cancels from their reservation page. Frees the items and releases
@@ -25,25 +26,14 @@ export async function POST(_req: Request, { params }: { params: Promise<{ token:
   }
 
   const shopRowEarly = Array.isArray(drop.shops) ? drop.shops[0] : drop.shops;
-  if (claim.payment_status === "authorized" && claim.payment_intent_id) {
-    const stripe = getStripe();
-    if (stripe && shopRowEarly?.owner_id) {
-      const { data: billing } = await admin
-        .from("billing")
-        .select("stripe_account_id")
-        .eq("profile_id", shopRowEarly.owner_id)
-        .maybeSingle();
-      try {
-        await stripe.paymentIntents.cancel(claim.payment_intent_id, {
-          ...(billing?.stripe_account_id ? { stripeAccount: billing.stripe_account_id } : {}),
-        } as never);
-      } catch {
-        /* already released or expired */
-      }
-    }
+  let undone: "cancelled" | "refunded" | null = null;
+  if (shopRowEarly?.owner_id && ["authorized", "captured"].includes(claim.payment_status)) {
+    const { data: billing } = await admin.from("billing").select("stripe_account_id").eq("profile_id", shopRowEarly.owner_id).maybeSingle();
+    undone = await undoPayment(claim, billing?.stripe_account_id ?? null);
   }
 
   await admin.rpc("release_claim", { p_claim: claim.id });
+  if (undone === "refunded") await admin.from("claims").update({ payment_status: "refunded" }).eq("id", claim.id);
 
   const shopRow = shopRowEarly;
   const seller = Array.isArray(shopRow?.owner) ? shopRow?.owner[0] : shopRow?.owner;

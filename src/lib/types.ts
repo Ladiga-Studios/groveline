@@ -59,6 +59,8 @@ export type Drop = {
   pickup_end: string;
   status: "active" | "closed" | "removed";
   views: number;
+  cancel_reason: string | null;
+  cancelled_at: string | null;
   created_at: string;
   shops?: Partial<Shop>;
 };
@@ -75,7 +77,10 @@ export type Claim = {
   paid: boolean;
   picked_up: boolean;
   payment_intent_id: string | null;
-  payment_status: "none" | "pending" | "authorized" | "captured" | "cancelled";
+  payment_status: "none" | "pending" | "authorized" | "captured" | "cancelled" | "refunded";
+  capture_mode: "manual" | "automatic";
+  picked_up_at: string | null;
+  tracking: string | null;
   cancel_token: string;
   cancelled_at: string | null;
   delivery: "pickup" | "shipping";

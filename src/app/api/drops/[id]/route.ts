@@ -4,6 +4,10 @@ import { moderateDropSubmission } from "@/lib/moderation";
 import { isValidCategory } from "@/lib/categories";
 import { cleanSlug } from "@/lib/format";
 import { geocode } from "@/lib/geocode";
+import { supabaseAdmin } from "@/lib/supabase/server";
+import { sendEmail } from "@/lib/email";
+import { siteUrl } from "@/lib/stripe";
+import { pickupWindow } from "@/lib/format";
 
 export const runtime = "nodejs";
 
@@ -17,7 +21,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
   const { data: existing } = await supabase
     .from("drops")
-    .select("id, seller_id, claimed, pickup_address, pickup_city, pickup_state, pickup_zip, pickup_lat, pickup_lng, shops!drops_seller_id_fkey(owner_id)")
+    .select("id, title, slug, seller_id, claimed, pickup_place, pickup_start, pickup_end, pickup_address, pickup_city, pickup_state, pickup_zip, pickup_lat, pickup_lng, shops!drops_seller_id_fkey(owner_id, name)")
     .eq("id", id)
     .maybeSingle();
   const owner = Array.isArray(existing?.shops) ? existing?.shops[0] : existing?.shops;
@@ -117,6 +121,32 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     })
     .eq("id", id);
   if (updErr) return NextResponse.json({ error: "That didn't save. Try again." }, { status: 500 });
+
+  // If the when or where changed and people have reserved, they hear about it.
+  const whenWhereChanged =
+    pickupStart !== existing.pickup_start ||
+    pickupEnd !== existing.pickup_end ||
+    pickupPlace !== (existing.pickup_place ?? "") ||
+    addressChanged;
+  if (whenWhereChanged && existing.claimed > 0) {
+    const admin = supabaseAdmin();
+    const { data: buyers } = await admin
+      .from("claims")
+      .select("buyer_email, cancel_token, quantity")
+      .eq("drop_id", id)
+      .is("cancelled_at", null)
+      .eq("picked_up", false)
+      .not("buyer_email", "is", null);
+    const shopName = (Array.isArray(existing.shops) ? existing.shops[0] : existing.shops)?.name ?? "The seller";
+    const where = fulfillment === "shipping" ? "This drop now ships instead of pickup." : `New pickup: ${pickupWindow(pickupStart, pickupEnd)} at ${pickupPlace}${pickupAddress ? `, ${pickupAddress}` : ""}, ${pickupCity}.`;
+    for (const b of buyers ?? []) {
+      sendEmail(
+        b.buyer_email!,
+        `Change to your pickup: ${title}`,
+        `${shopName} changed the details on ${title}.\n\n${where}\n\nYour reservation for ${b.quantity} still stands. If the new time doesn't work, cancel here and your spot goes to the next person (any card hold is released): ${siteUrl()}/r/${b.cancel_token}`
+      );
+    }
+  }
 
   return NextResponse.json({ ok: true });
 }

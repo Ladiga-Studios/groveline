@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { supabaseServer, supabaseAdmin } from "@/lib/supabase/server";
-import { getStripe } from "@/lib/stripe";
+import { getStripe, siteUrl } from "@/lib/stripe";
+import { sendEmail } from "@/lib/email";
 
 /* Seller marks a claim picked up (or un-marks it). For card claims,
    picking up is the moment the held funds get captured. */
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { picked_up } = (await req.json().catch(() => ({}))) as { picked_up?: boolean };
+  const { picked_up, tracking } = (await req.json().catch(() => ({}))) as { picked_up?: boolean; tracking?: string };
 
   const supabase = await supabaseServer();
   const {
@@ -17,14 +18,18 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const admin = supabaseAdmin();
   const { data: claim } = await admin
     .from("claims")
-    .select("id, payment_status, payment_intent_id, drops!inner(seller_id, shops!drops_seller_id_fkey(owner_id))")
+    .select("id, payment_status, payment_intent_id, delivery, buyer_email, buyer_name, quantity, drops!inner(id, title, seller_id, shops!drops_seller_id_fkey(owner_id, name))")
     .eq("id", id)
     .maybeSingle();
   const drop = Array.isArray(claim?.drops) ? claim?.drops[0] : claim?.drops;
   const shop = Array.isArray(drop?.shops) ? drop?.shops[0] : drop?.shops;
   if (!claim || shop?.owner_id !== user.id) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const update: Record<string, unknown> = { picked_up: !!picked_up };
+  const update: Record<string, unknown> = {
+    picked_up: !!picked_up,
+    picked_up_at: picked_up ? new Date().toISOString() : null,
+    ...(typeof tracking === "string" ? { tracking: tracking.trim().slice(0, 120) || null } : {}),
+  };
 
   if (picked_up && claim.payment_status === "authorized" && claim.payment_intent_id) {
     const stripe = getStripe();

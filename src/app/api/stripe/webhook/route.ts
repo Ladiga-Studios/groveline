@@ -39,11 +39,14 @@ export async function POST(req: Request) {
       // event arrives with event.account set. Either way the claim id is in
       // the metadata we put there.
       if (s.mode === "payment" && s.metadata?.claim_id) {
+        const { data: c } = await admin.from("claims").select("capture_mode").eq("id", s.metadata.claim_id).maybeSingle();
+        const charged = c?.capture_mode === "automatic";
         await admin
           .from("claims")
           .update({
             payment_intent_id: typeof s.payment_intent === "string" ? s.payment_intent : s.payment_intent?.id ?? null,
-            payment_status: "authorized",
+            payment_status: charged ? "captured" : "authorized",
+            ...(charged ? { paid: true } : {}),
           })
           .eq("id", s.metadata.claim_id);
       }
