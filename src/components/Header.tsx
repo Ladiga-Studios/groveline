@@ -251,7 +251,10 @@ export default function Header({ user }: { user: HeaderUser }) {
               )}
             </div>
           ) : (
-            <Link href="/login" className="btn btn-grove !min-h-11 !px-5">Log in</Link>
+            <>
+              <Link href="/login" className="btn btn-outline !min-h-11 !px-5">Log in</Link>
+              <Link href="/login?mode=register" className="btn btn-grove !min-h-11 !px-5">Create account</Link>
+            </>
           )}
         </div>
 
@@ -312,7 +315,10 @@ export default function Header({ user }: { user: HeaderUser }) {
                 <button onClick={logOut} className="mt-1 rounded-lg px-3 py-3 text-left text-muted hover:bg-cream-dark">Log out</button>
               </>
             ) : (
-              <Link href="/login" className="btn btn-grove mt-3">Log in</Link>
+              <>
+                <Link href="/login?mode=register" className="btn btn-grove mt-3">Create account</Link>
+                <Link href="/login" className="btn btn-outline mt-2">Log in</Link>
+              </>
             )}
           </nav>
         </div>
