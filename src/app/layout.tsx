@@ -7,6 +7,7 @@ import ScrollToTop from "@/components/ScrollToTop";
 import Footer from "@/components/Footer";
 import { ToastProvider } from "@/components/Toast";
 import { supabaseServer } from "@/lib/supabase/server";
+import { Analytics } from "@vercel/analytics/next";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://groveline.io";
 
@@ -63,6 +64,7 @@ export default async function RootLayout({
           <main id="main">{children}</main>
           <Footer />
         </ToastProvider>
+        <Analytics />
       </body>
     </html>
   );
