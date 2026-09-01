@@ -5,7 +5,7 @@ import { getStripe, siteUrl } from "@/lib/stripe";
 /* Starts a $10/month subscription checkout. */
 export async function POST(req: Request) {
   const stripe = getStripe();
-  const { interval, promo } = (await req.json().catch(() => ({}))) as { interval?: "month" | "year"; promo?: string };
+  const { interval } = (await req.json().catch(() => ({}))) as { interval?: "month" | "year" };
   const price = interval === "year"
     ? process.env.STRIPE_PRICE_ID_YEARLY
     : process.env.STRIPE_PRICE_ID_MONTHLY || process.env.STRIPE_PRICE_ID;
@@ -27,33 +27,11 @@ export async function POST(req: Request) {
     await admin.from("billing").upsert({ profile_id: user.id, stripe_customer_id: customerId });
   }
 
-  // The free-month code gives a real 30-day trial on either plan, so
-  // "one month free" means one month free no matter what they pick.
-  // Any other code gets looked up in Stripe as a normal coupon.
-  const freeMonthCode = (process.env.FREE_MONTH_CODE || "").trim().toUpperCase();
-  const typed = (promo || "").trim().toUpperCase();
-  const freeMonth = !!freeMonthCode && typed === freeMonthCode;
-
-  // Only one trial per customer. If they've ever had a subscription, no trial.
-  let trialAllowed = freeMonth;
-  if (freeMonth && customerId) {
-    const prior = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 1 });
-    if (prior.data.length > 0) trialAllowed = false;
-  }
-  if (freeMonth && !trialAllowed) {
-    return NextResponse.json({ error: "That code is for first-time subscribers only." }, { status: 400 });
-  }
-
-  let discounts: { promotion_code: string }[] | undefined;
-  if (promo && promo.trim() && !freeMonth) {
-    try {
-      const codes = await stripe.promotionCodes.list({ code: promo.trim().toUpperCase(), active: true, limit: 1 });
-      if (codes.data[0]) discounts = [{ promotion_code: codes.data[0].id }];
-      else return NextResponse.json({ error: "That code isn't one we recognize." }, { status: 400 });
-    } catch {
-      return NextResponse.json({ error: "Couldn't check that code. Try again." }, { status: 500 });
-    }
-  }
+  /* Discount codes are entered in Stripe Checkout rather than here.
+     Stripe validates the code, shows the adjusted total before payment,
+     and handles first-time-only restrictions, none of which a plain text
+     box on our pricing page can do. Create codes under Product catalog,
+     Coupons, Add promotion code. */
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -61,11 +39,8 @@ export async function POST(req: Request) {
     customer: customerId,
     line_items: [{ price, quantity: 1 }],
     metadata: { profile_id: user.id },
-    subscription_data: {
-      metadata: { profile_id: user.id },
-      ...(trialAllowed ? { trial_period_days: 30 } : {}),
-    },
-    ...(discounts ? { discounts } : trialAllowed ? {} : { allow_promotion_codes: true }),
+    subscription_data: { metadata: { profile_id: user.id } },
+    allow_promotion_codes: true,
     success_url: `${siteUrl()}/dashboard/new?subscribed=1`,
     cancel_url: `${siteUrl()}/dashboard`,
     });

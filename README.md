@@ -63,9 +63,9 @@ Stripe dashboard checklist for card payments to work:
 5. Flip the dashboard to Live mode and make sure the keys in Vercel are the live ones (`sk_live_...`), not test keys.
 6. Post a real drop, turn on card payments in Settings, complete the Express onboarding yourself, and reserve it with a real card from another browser. Then mark it picked up and watch the charge land.
 
-Free month code: set `FREE_MONTH_CODE` (for example `LADIGA`). When a first-time subscriber enters it on `/pricing`, they get a real 30-day free trial on whichever plan they pick, monthly or yearly. Stripe collects their card up front and the first charge lands after 30 days. Anyone who has ever subscribed before is told the code is for first-timers. No coupon needs to exist in Stripe for this one.
+Discount codes: create them in Stripe (Product catalog, Coupons, Add promotion code). Checkout shows a "Add promotion code" link, so nothing needs configuring here and the code is validated against Stripe before anyone pays.
 
-Other codes: any promotion code you create in Stripe (Product catalog, Coupons, Add promotion code) also works on `/pricing` and in Stripe's own box at checkout.
+For a free first month, make a coupon of 100% off with duration "once" and restrict it to the **monthly** product. Without that restriction the same code takes 100% off a yearly plan, which is a free year rather than a free month. Tick "First-time order only" on the promotion code to keep it to new subscribers.
 
 Cancelling: sellers get a "Cancel my plan" button in Settings that ends the plan at the close of the current period, with an undo. "Update card or switch plans" opens Stripe's Customer Portal. For the portal to work you must enable it once in the Stripe dashboard: Settings, Billing, Customer portal. Turn on "Cancel subscriptions" and "Switch plans" and add both prices to the switchable list.
 

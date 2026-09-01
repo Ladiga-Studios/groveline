@@ -12,7 +12,6 @@ export default function PlanButtons({
   subscribed: boolean;
   yearlyAvailable: boolean;
 }) {
-  const [promo, setPromo] = useState("");
   const [busy, setBusy] = useState<"month" | "year" | null>(null);
   const toast = useToast();
   const router = useRouter();
@@ -26,7 +25,7 @@ export default function PlanButtons({
     const res = await fetch("/api/stripe/subscribe", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ interval, promo }),
+      body: JSON.stringify({ interval }),
     });
     setBusy(null);
     const data = await res.json().catch(() => ({}));
@@ -64,17 +63,9 @@ export default function PlanButtons({
           </div>
         )}
       </div>
-      <div className="mt-4 flex flex-col items-start gap-2 sm:flex-row sm:items-center">
-        <label htmlFor="promo" className="text-sm text-muted">Have a code? It applies before you pay.</label>
-        <input
-          id="promo"
-          className="field sm:w-56"
-          placeholder="Enter it here"
-          value={promo}
-          onChange={(e) => setPromo(e.target.value.toUpperCase())}
-          autoCapitalize="characters"
-        />
-      </div>
+      {/* Codes are entered in Stripe's own checkout, which validates them
+          and shows the new total before anyone pays. */}
+      <p className="mt-4 text-sm text-muted">Got a code? There&apos;s a spot for it at checkout.</p>
     </div>
   );
 }
