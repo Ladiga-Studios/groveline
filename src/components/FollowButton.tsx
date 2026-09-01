@@ -9,10 +9,13 @@ export default function FollowButton({
   sellerId,
   initiallyFollowing,
   loggedIn,
+  light = false,
 }: {
   sellerId: string;
   initiallyFollowing: boolean;
   loggedIn: boolean;
+  /* On a dark green band: peach to follow, cream outline once following. */
+  light?: boolean;
 }) {
   const [following, setFollowing] = useState(initiallyFollowing);
   const [askLogin, setAskLogin] = useState(false);
@@ -61,7 +64,7 @@ export default function FollowButton({
       <button
         onClick={toggle}
         disabled={busy}
-        className={following ? "btn btn-outline" : "btn btn-grove"}
+        className={light ? (following ? "btn btn-outline-cream" : "btn btn-primary") : following ? "btn btn-outline" : "btn btn-grove"}
         aria-pressed={following}
       >
         {following ? "Following" : "Follow"}

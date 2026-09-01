@@ -132,7 +132,8 @@ export default function ClaimForm({
           <p className="font-display text-2xl font-semibold text-grove">You're number {claim.position}.</p>
         </div>
         <p className="mt-3">
-          {qty} {qty === 1 ? "item" : "items"} reserved under <span className="font-semibold">{name}</span>. Pay cash when you pick up.
+          {qty} {qty === 1 ? "item" : "items"} reserved under <span className="font-semibold">{name}</span>.{" "}
+          {method === "card" ? "Your card is on hold and only charged at pickup." : "Pay cash when you pick up."}
         </p>
         <p className="mt-2">
           Pickup is {pickupWindow(drop.pickup_start, drop.pickup_end)} at <span className="font-semibold">{drop.pickup_place}</span>.
@@ -150,9 +151,19 @@ export default function ClaimForm({
   if (soldOut) return <WaitlistForm dropId={drop.id} />;
 
   return (
-    <form onSubmit={submit} className="tag-card flex flex-col gap-4 p-6" noValidate>
+    <form onSubmit={submit} className="tag-card flex flex-col gap-4 p-5 sm:p-6" noValidate aria-labelledby="reserve-heading">
       <div>
-        <span className="field-label" id="qty-label">How many do you want</span>
+        <h2 id="reserve-heading" className="text-xl font-semibold">Reserve yours</h2>
+        <p className="mt-0.5 text-sm text-muted">Name and number, that's it. About fifteen seconds.</p>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <span className="field-label !mb-0" id="qty-label">How many</span>
+          <p className="text-sm text-muted">
+            {maxQty} available{drop.max_per_buyer ? `, up to ${drop.max_per_buyer} each` : ""}
+          </p>
+        </div>
         <div className="inline-flex items-center gap-1 rounded-full border-2 border-cream-dark bg-white p-1" role="group" aria-labelledby="qty-label">
           <button type="button" className="grid h-11 w-11 place-items-center rounded-full text-xl font-semibold hover:bg-cream-dark" onClick={() => setQty(Math.max(1, qty - 1))} aria-label="Fewer" disabled={qty <= 1}>&minus;</button>
           <input
@@ -170,30 +181,28 @@ export default function ClaimForm({
           />
           <button type="button" className="grid h-11 w-11 place-items-center rounded-full text-xl font-semibold hover:bg-cream-dark" onClick={() => setQty(Math.min(maxQty, qty + 1))} aria-label="More" disabled={qty >= maxQty}>+</button>
         </div>
-        <p className="field-hint">Type a number or use the buttons. {maxQty} available.</p>
-        {drop.max_per_buyer && <p className="field-hint">Up to {drop.max_per_buyer} per person, so everybody gets a turn.</p>}
       </div>
 
-      <div>
-        <label htmlFor="claim-name" className="field-label">What's your name</label>
-        <input id="claim-name" className="field" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" aria-invalid={!!errors.name} />
-        {errors.name && <p className="field-error">{errors.name}</p>}
-      </div>
-
-      <div>
-        <label htmlFor="claim-phone" className="field-label">Best number to reach you</label>
-        <input id="claim-phone" type="tel" className="field" value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} autoComplete="tel" inputMode="tel" placeholder="256-555-0100" aria-invalid={!!errors.phone} />
-        {errors.phone && <p className="field-error">{errors.phone}</p>}
-        <p className="field-hint">Only used if plans change on either end.</p>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+        <div>
+          <label htmlFor="claim-name" className="field-label">Your name</label>
+          <input id="claim-name" className="field" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" aria-invalid={!!errors.name} />
+          {errors.name && <p className="field-error">{errors.name}</p>}
+        </div>
+        <div>
+          <label htmlFor="claim-phone" className="field-label">Phone</label>
+          <input id="claim-phone" type="tel" className="field" value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} autoComplete="tel" inputMode="tel" placeholder="256-555-0100" aria-invalid={!!errors.phone} />
+          {errors.phone && <p className="field-error">{errors.phone}</p>}
+        </div>
       </div>
 
       <div>
         <label htmlFor="claim-email" className="field-label">
-          Email <span className="font-normal text-muted">{method === "card" ? "(for your receipt)" : "(optional)"}</span>
+          Email <span className="font-normal text-muted">{method === "card" || delivery === "shipping" ? "(for your receipt)" : "(optional)"}</span>
         </label>
         <input id="claim-email" type="email" className="field" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" aria-invalid={!!errors.email} />
         {errors.email && <p className="field-error">{errors.email}</p>}
-        <p className="field-hint">We'll send your pickup details, plus a reminder the day before.</p>
+        <p className="field-hint">Pickup details now, a reminder the day before.</p>
       </div>
 
       {canShip && !shipOnly && (

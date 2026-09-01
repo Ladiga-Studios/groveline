@@ -7,8 +7,8 @@ import { stateName } from "@/lib/states";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Sellers",
-  description: "Every seller on Groveline. Follow the ones near you to catch their next drop.",
+  title: "Shops",
+  description: "Every shop on Groveline. Follow the ones near you to catch their next drop.",
   alternates: { canonical: "/sellers" },
 };
 
@@ -28,8 +28,8 @@ export default async function SellersPage({ searchParams }: { searchParams: Prom
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <h1 className="text-3xl font-semibold">Everybody selling on Groveline</h1>
-      <p className="mt-2 text-muted">Find the ones near you and follow along so you never miss what they post.</p>
+      <h1 className="text-3xl font-semibold sm:text-4xl">Every shop on Groveline</h1>
+      <p className="mt-2 max-w-2xl text-lg text-muted">Find the ones near you and follow along so you never miss what they post.</p>
       {states.length > 1 && (
         <nav aria-label="Filter by state" className="mt-4 flex flex-wrap gap-2">
           <Link href="/sellers" className={`btn !min-h-11 !px-4 ${!state ? "btn-grove" : "btn-outline"}`}>All</Link>
@@ -49,12 +49,13 @@ export default async function SellersPage({ searchParams }: { searchParams: Prom
           {list.map((s) => {
             const n = liveCount.get(s.id) ?? 0;
             return (
-              <Link key={s.id} href={`/s/${s.slug}`} className="tag-card flex gap-4 p-4">
-                <Avatar url={s.avatar_url} name={s.name} size={56} />
+              <Link key={s.id} href={`/s/${s.slug}`} className="tag-card flex gap-4 p-5">
+                <Avatar url={s.avatar_url} name={s.name} size={64} />
                 <div className="min-w-0">
-                  <p className="truncate font-semibold">{s.name}</p>
+                  <p className="truncate text-lg font-semibold">{s.name}</p>
                   <p className="text-sm text-muted">{s.town}, {s.state}</p>
-                  <p className={`mt-1 text-sm font-medium ${n > 0 ? "text-grove" : "text-muted"}`}>
+                  {s.bio && <p className="mt-1.5 line-clamp-2 text-sm text-ink/80">{s.bio}</p>}
+                  <p className={`mt-2 text-sm font-semibold ${n > 0 ? "text-grove" : "text-muted"}`}>
                     {n > 0 ? `${n} drop${n === 1 ? "" : "s"} up right now` : "Nothing posted at the moment"}
                   </p>
                 </div>

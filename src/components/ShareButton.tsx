@@ -8,12 +8,14 @@ export default function ShareButton({
   text,
   label = "Share",
   primary = false,
+  light = false,
 }: {
   url: string;
   title: string;
   text?: string;
   label?: string;
   primary?: boolean;
+  light?: boolean;
 }) {
   const toast = useToast();
   async function share() {
@@ -34,7 +36,7 @@ export default function ShareButton({
     }
   }
   return (
-    <button onClick={share} className={primary ? "btn btn-primary" : "btn btn-outline"}>
+    <button onClick={share} className={primary ? "btn btn-primary" : light ? "btn btn-outline-cream" : "btn btn-outline"}>
       {label}
     </button>
   );

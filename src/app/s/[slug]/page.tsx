@@ -70,87 +70,98 @@ export default async function ShopPage({ params }: { params: Promise<{ slug: str
   const shipsAny = live.some((d) => d.fulfillment && d.fulfillment !== "pickup");
   const following_total = (stats.followers ?? 0) + (stats.subscribers ?? 0);
 
+  const stats_row = [
+    [stats.drops_posted ?? 0, "drops posted"],
+    [stats.items_sold ?? 0, "items sold"],
+    [stats.sold_out ?? 0, "sold out"],
+    [following_total, following_total === 1 ? "follower" : "followers"],
+  ] as const;
+
   return (
     <div>
       {/* Storefront header */}
       <div className="bg-grove text-cream">
-        <div className="mx-auto max-w-6xl px-4 py-10 sm:py-12">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-            <div className="w-fit rounded-full bg-cream p-1.5 shadow-lift">
-              <Avatar url={s.avatar_url} name={s.name} size={96} />
-            </div>
-            <div className="min-w-0 grow">
-              <h1 className="font-display text-3xl font-semibold leading-tight sm:text-5xl">{s.name}</h1>
-              <p className="mt-2 text-cream/85">
-                {s.town}, {stateName(s.state)}
-                {since ? ` · Here since ${since}` : ""}
-                {owner?.payouts_enabled ? " · Takes cards" : " · Cash at pickup"}
-                {shipsAny ? " · Ships" : ""}
-              </p>
-              {s.bio && <p className="mt-3 max-w-2xl text-lg text-cream/95">{s.bio}</p>}
-              {(s.contact_phone || s.social_url) && (
-                <p className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
-                  {s.contact_phone && <a href={`sms:${s.contact_phone}`} className="underline underline-offset-2">Text {s.contact_phone}</a>}
-                  {s.social_url && <a href={s.social_url} target="_blank" rel="noopener" className="underline underline-offset-2">Facebook page</a>}
+        <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+            <div className="flex flex-col gap-5 sm:flex-row sm:gap-7">
+              <div className="w-fit shrink-0 rounded-full bg-cream p-1.5 shadow-lift">
+                <Avatar url={s.avatar_url} name={s.name} size={112} />
+              </div>
+              <div className="min-w-0">
+                <h1 className="font-display text-3xl font-semibold leading-tight sm:text-5xl">{s.name}</h1>
+                <p className="mt-2 text-lg text-cream/90">
+                  {s.town}, {stateName(s.state)}
+                  {owner && !isOwner ? (
+                    <>
+                      {" "}· Run by{" "}
+                      <Link href={`/u/${owner.slug}`} className="underline underline-offset-2 hover:text-cream">{owner.name}</Link>
+                    </>
+                  ) : null}
                 </p>
-              )}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {[
+                    owner?.payouts_enabled ? "Takes cards" : "Cash at pickup",
+                    shipsAny ? "Ships" : null,
+                    since ? `Here since ${since}` : null,
+                  ]
+                    .filter(Boolean)
+                    .map((t) => (
+                      <span key={t as string} className="rounded-full bg-cream/12 px-3 py-1 text-sm">{t}</span>
+                    ))}
+                </div>
+                {s.bio && <p className="mt-4 max-w-2xl text-lg leading-relaxed text-cream/95">{s.bio}</p>}
+                {(s.contact_phone || s.social_url) && (
+                  <p className="mt-3 flex flex-wrap gap-x-5 gap-y-1">
+                    {s.contact_phone && <a href={`sms:${s.contact_phone}`} className="underline underline-offset-2">Text {s.contact_phone}</a>}
+                    {s.social_url && <a href={s.social_url} target="_blank" rel="noopener" className="underline underline-offset-2">Facebook page</a>}
+                  </p>
+                )}
+                <dl className="mt-5 flex flex-wrap gap-x-6 gap-y-2">
+                  {stats_row.map(([value, label]) => (
+                    <div key={label} className="flex items-baseline gap-1.5">
+                      <dd className="font-display text-2xl font-semibold">{value}</dd>
+                      <dt className="text-sm text-cream/75">{label}</dt>
+                    </div>
+                  ))}
+                </dl>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2 sm:flex-col sm:items-stretch">
+
+            <div className="flex flex-wrap gap-2 lg:w-56 lg:flex-col">
               {isOwner ? (
                 <>
                   <Link href="/dashboard/new" className="btn btn-primary">Post a drop</Link>
                   <Link href={`/dashboard/shops/${s.id}`} className="btn btn-outline-cream">Edit shop</Link>
                 </>
               ) : (
-                <FollowButton sellerId={s.id} initiallyFollowing={following} loggedIn={!!user} />
+                <FollowButton sellerId={s.id} initiallyFollowing={following} loggedIn={!!user} light />
               )}
-              <div className="flex gap-2">
+              <div className="flex gap-2 lg:contents">
                 <FacebookShareButton url={`${site}/s/${s.slug}`} label="Share" />
-                <ShareButton url={`${site}/s/${s.slug}`} title={`${s.name} on Groveline`} label="Copy link" />
+                <ShareButton url={`${site}/s/${s.slug}`} title={`${s.name} on Groveline`} label="Copy link" light />
               </div>
             </div>
           </div>
-
-          <dl className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[
-              ["Drops posted", stats.drops_posted ?? 0],
-              ["Items sold", stats.items_sold ?? 0],
-              ["Sold out", stats.sold_out ?? 0],
-              ["Followers", following_total],
-            ].map(([label, value]) => (
-              <div key={String(label)} className="rounded-xl bg-cream/10 p-4 text-center">
-                <dd className="font-display text-2xl font-semibold">{value}</dd>
-                <dt className="text-xs text-cream/75">{label}</dt>
-              </div>
-            ))}
-          </dl>
         </div>
       </div>
 
       <div className="mx-auto max-w-6xl px-4 py-10">
-        {owner && !isOwner && (
-          <Link href={`/u/${owner.slug}`} className="inline-flex items-center gap-2 text-sm text-muted hover:text-grove">
-            <Avatar url={owner.avatar_url} name={owner.name} size={22} />
-            Run by {owner.name}
-          </Link>
-        )}
-
-        <section className="mt-6" aria-labelledby="active-drops">
-          <div className="flex items-baseline justify-between">
-            <h2 id="active-drops" className="text-2xl font-semibold">Up for grabs right now</h2>
+        <section aria-labelledby="active-drops">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="active-drops" className="text-2xl font-semibold sm:text-3xl">Up for grabs right now</h2>
             {live.length > 0 && <p className="text-sm text-muted">{live.length} {live.length === 1 ? "drop" : "drops"}</p>}
           </div>
           {isOwner && live.length > 0 && (
-            <p className="mt-1 text-sm text-muted">This is your shop. Tap any drop to see who reserved, print the pickup sheet, or close it.</p>
+            <p className="mt-1 text-sm text-muted">This is your shop. Open any drop to see who reserved, print the pickup sheet, or close it.</p>
           )}
           {live.length > 0 ? (
-            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {live.map((d) => <ProductCard key={d.id} drop={d} manage={isOwner} />)}
             </div>
           ) : (
-            <div className="tag-card mt-4 p-8 text-center">
+            <div className="tag-card mt-5 p-8 text-center sm:p-12">
               <p className="font-display text-xl font-semibold">Nothing posted at the moment.</p>
-              <p className="mt-2 text-muted">
+              <p className="mx-auto mt-2 max-w-md text-muted">
                 {isOwner ? "Your shop is ready. Post something and it shows up right here." : `Follow ${s.name} or drop your email below and you'll hear the moment something goes up.`}
               </p>
               {isOwner && <Link href="/dashboard/new" className="btn btn-primary mt-4">Post a drop</Link>}
@@ -158,27 +169,34 @@ export default async function ShopPage({ params }: { params: Promise<{ slug: str
           )}
         </section>
 
-        <section className="mt-12 grid gap-6 lg:grid-cols-[1.2fr_1fr]" aria-labelledby="newsletter">
-          <div className="tag-card p-6">
-            <h2 id="newsletter" className="text-xl font-semibold">Hear about it the moment {s.name} posts</h2>
-            <p className="mb-4 mt-1 text-sm text-muted">One email per drop, that&apos;s it. Unsubscribe whenever you want.</p>
+        <section className="mt-12 grid gap-5 lg:grid-cols-[1.2fr_1fr]" aria-labelledby="newsletter">
+          <div className="tag-card p-6 sm:p-8">
+            <h2 id="newsletter" className="text-xl font-semibold sm:text-2xl">Hear about it the moment {s.name} posts</h2>
+            <p className="mb-4 mt-1 text-muted">One email per drop, that&apos;s it. Unsubscribe whenever you want.</p>
             <NewsletterForm sellerId={s.id} />
           </div>
-          <div className="tag-card p-6">
+          <div className="tag-card p-6 sm:p-8">
             <h2 className="text-xl font-semibold">How buying works here</h2>
-            <ul className="mt-3 space-y-2 text-sm">
-              <li>Tap a drop, pick how many, leave your name and number. No account needed.</li>
-              <li>{owner?.payouts_enabled ? "Pay cash at pickup, or by card when you reserve." : "Pay cash when you pick up."}</li>
-              {shipsAny && <li>Some drops ship. Look for the Ships tag.</li>}
-              <li>Plans change? Cancel from your reservation page and it goes to the next person.</li>
-            </ul>
+            <ol className="mt-3 space-y-2.5">
+              {[
+                "Open a drop, pick how many, leave your name and number. No account needed.",
+                owner?.payouts_enabled ? "Pay cash at pickup, or by card when you reserve." : "Pay cash when you pick up.",
+                ...(shipsAny ? ["Some drops ship. Look for the Ships tag."] : []),
+                "Plans change? Cancel from your reservation page and it goes to the next person.",
+              ].map((t, i) => (
+                <li key={t} className="flex gap-3">
+                  <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-cream-dark text-xs font-semibold" aria-hidden="true">{i + 1}</span>
+                  <span>{t}</span>
+                </li>
+              ))}
+            </ol>
           </div>
         </section>
 
         {past && past.length > 0 && (
           <section className="mt-12" aria-labelledby="past-drops">
             <h2 id="past-drops" className="text-xl font-semibold text-muted">What they&apos;ve posted before</h2>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {(past as Drop[]).map((d) => <ProductCard key={d.id} drop={d} muted manage={isOwner} />)}
             </div>
           </section>

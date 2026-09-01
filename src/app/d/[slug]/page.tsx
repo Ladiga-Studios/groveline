@@ -10,7 +10,7 @@ import PickupMap from "@/components/PickupMap";
 import ReportButton from "@/components/ReportButton";
 import Avatar from "@/components/Avatar";
 import NewsletterForm from "@/components/NewsletterForm";
-import { money, pickupWindow, whenLabel } from "@/lib/format";
+import { money, pickupWindow, shortDate, whenLabel } from "@/lib/format";
 import { categoryLabel } from "@/lib/categories";
 import { fullAddress } from "@/lib/geocode";
 import type { Drop } from "@/lib/types";
@@ -103,90 +103,124 @@ export default async function DropPage({ params }: { params: Promise<{ slug: str
     },
   };
 
+  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://groveline.io";
+  const url = `${site}/d/${drop.slug}`;
+  const stock =
+    drop.status === "closed" ? "Closed" : left > 0 ? `${left} of ${drop.quantity} left` : "Sold out";
+
+  /* Layout: one column on phones in reading order (photos, the facts,
+     description, reserve form, map). On large screens the facts and the
+     form move into a sticky right rail so reserving is always one click
+     away while the photos, description, and map fill the left. The
+     wrappers use display: contents on small screens so the order-*
+     utilities can interleave both columns. */
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
+    <div className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {isOwner && (
-        <div className="mb-6 rounded-2xl border-2 border-leaf bg-cream p-4">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-leaf bg-cream px-4 py-3">
           <p className="font-semibold text-grove">This is your drop. {drop.claimed} of {drop.quantity} reserved{drop.status === "closed" ? ", closed" : ""}.</p>
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2">
             <Link href={`/dashboard/drops/${drop.id}`} className="btn btn-grove !min-h-10 !px-4 text-sm">See who reserved</Link>
             <a href={`/api/drops/${drop.id}/report?format=pdf`} className="btn btn-outline !min-h-10 !px-4 text-sm">Print sheet</a>
-            <a href={`/api/drops/${drop.id}/report?format=xlsx`} className="btn btn-outline !min-h-10 !px-4 text-sm">Spreadsheet</a>
             <Link href={`/dashboard/drops/${drop.id}/edit`} className="btn btn-outline !min-h-10 !px-4 text-sm">Edit</Link>
           </div>
         </div>
       )}
-      <PhotoGallery urls={photos} alt={drop.title} />
 
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h1 className="text-2xl font-semibold sm:text-3xl">{drop.title}</h1>
-        <p className="font-display text-2xl font-semibold text-grove sm:text-3xl">
-          {money(drop.price_cents)}<span className="ml-1 text-base font-normal text-muted">each</span>
-        </p>
-      </div>
-
-      {seller && (
-        <Link href={`/s/${seller.slug}`} className="mt-3 inline-flex items-center gap-3 rounded-full pr-3 hover:bg-cream-dark">
-          <Avatar url={seller.avatar_url} name={seller.name || ""} size={40} />
-          <span>
-            <span className="block font-medium text-grove">{seller.name}</span>
-            <span className="block text-sm text-muted">{drop.pickup_city || seller.town}{drop.pickup_state ? `, ${drop.pickup_state}` : ""}</span>
-          </span>
-        </Link>
-      )}
-
-      <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2">
-        <p className={`text-lg font-semibold ${left > 0 ? "text-grove" : "text-muted"}`} aria-live="polite">
-          {drop.status === "closed" ? "This drop has closed" : left > 0 ? `${left} of ${drop.quantity} left` : "Sold out"}
-        </p>
-        <span className="rounded-full bg-cream-dark px-2.5 py-1 text-xs font-medium">{categoryLabel(drop.category)}</span>
-      </div>
-
-      <p className="mt-2">{whenLabel(drop)}{drop.fulfillment !== "pickup" && drop.shipping_cents ? ` (${money(drop.shipping_cents)} shipping)` : ""}</p>
-
-      {drop.description && <p className="mt-4 whitespace-pre-line text-lg">{drop.description}</p>}
-
-      {drop.fulfillment !== "shipping" && drop.pickup_place && (
-        <div className="mt-6">
-          <PickupMap lat={drop.pickup_lat} lng={drop.pickup_lng} address={address} place={drop.pickup_place} />
-        </div>
-      )}
-
-      <div className="mt-8">
-        {ended ? (
-          <div className="tag-card p-6">
-            <p className="font-display text-xl font-semibold">This pickup time has passed.</p>
-            <p className="mt-2 text-muted">
-              {seller ? `Follow ${seller.name} or join their email list so you catch the next one.` : "Head over to browse to see what's still up for grabs."}
-            </p>
-            <Link href="/browse" className="btn btn-primary mt-4">See what is claimable now</Link>
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-start lg:gap-12">
+        {/* Left: photos, description, map, share, newsletter */}
+        <div className="contents lg:block lg:space-y-8">
+          <div className="order-1">
+            <PhotoGallery urls={photos} alt={drop.title} />
           </div>
-        ) : (
-          <ClaimForm drop={drop} acceptsCard={!!owner?.payouts_enabled} prefill={prefill} />
-        )}
-      </div>
 
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <FacebookShareButton url={`${process.env.NEXT_PUBLIC_SITE_URL || "https://groveline.io"}/d/${drop.slug}`} />
-          <ShareButton
-            url={`${process.env.NEXT_PUBLIC_SITE_URL || "https://groveline.io"}/d/${drop.slug}`}
-            title={`${drop.title} for ${money(drop.price_cents)}`}
-            text="Reserve yours before it is gone."
-          />
+          {drop.description && (
+            <section className="order-3" aria-labelledby="about">
+              <h2 id="about" className="text-lg font-semibold lg:text-xl">About this drop</h2>
+              <p className="mt-2 whitespace-pre-line text-lg leading-relaxed">{drop.description}</p>
+            </section>
+          )}
+
+          {drop.fulfillment !== "shipping" && drop.pickup_place && (
+            <section className="order-5" aria-labelledby="where">
+              <h2 id="where" className="text-lg font-semibold lg:text-xl">Where to pick up</h2>
+              <p className="mt-1 text-muted">{pickupWindow(drop.pickup_start, drop.pickup_end)}</p>
+              <div className="mt-3">
+                <PickupMap lat={drop.pickup_lat} lng={drop.pickup_lng} address={address} place={drop.pickup_place} />
+              </div>
+            </section>
+          )}
+
+          <div className="order-6 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <FacebookShareButton url={url} />
+              <ShareButton url={url} title={`${drop.title} for ${money(drop.price_cents)}`} text="Reserve yours before it is gone." />
+            </div>
+            <ReportButton dropId={drop.id} />
+          </div>
+
+          {seller && (
+            <section className="tag-card order-7 p-6">
+              <h2 className="text-lg font-semibold">Want to know next time {seller.name} posts?</h2>
+              <p className="mb-3 mt-1 text-sm text-muted">One email per drop, nothing else, and you can unsubscribe whenever.{seller.contact_phone ? ` Got a question? Text ${seller.contact_phone}.` : ""}</p>
+              <NewsletterForm sellerId={seller.id!} />
+            </section>
+          )}
         </div>
-        <ReportButton dropId={drop.id} />
-      </div>
 
-      {seller && (
-        <section className="tag-card mt-8 p-6">
-          <h2 className="text-lg font-semibold">Want to know next time {seller.name} posts?</h2>
-          <p className="mb-3 mt-1 text-sm text-muted">One email per drop, nothing else, and you can unsubscribe whenever.{seller.contact_phone ? ` Got a question? Text ${seller.contact_phone}.` : ""}</p>
-          <NewsletterForm sellerId={seller.id!} />
-        </section>
-      )}
+        {/* Right rail: the facts and the reserve form, sticky on desktop */}
+        <aside className="contents lg:sticky lg:top-24 lg:block lg:space-y-5">
+          <div className="order-2">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <h1 className="text-2xl font-semibold sm:text-3xl">{drop.title}</h1>
+              <p className="font-display text-2xl font-semibold text-grove sm:text-3xl">
+                {money(drop.price_cents)}<span className="ml-1 text-base font-normal text-muted">each</span>
+              </p>
+            </div>
+
+            {seller && (
+              <Link href={`/s/${seller.slug}`} className="mt-3 inline-flex items-center gap-3 rounded-full pr-3 hover:bg-cream-dark">
+                <Avatar url={seller.avatar_url} name={seller.name || ""} size={40} />
+                <span>
+                  <span className="block font-medium text-grove">{seller.name}</span>
+                  <span className="block text-sm text-muted">{drop.pickup_city || seller.town}{drop.pickup_state ? `, ${drop.pickup_state}` : ""}</span>
+                </span>
+              </Link>
+            )}
+
+            <dl className="mt-4 grid gap-x-4 gap-y-2 text-sm sm:grid-cols-[auto_1fr] sm:text-base">
+              <dt className="text-muted">Available</dt>
+              <dd className={`font-semibold ${left > 0 && drop.status === "active" ? "text-grove" : "text-muted"}`} aria-live="polite">{stock}</dd>
+              <dt className="text-muted">{drop.fulfillment === "shipping" ? "Shipping" : "Pickup"}</dt>
+              <dd>
+                {drop.fulfillment === "shipping"
+                  ? `Order by ${shortDate(drop.pickup_end)}, ships to you`
+                  : `${pickupWindow(drop.pickup_start, drop.pickup_end)}${drop.pickup_place ? ` at ${drop.pickup_place}` : ""}`}
+                {drop.fulfillment === "both" ? ", or shipped to you" : ""}
+                {drop.fulfillment !== "pickup" && drop.shipping_cents ? ` (${money(drop.shipping_cents)} shipping)` : ""}
+              </dd>
+              <dt className="text-muted">Category</dt>
+              <dd>{categoryLabel(drop.category)}</dd>
+            </dl>
+          </div>
+
+          <div className="order-4">
+            {ended ? (
+              <div className="tag-card p-6">
+                <p className="font-display text-xl font-semibold">This pickup time has passed.</p>
+                <p className="mt-2 text-muted">
+                  {seller ? `Follow ${seller.name} or join their email list so you catch the next one.` : "Head over to browse to see what's still up for grabs."}
+                </p>
+                <Link href="/browse" className="btn btn-primary mt-4">See what is claimable now</Link>
+              </div>
+            ) : (
+              <ClaimForm drop={drop} acceptsCard={!!owner?.payouts_enabled} prefill={prefill} />
+            )}
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }

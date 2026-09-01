@@ -2,6 +2,8 @@ export type ForPage = {
   slug: string;
   title: string;
   heading: string;
+  /* One line for the nav dropdown: who this page is for. */
+  tagline: string;
   intro: string;
   image: string;
   imageAlt: string;
@@ -15,6 +17,7 @@ export const FOR_PAGES: ForPage[] = [
     slug: "kitchen",
     title: "For bakers, gardeners, and everyone with too many eggs",
     heading: "From the kitchen and the garden",
+    tagline: "Bakers, gardeners, and egg sellers",
     intro:
       "Sourdough on Saturdays. Eggs when the hens are laying. Tomatoes in July, whether you want them or not. This is what Groveline was built for first.",
     image: "/illustrations/goods.jpg",
@@ -32,6 +35,7 @@ export const FOR_PAGES: ForPage[] = [
     slug: "workshop",
     title: "For soap makers, woodworkers, and everyone who makes things by hand",
     heading: "From the workshop",
+    tagline: "Soap, candles, woodwork, crafts",
     intro:
       "You make twenty bars at a time, or six cutting boards, or a run of candles for the holidays. Batches. That is exactly what a drop is.",
     image: "/illustrations/handmade.jpg",
@@ -49,6 +53,7 @@ export const FOR_PAGES: ForPage[] = [
     slug: "greenhouse",
     title: "For plant sellers, flower growers, and seedling starters",
     heading: "From the greenhouse",
+    tagline: "Seedlings, cut flowers, wreaths",
     intro:
       "Seedlings in April, cut flowers all summer, mums in the fall, wreaths and trees when it turns cold. Plant sellers have a season for everything, and every season is a drop.",
     image: "/illustrations/plants.jpg",
@@ -66,6 +71,7 @@ export const FOR_PAGES: ForPage[] = [
     slug: "fundraisers",
     title: "For fire departments, churches, boosters, and anyone cooking for a cause",
     heading: "From the fire hall",
+    tagline: "Plate sales, fish fries, bake sales",
     intro:
       "Plate sales, Boston butts, fish fries, bake sales. The hardest part was never the cooking. It was knowing how many to cook.",
     image: "/illustrations/plates.jpg",

@@ -98,12 +98,12 @@ export default async function Home() {
           </div>
           <Image
             src="/illustrations/hero-side.jpg"
-            alt="A seller handing a bag of produce across the table to a neighbor"
-            width={999}
-            height={724}
+            alt="A seller under a green striped awning handing a bag of vegetables across the stall to a neighbor"
+            width={1473}
+            height={1068}
             priority
             className="rise rise-2 w-full rounded-2xl"
-            sizes="(max-width: 1024px) 100vw, 520px"
+            sizes="(max-width: 1024px) 100vw, 540px"
           />
         </div>
       </section>
@@ -200,8 +200,8 @@ export default async function Home() {
           <div className="grid items-center gap-10 lg:grid-cols-2">
             <Image
               src="/illustrations/driveway.jpg"
-              alt="A folding table with a cooler and paper bags by a front porch, a neighbor walking up"
-              width={1536}
+              alt="A folding table with a cooler and two tagged paper bags at the end of a driveway, a neighbor walking up to it"
+              width={1535}
               height={1024}
               className="w-full rounded-2xl"
               sizes="(max-width: 1024px) 100vw, 560px"
