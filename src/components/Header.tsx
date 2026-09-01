@@ -93,7 +93,7 @@ export default function Header({ user }: { user: HeaderUser }) {
               {menu && (
                 <div role="menu" className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-cream-dark bg-white shadow-lift">
                   {accountItems.map((i) => (
-                    <Link key={i.href} href={i.href} role="menuitem" onClick={() => setMenu(false)} className="block px-4 py-2.5 hover:bg-cream-dark">
+                    <Link key={i.href} href={i.href} prefetch={false} role="menuitem" onClick={() => setMenu(false)} className="block px-4 py-2.5 hover:bg-cream-dark">
                       {i.label}
                     </Link>
                   ))}
@@ -138,7 +138,7 @@ export default function Header({ user }: { user: HeaderUser }) {
                   <span className="font-semibold">{user.name}</span>
                 </div>
                 {accountItems.map((i) => (
-                  <Link key={i.href} href={i.href} onClick={() => setOpen(false)} className="rounded-lg px-3 py-3 hover:bg-cream-dark">
+                  <Link key={i.href} href={i.href} prefetch={false} onClick={() => setOpen(false)} className="rounded-lg px-3 py-3 hover:bg-cream-dark">
                     {i.label}
                   </Link>
                 ))}

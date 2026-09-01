@@ -7,6 +7,7 @@ import { money, whenLabel } from "@/lib/format";
 import type { Drop } from "@/lib/types";
 import BecomeSeller from "./BecomeSeller";
 import Avatar from "@/components/Avatar";
+import RefreshOnReturn from "@/components/RefreshOnReturn";
 import ShopSwitch from "./shops/ShopSwitch";
 
 export const dynamic = "force-dynamic";
@@ -37,6 +38,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
+      <RefreshOnReturn />
       {shops.length > 1 && (
         <div className="mb-6 flex flex-wrap items-center gap-2">
           <span className="text-sm text-muted">Working in:</span>

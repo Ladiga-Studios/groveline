@@ -13,6 +13,7 @@
   --color-leaf: #4e8a5a;
   --color-peach: #f2a65a;
   --color-peach-dark: #dd8a3d;
+  --color-gold: #b9711f;
   --color-ink: #2b2b26;
   --color-muted: #6b6a5f;
 
@@ -130,23 +131,10 @@ h3,
   border: 1.5px solid var(--color-cream-dark);
   border-radius: var(--radius-tag);
   box-shadow: var(--shadow-lift);
-  padding-left: 1.75rem;
   transition:
     transform var(--transition-fast),
     box-shadow var(--transition-fast),
     border-color var(--transition-fast);
-}
-.tag-card::before {
-  content: "";
-  position: absolute;
-  left: 0.65rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  background: var(--color-cream);
-  border: 2px solid var(--color-cream-dark);
 }
 a.tag-card:hover,
 a.tag-card:focus-visible {
@@ -262,6 +250,25 @@ body[data-modal-open="true"] {
 }
 
 }
+
+/* Page-load entrance for the hero. Staggered with .rise-1 through .rise-4. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise {
+  animation: rise 640ms ease-out both;
+}
+.rise-1 { animation-delay: 90ms; }
+.rise-2 { animation-delay: 180ms; }
+.rise-3 { animation-delay: 270ms; }
+.rise-4 { animation-delay: 360ms; }
 
 /* Section reveals, driven by IntersectionObserver adding data-shown */
 .reveal {

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase/server";
 import Avatar from "@/components/Avatar";
+import RefreshOnReturn from "@/components/RefreshOnReturn";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Sellers I follow", robots: { index: false } };
@@ -28,6 +29,7 @@ export default async function FollowingPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
+      <RefreshOnReturn />
       <h1 className="text-3xl font-semibold">Who you're following</h1>
       <p className="mt-1 text-muted">An email lands in your inbox every time one of them posts something new.</p>
       {sellers.length === 0 ? (

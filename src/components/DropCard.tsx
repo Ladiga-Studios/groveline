@@ -59,6 +59,11 @@ export default function DropCard({ drop }: { drop: Drop }) {
               {categoryLabel(drop.category)}
             </span>
           )}
+          {drop.fulfillment && drop.fulfillment !== "pickup" && (
+            <span className="rounded-full bg-peach/30 px-2 py-0.5 text-xs font-medium text-ink">
+              Ships
+            </span>
+          )}
         </p>
       </div>
     </Link>

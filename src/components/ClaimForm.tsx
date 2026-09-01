@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Script from "next/script";
 import Image from "next/image";
 import Link from "next/link";
@@ -52,6 +53,7 @@ export default function ClaimForm({
   const [busy, setBusy] = useState(false);
   const [claim, setClaim] = useState<{ position: number; token: string } | null>(null);
   const toast = useToast();
+  const router = useRouter();
 
   function renderTurnstile() {
     if (TURNSTILE_SITE_KEY && turnstileRef.current && window.turnstile) {
@@ -108,6 +110,7 @@ export default function ClaimForm({
       setBusy(false);
       setClaim({ position: data.position, token: data.token });
       toast("You're in. See you soon.", "success");
+      router.refresh();
       return;
     }
     setBusy(false);

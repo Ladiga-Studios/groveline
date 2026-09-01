@@ -3,11 +3,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase/server";
 import { money, whenLabel } from "@/lib/format";
+import RefreshOnReturn from "@/components/RefreshOnReturn";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "My reservations" };
 
 export default async function ReservationsPage() {
+  noStore();
   const supabase = await supabaseServer();
   const {
     data: { user },
@@ -44,6 +47,7 @@ export default async function ReservationsPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
+      <RefreshOnReturn />
       <h1 className="text-3xl font-semibold">What you've got coming</h1>
       <p className="mt-1 text-muted">Everything you've reserved while logged into this account.</p>
 

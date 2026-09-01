@@ -72,38 +72,40 @@ export default async function Home() {
       />
 
       {/* Hero */}
-      <section className="mx-auto max-w-6xl px-4 pb-10 pt-10 sm:pt-14">
-        <div className="max-w-3xl">
-          <h1 className="font-display text-4xl font-semibold leading-tight text-grove sm:text-5xl">
-            You made a batch. Let's find it a home.
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg">
-            Groveline is where people who sell in batches post what they have, so neighbors can claim it
-            before it's gone. Bread, eggs, beef, honey, soap, seedlings, plate sales, whatever you make.
-            Reserving takes about fifteen seconds. Handing it over happens the old way, in person, at the
-            market, on your porch, or wherever you say to meet.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/browse" className="btn btn-primary text-lg">
-              See what is for sale
-            </Link>
-            <Link href={sellHref} className="btn btn-grove text-lg">
-              {sellLabel}
-            </Link>
+      <section className="mx-auto max-w-6xl px-4 pb-12 pt-10 sm:pt-16">
+        <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_1fr]">
+          <div>
+            <h1 className="rise font-display text-4xl font-semibold leading-[1.08] text-grove sm:text-5xl lg:text-6xl">
+              <span className="block">You made a batch.</span>
+              <span className="block text-gold">Let&apos;s find it a home.</span>
+            </h1>
+            <p className="rise rise-1 mt-6 max-w-xl text-lg">
+              Groveline is where people who sell in batches post what they have, so neighbors can claim it
+              before it&apos;s gone. Bread, eggs, beef, honey, soap, seedlings, plate sales, whatever you make.
+              Reserving takes about fifteen seconds. Then meet up in person, or ship it anywhere in the country.
+            </p>
+            <div className="rise rise-2 mt-8 flex flex-wrap gap-3">
+              <Link href="/browse" className="btn btn-primary text-lg">
+                See what&apos;s for sale
+              </Link>
+              <Link href={sellHref} className="btn btn-grove text-lg">
+                {sellLabel}
+              </Link>
+            </div>
+            <p className="rise rise-3 mt-4 text-sm text-muted">
+              No account needed to buy anything. Your first three drops as a seller are on the house.
+            </p>
           </div>
-          <p className="mt-4 text-sm text-muted">
-            No account needed to buy anything. Your first three drops as a seller are on the house.
-          </p>
+          <Image
+            src="/illustrations/hero-side.jpg"
+            alt="A seller handing a bag of produce across the table to a neighbor"
+            width={999}
+            height={724}
+            priority
+            className="rise rise-2 w-full rounded-2xl"
+            sizes="(max-width: 1024px) 100vw, 520px"
+          />
         </div>
-        <Image
-          src="/illustrations/hero.jpg"
-          alt="A seller handing over a bag of produce to a neighbor, hills rolling behind them"
-          width={2172}
-          height={724}
-          priority
-          className="mt-10 w-full rounded-2xl"
-          sizes="(max-width: 1152px) 100vw, 1152px"
-        />
       </section>
 
       {/* Live drops, when there are any */}
@@ -211,12 +213,46 @@ export default async function Home() {
                 a cooler, and a Facebook group, and that's plenty. Post your drop, set the cooler out front,
                 and let the list do the remembering for you.
               </p>
-              <p className="mt-3 text-lg">
-                Want to reach past your own town? Turn on shipping and buyers can pay by card right when they
-                order. You print a label, they get a box.
-              </p>
+
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Shipping */}
+      <section className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="ship">
+        <div className="grid items-center gap-10 lg:grid-cols-2">
+          <div>
+            <p className="text-sm font-medium text-leaf">It&apos;s an online store too</p>
+            <h2 id="ship" className="mt-1 text-3xl font-semibold">Or skip the meetup and ship it</h2>
+            <p className="mt-4 text-lg">
+              Turn on shipping and a drop works like any online store. Buyers pay by card at checkout, you get
+              a list of names and addresses, you print the labels. Soap, candles, honey, cutting boards,
+              dry goods, anything that fits in a box can go anywhere in the country.
+            </p>
+            <ul className="mt-5 space-y-3">
+              {[
+                ["Card checkout, handled", "Buyers pay through Stripe at checkout, Apple Pay and Google Pay included. Nobody types a card number into Groveline."],
+                ["You set the shipping charge", "One flat rate per order. It gets added at checkout and paid to you along with the sale."],
+                ["Charged when it ships, not before", "The card is held at checkout and only charged once you mark the order shipped. Cancel before then and nobody pays."],
+                ["Pickup and shipping on the same drop", "Offer both and let the buyer pick. Locals swing by, everyone else gets a box."],
+              ].map(([t, d]) => (
+                <li key={t} className="flex gap-3">
+                  <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-peach" aria-hidden="true" />
+                  <span><span className="font-semibold">{t}.</span> <span className="text-muted">{d}</span></span>
+                </li>
+              ))}
+            </ul>
+            <Link href="/browse?ships=1" className="btn btn-grove mt-6">See drops that ship</Link>
+          </div>
+          <Image
+            src="/illustrations/bag.jpg"
+            alt="A paper bag with a leaf tag, ready to go"
+            width={1254}
+            height={1254}
+            className="mx-auto w-full max-w-sm rounded-2xl"
+            sizes="(max-width: 1024px) 100vw, 384px"
+          />
         </div>
       </section>
 

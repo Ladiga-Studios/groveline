@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/browse" },
 };
 
-type Params = { q?: string; city?: string; state?: string; cat?: string; group?: string };
+type Params = { q?: string; city?: string; state?: string; cat?: string; group?: string; ships?: string };
 
 function href(p: Params) {
   const params = new URLSearchParams();
@@ -24,6 +24,7 @@ function href(p: Params) {
   if (p.city) params.set("city", p.city);
   if (p.cat) params.set("cat", p.cat);
   if (p.group) params.set("group", p.group);
+  if (p.ships) params.set("ships", "1");
   const qs = params.toString();
   return qs ? `/browse?${qs}` : "/browse";
 }
@@ -37,17 +38,17 @@ function CategoryTree({
   catCounts: Map<string, number>;
   total: number;
 }) {
-  const { q, city, state, cat, group } = params;
+  const { q, city, state, cat, group, ships } = params;
   return (
     <div>
       <div className="flex items-baseline justify-between">
         <h2 className="text-lg font-semibold">Categories</h2>
         {(cat || group) && (
-          <Link href={href({ q, city, state })} className="text-sm text-grove underline">Clear</Link>
+          <Link href={href({ q, city, state, ships })} className="text-sm text-grove underline">Clear</Link>
         )}
       </div>
       <Link
-        href={href({ q, city, state })}
+        href={href({ q, city, state, ships })}
         className={`mt-2 block rounded-lg px-3 py-2 font-medium ${!cat && !group ? "bg-grove text-cream" : "hover:bg-cream-dark"}`}
       >
         Everything ({total})
@@ -68,7 +69,7 @@ function CategoryTree({
                 {groupCount > 0 && (
                   <li>
                     <Link
-                      href={href({ q, city, state, group: grp.id })}
+                      href={href({ q, city, state, ships, group: grp.id })}
                       className={`block rounded px-2 py-1 text-sm ${group === grp.id && !cat ? "font-semibold text-grove" : "text-ink hover:bg-cream-dark"}`}
                     >
                       All {grp.label.toLowerCase()} ({groupCount})
@@ -81,7 +82,7 @@ function CategoryTree({
                     <li key={c.value}>
                       {n > 0 ? (
                         <Link
-                          href={href({ q, city, state, cat: c.value })}
+                          href={href({ q, city, state, ships, cat: c.value })}
                           className={`block rounded px-2 py-1 text-sm ${cat === c.value ? "bg-grove font-semibold text-cream" : "font-medium text-ink hover:bg-cream-dark"}`}
                         >
                           {c.label} ({n})
@@ -103,7 +104,7 @@ function CategoryTree({
 
 export default async function BrowsePage({ searchParams }: { searchParams: Promise<Params> }) {
   const params = await searchParams;
-  const { q, city, state, cat, group } = params;
+  const { q, city, state, cat, group, ships } = params;
   const supabase = await supabaseServer();
   const nowIso = new Date().toISOString();
 
@@ -137,11 +138,12 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
   if (state) query = query.eq("pickup_state", state);
   if (city) query = query.eq("pickup_city", city);
   if (q) query = query.or(`title.ilike.%${q}%,description.ilike.%${q}%`);
+  if (ships) query = query.in("fulfillment", ["shipping", "both"]);
 
   const { data: drops } = await query;
   const results = (drops ?? []) as Drop[];
   const total = live?.length ?? 0;
-  const filtering = !!(q || cat || group || city || state);
+  const filtering = !!(q || cat || group || city || state || ships);
   const groupLabel = group ? CATEGORY_GROUPS.find((g) => g.id === group)?.label : undefined;
 
   return (
@@ -151,7 +153,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
         {total} {total === 1 ? "drop" : "drops"} up for grabs this minute. Reserve in a few taps, then pick it up or have it shipped.
       </p>
 
-      <form action="/browse" method="get" className="mt-6 flex flex-col gap-3 sm:flex-row">
+      <form id="browse-form" action="/browse" method="get" className="mt-6 flex flex-col gap-3 sm:flex-row">
         {cat && <input type="hidden" name="cat" value={cat} />}
         {group && <input type="hidden" name="group" value={group} />}
         <div className="grow">
@@ -178,6 +180,10 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
         </div>
         <button className="btn btn-grove">Search</button>
       </form>
+      <label className="mt-3 inline-flex min-h-11 cursor-pointer items-center gap-2 text-sm">
+        <input type="checkbox" name="ships" value="1" defaultChecked={!!ships} form="browse-form" className="h-5 w-5 accent-[#1e4d2b]" />
+        Only show drops that ship to me
+      </label>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[260px_1fr]">
         <details className="tag-card !pl-4 p-4 lg:hidden" open={!!(cat || group)}>
