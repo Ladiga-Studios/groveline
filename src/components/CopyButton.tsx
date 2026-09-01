@@ -5,9 +5,11 @@ import { useToast } from "./Toast";
 export default function CopyButton({
   text,
   label = "Copy link",
+  className = "btn btn-outline",
 }: {
   text: string;
   label?: string;
+  className?: string;
 }) {
   const [copied, setCopied] = useState(false);
   const toast = useToast();
@@ -22,7 +24,7 @@ export default function CopyButton({
     }
   }
   return (
-    <button onClick={copy} className="btn btn-outline">
+    <button onClick={copy} className={className}>
       {copied ? "Copied" : label}
     </button>
   );

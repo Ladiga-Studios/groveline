@@ -76,11 +76,11 @@ export default async function ShopPage({ params }: { params: Promise<{ slug: str
       <div className="bg-grove text-cream">
         <div className="mx-auto max-w-6xl px-4 py-10 sm:py-12">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-            <div className="rounded-full bg-cream p-1.5 shadow-lift">
-              <Avatar url={s.avatar_url} name={s.name} size={112} />
+            <div className="w-fit rounded-full bg-cream p-1.5 shadow-lift">
+              <Avatar url={s.avatar_url} name={s.name} size={96} />
             </div>
             <div className="min-w-0 grow">
-              <h1 className="font-display text-4xl font-semibold leading-tight sm:text-5xl">{s.name}</h1>
+              <h1 className="font-display text-3xl font-semibold leading-tight sm:text-5xl">{s.name}</h1>
               <p className="mt-2 text-cream/85">
                 {s.town}, {stateName(s.state)}
                 {since ? ` · Here since ${since}` : ""}

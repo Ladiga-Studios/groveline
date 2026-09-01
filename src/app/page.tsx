@@ -135,7 +135,7 @@ export default async function Home() {
             If you make it, grow it, or cook it in batches, there is a place for it here. Pick the one that
             sounds like you.
           </p>
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
             {[
               { img: "/illustrations/goods.jpg", alt: "Bread, tomatoes, eggs, and a jar of preserves", t: "From the kitchen and the garden", d: "Sourdough, cakes, cookies. Tomatoes, greens, sweet corn. Eggs by the dozen. Jam, honey, pickles, hot sauce.", g: "kitchen" },
               { img: "/illustrations/handmade.jpg", alt: "A woman arranging soap and candles at a market table", t: "From the workshop", d: "Soap, candles, wax melts. Cutting boards and signs. Quilts, crochet, pottery, leather. If your hands made it, it fits.", g: "workshop" },
@@ -145,9 +145,9 @@ export default async function Home() {
               <Reveal key={c.t} delay={i * 70}>
                 <Link href={`/for/${c.g}`} className="tag-card block h-full overflow-hidden !pl-0">
                   <Image src={c.img} alt={c.alt} width={600} height={450} className="aspect-[4/3] w-full object-cover" sizes="(max-width: 640px) 100vw, 300px" />
-                  <div className="p-4">
-                    <h3 className="font-semibold">{c.t}</h3>
-                    <p className="mt-1 text-sm text-muted">{c.d}</p>
+                  <div className="p-3 sm:p-4">
+                    <h3 className="text-sm font-semibold sm:text-base">{c.t}</h3>
+                    <p className="mt-1 hidden text-sm text-muted sm:block">{c.d}</p>
                   </div>
                 </Link>
               </Reveal>
@@ -177,7 +177,7 @@ export default async function Home() {
             sizes="(max-width: 1152px) 100vw, 1152px"
           />
         </Reveal>
-        <ol className="mt-8 grid gap-6 sm:grid-cols-3">
+        <ol className="mt-8 grid gap-4 sm:grid-cols-3 sm:gap-6">
           {[
             { t: "Post it", d: "What it is, how many you have, what it costs, and where or when to pick it up. Add a few photos. Takes about a minute, standing right in the kitchen." },
             { t: "Share it", d: "You get one link. Drop it in the Facebook groups you already use. It shows up as a card with your photo and price, and the count updates on its own, so nobody has to ask what's left." },

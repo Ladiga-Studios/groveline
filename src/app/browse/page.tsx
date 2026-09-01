@@ -56,7 +56,7 @@ function CategoryTree({
       <div className="mt-2 space-y-1">
         {CATEGORY_GROUPS.map((grp) => {
           const groupCount = grp.items.reduce((n, i) => n + (catCounts.get(i.value) ?? 0), 0);
-          const isOpen = group === grp.id || (!!cat && grp.items.some((i) => i.value === cat)) || groupCount > 0;
+          const isOpen = group === grp.id || (!!cat && grp.items.some((i) => i.value === cat));
           return (
             <details key={grp.id} open={isOpen} className="rounded-lg">
               <summary

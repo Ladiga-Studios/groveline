@@ -173,7 +173,7 @@ export default function ClaimList({
       ) : (
         <ul className="mt-4 grid gap-3">
           {claims.map((c, i) => (
-            <li key={c.id} className="tag-card flex items-center justify-between gap-3 p-4">
+            <li key={c.id} className="tag-card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <p className="font-semibold">
                   {i + 1}. {c.buyer_name}{" "}
@@ -195,11 +195,11 @@ export default function ClaimList({
                         : "Card not completed"}
                 </p>
               </div>
-              <div className="flex flex-col items-end gap-1">
+              <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end sm:gap-1">
                 <button
                   onClick={() => togglePickedUp(c)}
                   aria-pressed={c.picked_up}
-                  className={c.picked_up ? "btn btn-grove !min-h-11" : "btn btn-outline !min-h-11"}
+                  className={`${c.picked_up ? "btn btn-grove" : "btn btn-outline"} !min-h-11 grow sm:grow-0`}
                 >
                   {c.delivery === "shipping" ? (c.picked_up ? "Shipped" : "Mark shipped") : c.picked_up ? "Picked up" : "Mark it picked up"}
                 </button>

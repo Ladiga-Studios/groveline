@@ -120,9 +120,9 @@ export default async function DropPage({ params }: { params: Promise<{ slug: str
       )}
       <PhotoGallery urls={photos} alt={drop.title} />
 
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h1 className="text-3xl font-semibold">{drop.title}</h1>
-        <p className="font-display text-3xl font-semibold text-grove">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h1 className="text-2xl font-semibold sm:text-3xl">{drop.title}</h1>
+        <p className="font-display text-2xl font-semibold text-grove sm:text-3xl">
           {money(drop.price_cents)}<span className="ml-1 text-base font-normal text-muted">each</span>
         </p>
       </div>

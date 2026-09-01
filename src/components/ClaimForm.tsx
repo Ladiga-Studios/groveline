@@ -215,12 +215,12 @@ export default function ClaimForm({
         <fieldset className="flex flex-col gap-3">
           <legend className="field-label">Where should it go</legend>
           <input className="field" placeholder="Street address" value={ship.line1} onChange={(e) => setShip({ ...ship, line1: e.target.value })} autoComplete="street-address" aria-label="Street address" />
-          <div className="grid grid-cols-6 gap-2">
-            <input className="field col-span-3" placeholder="City" value={ship.city} onChange={(e) => setShip({ ...ship, city: e.target.value })} autoComplete="address-level2" aria-label="City" />
-            <select className="field col-span-2" value={ship.state} onChange={(e) => setShip({ ...ship, state: e.target.value })} aria-label="State">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-6">
+            <input className="field col-span-2 sm:col-span-3" placeholder="City" value={ship.city} onChange={(e) => setShip({ ...ship, city: e.target.value })} autoComplete="address-level2" aria-label="City" />
+            <select className="field col-span-1 sm:col-span-2" value={ship.state} onChange={(e) => setShip({ ...ship, state: e.target.value })} aria-label="State">
               {STATES.map(([c, n]) => <option key={c} value={c}>{n}</option>)}
             </select>
-            <input className="field col-span-1 !px-2" placeholder="Zip" value={ship.zip} onChange={(e) => setShip({ ...ship, zip: e.target.value })} inputMode="numeric" autoComplete="postal-code" aria-label="Zip" />
+            <input className="field col-span-1" placeholder="Zip" value={ship.zip} onChange={(e) => setShip({ ...ship, zip: e.target.value })} inputMode="numeric" autoComplete="postal-code" aria-label="Zip" />
           </div>
         </fieldset>
       )}

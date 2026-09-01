@@ -51,32 +51,50 @@ export default async function DropAdminPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-3xl font-semibold">{drop.title}</h1>
-      <p className="mt-1 text-muted">
-        {money(drop.price_cents)} each, {whenLabel(drop)}{drop.pickup_place ? ` at ${drop.pickup_place}` : ""}.
-      </p>
-      <p className="mt-3 font-display text-2xl font-semibold text-grove">
-        {drop.claimed} of {drop.quantity} claimed
-        <span className="ml-3 text-base font-normal text-muted">{drop.views} views</span>
-      </p>
-      <div className="mt-4 flex flex-wrap gap-3">
-        <FacebookShareButton url={url} />
-        <Link href={`/dashboard/drops/${drop.id}/edit`} className="btn btn-outline">
-          Edit drop
-        </Link>
-        <Link href={`/dashboard/new?from=${drop.id}`} className="btn btn-outline">
-          Post again
-        </Link>
-        <NotifyFollowersButton slug={drop.slug} />
-        <a href={`/api/drops/${drop.id}/report?format=pdf`} className="btn btn-outline">Print list (PDF)</a>
-        <a href={`/api/drops/${drop.id}/report?format=xlsx`} className="btn btn-outline">Spreadsheet</a>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-3xl font-semibold">{drop.title}</h1>
+            {drop.status === "closed" && (
+              <span className="rounded-full bg-ink px-2.5 py-1 text-xs font-semibold text-cream">Closed</span>
+            )}
+          </div>
+          <p className="mt-1 text-muted">
+            {money(drop.price_cents)} each, {whenLabel(drop)}{drop.pickup_place ? ` at ${drop.pickup_place}` : ""}.
+          </p>
+        </div>
+        <Link href={`/d/${drop.slug}`} className="text-sm text-grove underline">View as a buyer</Link>
+      </div>
+
+      <div className="mt-5 grid grid-cols-3 gap-3">
+        {[
+          ["Reserved", `${drop.claimed} of ${drop.quantity}`],
+          ["Left", String(Math.max(0, drop.quantity - drop.claimed))],
+          ["Views", String(drop.views)],
+        ].map(([l, v]) => (
+          <div key={l} className="tag-card p-3 text-center sm:p-4">
+            <p className="font-display text-2xl font-semibold text-grove">{v}</p>
+            <p className="text-xs text-muted">{l}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-5 flex flex-wrap gap-2">
+        <FacebookShareButton url={url} label="Post to Facebook" />
         <CopyButton text={url} />
+      </div>
+
+      <div className="toolbar mt-3" style={{ "--toolbar-cols": 3 } as React.CSSProperties}>
+        <a href={`/api/drops/${drop.id}/report?format=pdf`} className="toolbar-item">Print pickup sheet</a>
+        <a href={`/api/drops/${drop.id}/report?format=xlsx`} className="toolbar-item">Download spreadsheet</a>
         <CopyButton
-          text={(claims ?? [])
-            .map((c) => `${c.buyer_name} ${c.buyer_phone} x${c.quantity}`)
-            .join("\n")}
-          label="Copy claim list"
+          text={(claims ?? []).map((c) => `${c.buyer_name} ${c.buyer_phone} x${c.quantity}`).join("\n")}
+          label="Copy the list as text"
+          className="toolbar-item"
         />
+        <Link href={`/dashboard/drops/${drop.id}/edit`} className="toolbar-item">Edit drop</Link>
+        <Link href={`/dashboard/new?from=${drop.id}`} className="toolbar-item">Post again</Link>
+        <NotifyFollowersButton slug={drop.slug} className="toolbar-item" />
       </div>
 
       <InventoryControl

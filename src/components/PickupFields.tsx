@@ -76,12 +76,12 @@ export default function PickupFields({
         </>
       )}
 
-      <div className="grid grid-cols-6 gap-3">
-        <div className="col-span-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-6">
+        <div className="col-span-2 sm:col-span-3">
           <label htmlFor={`${prefix}-city`} className="field-label">{pickup ? "City" : "Shipping from"}</label>
           <input id={`${prefix}-city`} className="field" value={value.city} onChange={set("city")} placeholder="Piedmont" autoComplete="address-level2" />
         </div>
-        <div className="col-span-2">
+        <div className="col-span-1 sm:col-span-2">
           <label htmlFor={`${prefix}-state`} className="field-label">State</label>
           <select id={`${prefix}-state`} className="field" value={value.state} onChange={set("state")}>
             {STATES.map(([code, name]) => <option key={code} value={code}>{name}</option>)}
@@ -89,13 +89,13 @@ export default function PickupFields({
         </div>
         <div className="col-span-1">
           <label htmlFor={`${prefix}-zip`} className="field-label">Zip</label>
-          <input id={`${prefix}-zip`} className="field !px-2" value={value.zip} onChange={set("zip")} inputMode="numeric" autoComplete="postal-code" />
+          <input id={`${prefix}-zip`} className="field" value={value.zip} onChange={set("zip")} inputMode="numeric" autoComplete="postal-code" />
         </div>
       </div>
 
       {pickup ? (
-        <div className="grid grid-cols-3 gap-3">
-          <div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="col-span-2 sm:col-span-1">
             <label htmlFor={`${prefix}-date`} className="field-label">What date</label>
             <input id={`${prefix}-date`} type="date" className="field" value={value.date} min={minDate} onChange={set("date")} />
           </div>

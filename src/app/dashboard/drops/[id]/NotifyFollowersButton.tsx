@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useToast } from "@/components/Toast";
 
 /* Emails followers and subscribers about a change to this drop. Once an hour, tops. */
-export default function NotifyFollowersButton({ slug }: { slug: string }) {
+export default function NotifyFollowersButton({ slug, className = "btn btn-outline" }: { slug: string; className?: string }) {
   const [busy, setBusy] = useState(false);
   const toast = useToast();
   async function send() {
@@ -19,7 +19,7 @@ export default function NotifyFollowersButton({ slug }: { slug: string }) {
     else toast(data.error || "That didn't send. Try again shortly.", "error");
   }
   return (
-    <button onClick={send} disabled={busy} className="btn btn-outline">
+    <button onClick={send} disabled={busy} className={className}>
       {busy ? "Sending" : "Let my followers know"}
     </button>
   );
