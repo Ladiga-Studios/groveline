@@ -97,8 +97,9 @@ export default function TermsPage() {
         <section>
           <h2 className="text-xl font-semibold">Fees</h2>
           <p className="mt-2">
-            A seller&apos;s first three drops are free. After that, selling is a subscription of $10 a month or
-            $60 a year, cancellable any time from your account. Buying is always free.
+            A seller&apos;s first three drops are free. That&apos;s three over the life of the account, not three at
+            a time, so deleting a drop doesn&apos;t give the slot back. After that, selling is a subscription of
+            $10 a month or $60 a year, cancellable any time from your account. Buying is always free.
           </p>
         </section>
 

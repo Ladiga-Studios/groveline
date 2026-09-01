@@ -22,7 +22,7 @@ const included = [
 ];
 
 const faq = [
-  ["Do I need to pay to try it?", "No. Post three drops on the house, no card required. If it works for you, pick a plan then."],
+  ["Do I need to pay to try it?", "No. Post three drops on the house, no card required. That's three over the life of your account rather than three at a time, so deleting one doesn't give the slot back. If it works for you, pick a plan then."],
   ["Do you take a cut of my sales?", "Never. Cash or card, big or small, the sale is yours. The subscription is the only thing you ever pay us."],
   ["What about card processing fees?", "Stripe charges its normal processing fee on card payments, about 2.9% plus 30 cents, the same as any card reader at a market. That comes out of the seller's side. Groveline adds nothing on top."],
   ["Can I cancel?", "Any time, with one button in your account settings. Nothing changes until the end of what you already paid for, and your shop, drops, and followers all stay right where they are."],

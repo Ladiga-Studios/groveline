@@ -44,7 +44,7 @@ export const PROHIBITED: ProhibitedCategory[] = [
   {
     label: "Raw milk and raw dairy",
     detail:
-      "Raw milk and raw-milk cheese aged under 60 days, unless you hold the license your state requires for it and can produce it on request. Pasteurized dairy, butter, and aged cheeses are fine.",
+      "Raw milk and raw-milk cheese aged under 60 days. The automatic check blocks these outright, licensed or not, because Groveline has no way to verify a dairy license. If you're licensed and want to sell raw dairy here, get in touch through the support page first. Pasteurized dairy, butter, and aged cheeses are fine.",
     terms: ["raw milk", "unpasteurized"],
   },
   {
