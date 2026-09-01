@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Logo from "./Logo";
-import Sprout from "./Sprout";
 import { FOR_PAGES } from "@/lib/for";
 
 export default function Footer() {
@@ -11,14 +10,10 @@ export default function Footer() {
           <Logo light />
           <p className="mt-3 max-w-xs text-cream/80">
             A place for people who sell things in batches. Post what you have,
-            neighbors reserve it, everybody meets up in person.
+            neighbors reserve it, and you meet up in person or ship it.
           </p>
           <div className="mt-5 flex flex-col gap-2 text-cream/80">
             <a href="mailto:hello@groveline.io" className="w-fit hover:underline">hello@groveline.io</a>
-            <p className="flex items-center gap-1.5">
-              <Sprout size={18} className="text-leaf" />
-              Grown in Alabama.
-            </p>
           </div>
         </div>
         <nav aria-label="Groveline" className="flex flex-col gap-2">
