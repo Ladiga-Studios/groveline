@@ -1,20 +1,33 @@
 import Link from "next/link";
 
-/* The mark: an upright leaf that is also a price tag, string and all. */
+/* The mark: a leaf that is also a price tag, string and all.
+
+   Kept deliberately plain. Every extra stroke in here disappears below
+   about 24px and just muddies the silhouette, so the tag reads through
+   the hole and the loop rather than through fine detail. */
 export function GrovelineMark({ size = 34, hole = "#faf6ef" }: { size?: number; hole?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-      {/* string loop */}
-      <path d="M31.5 19 C 28 12, 27 4, 31 3 C 36 2, 37 11, 33 19" fill="none" stroke="#f2a65a" strokeWidth="2.6" strokeLinecap="round" />
-      {/* leaf body */}
-      <path d="M32 61 C 13 46, 12 26, 32 11 C 52 26, 51 46, 32 61 Z" fill="currentColor" />
+      {/* string, looped through the hole */}
+      <path
+        d="M32 18 C26 15, 23.5 8.5, 27.5 6.5 C31.5 4.5, 34.5 10, 32.5 18"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      {/* leaf body, doubling as the tag */}
+      <path
+        d="M32 10 C44 17, 52 25, 52 34 C52 45, 42 53, 32 59 C22 53, 12 45, 12 34 C12 25, 20 17, 32 10 Z"
+        fill="currentColor"
+      />
       {/* tag hole */}
       <circle cx="32" cy="21" r="3.6" fill={hole} />
-      {/* veins */}
-      <g fill="none" stroke={hole} strokeWidth="2.2" strokeLinecap="round">
-        <path d="M32 28 V53" />
-        <path d="M32 33 L24 39 M32 33 L40 39" />
-        <path d="M32 42 L24.5 48 M32 42 L39.5 48" />
+      {/* a sprig for the veins: two pairs, no more */}
+      <g fill="none" stroke={hole} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M32 53 V31" />
+        <path d="M32 40 L24 33.5 M32 40 L40 33.5" />
+        <path d="M32 48 L25.5 42.5 M32 48 L38.5 42.5" />
       </g>
     </svg>
   );

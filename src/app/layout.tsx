@@ -3,6 +3,7 @@ import "@fontsource-variable/fraunces";
 import "@fontsource-variable/instrument-sans";
 import "./globals.css";
 import Header, { type HeaderUser } from "@/components/Header";
+import ScrollToTop from "@/components/ScrollToTop";
 import Footer from "@/components/Footer";
 import { ToastProvider } from "@/components/Toast";
 import { supabaseServer } from "@/lib/supabase/server";
@@ -58,6 +59,7 @@ export default async function RootLayout({
       <body>
         <ToastProvider>
           <Header user={headerUser} />
+          <ScrollToTop />
           <main id="main">{children}</main>
           <Footer />
         </ToastProvider>

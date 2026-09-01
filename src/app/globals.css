@@ -218,6 +218,14 @@ a.tag-card:focus-visible {
   padding: 1rem;
   animation: fade-in var(--transition-fast);
 }
+/* Marks a required field. Uses a real asterisk with an accessible label
+   rather than colour alone, so it reads for screen readers too. */
+.req::after {
+  content: " *";
+  color: var(--color-clay);
+  font-weight: 600;
+}
+
 .modal-card {
   background: var(--color-cream);
   /* Set explicitly: a modal opened from inside a dark band (the shop

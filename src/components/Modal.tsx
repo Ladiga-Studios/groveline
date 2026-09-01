@@ -14,10 +14,18 @@ export default function Modal({
   children: React.ReactNode;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const lastFocused = useRef<HTMLElement | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
+
+  /* Held in a ref so the effect below doesn't depend on it. Call sites
+     pass an inline arrow, which is a new function every render, and an
+     effect that re-runs on every render would re-run its focus setup on
+     every keystroke. */
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
 
   useEffect(() => {
     if (!open) return;
@@ -28,14 +36,17 @@ export default function Modal({
     document.body.style.top = `-${scrollY}px`;
     document.body.style.width = "100%";
     const card = cardRef.current;
-    const focusables = () =>
-      card?.querySelectorAll<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      ) ?? [];
-    focusables()[0]?.focus();
+    const SELECTOR = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const focusables = () => card?.querySelectorAll<HTMLElement>(SELECTOR) ?? [];
+
+    /* Focus what the modal is actually for, not the close button. The X
+       comes first in the DOM, so focusing focusables()[0] would land
+       there and skip past the input the person came to type in. */
+    const firstInBody = bodyRef.current?.querySelector<HTMLElement>(SELECTOR);
+    (firstInBody ?? focusables()[0])?.focus();
 
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") closeRef.current();
       if (e.key === "Tab") {
         const items = Array.from(focusables());
         if (!items.length) return;
@@ -60,7 +71,7 @@ export default function Modal({
       window.scrollTo(0, scrollY);
       lastFocused.current?.focus();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open || !mounted) return null;
 
@@ -96,7 +107,7 @@ export default function Modal({
             </svg>
           </button>
         </div>
-        {children}
+        <div ref={bodyRef}>{children}</div>
       </div>
     </div>,
     document.body

@@ -42,7 +42,7 @@ export async function POST(req: Request) {
   if (photo && photo.size > 0) {
     const base64 = Buffer.from(await photo.arrayBuffer()).toString("base64");
     const check = await moderateDropSubmission({ title: "shop photo", description: "", images: [{ base64, mediaType: photo.type || "image/jpeg" }] });
-    if (!check.ok) return NextResponse.json({ error: "That photo doesn't meet our guidelines. Try a different one." }, { status: 422 });
+    if (!check.ok) return NextResponse.json({ error: check.message }, { status: 422 });
     const path = `${user.id}/shop-${Date.now()}.jpg`;
     const { error: upErr } = await supabase.storage.from("drop-photos").upload(path, photo, { contentType: "image/jpeg", cacheControl: "31536000" });
     if (upErr) return NextResponse.json({ error: "That photo didn't upload. Try again." }, { status: 500 });

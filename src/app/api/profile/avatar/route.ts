@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     images: [{ base64, mediaType: file.type || "image/jpeg" }],
   });
   if (!check.ok) {
-    return NextResponse.json({ error: "That photo doesn't meet our guidelines. Try a different one." }, { status: 422 });
+    return NextResponse.json({ error: check.message }, { status: 422 });
   }
 
   const path = `${user.id}/avatar-${Date.now()}.jpg`;

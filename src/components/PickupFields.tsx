@@ -65,7 +65,7 @@ export default function PickupFields({
       {pickup && (
         <>
           <div>
-            <label htmlFor={`${prefix}-place`} className="field-label">Where should people meet you</label>
+            <label htmlFor={`${prefix}-place`} className="field-label req">Where should people meet you</label>
             <input id={`${prefix}-place`} className="field" value={value.place} onChange={set("place")} placeholder="Piedmont Farmers Market, or My driveway" />
             <p className="field-hint">Whatever your buyers would recognize right away.</p>
           </div>
@@ -78,17 +78,17 @@ export default function PickupFields({
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-6">
         <div className="col-span-2 sm:col-span-3">
-          <label htmlFor={`${prefix}-city`} className="field-label">{pickup ? "City" : "Shipping from"}</label>
+          <label htmlFor={`${prefix}-city`} className="field-label req">{pickup ? "City" : "Shipping from"}</label>
           <input id={`${prefix}-city`} className="field" value={value.city} onChange={set("city")} placeholder="Piedmont" autoComplete="address-level2" />
         </div>
         <div className="col-span-1 sm:col-span-2">
-          <label htmlFor={`${prefix}-state`} className="field-label">State</label>
+          <label htmlFor={`${prefix}-state`} className="field-label req">State</label>
           <select id={`${prefix}-state`} className="field" value={value.state} onChange={set("state")}>
             {STATES.map(([code, name]) => <option key={code} value={code}>{name}</option>)}
           </select>
         </div>
         <div className="col-span-1">
-          <label htmlFor={`${prefix}-zip`} className="field-label">Zip</label>
+          <label htmlFor={`${prefix}-zip`} className="field-label req">Zip</label>
           <input id={`${prefix}-zip`} className="field" value={value.zip} onChange={set("zip")} inputMode="numeric" autoComplete="postal-code" />
         </div>
       </div>
@@ -96,15 +96,15 @@ export default function PickupFields({
       {pickup ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <div className="col-span-2 sm:col-span-1">
-            <label htmlFor={`${prefix}-date`} className="field-label">What date</label>
+            <label htmlFor={`${prefix}-date`} className="field-label req">What date</label>
             <input id={`${prefix}-date`} type="date" className="field" value={value.date} min={minDate} onChange={set("date")} />
           </div>
           <div>
-            <label htmlFor={`${prefix}-start`} className="field-label">From</label>
+            <label htmlFor={`${prefix}-start`} className="field-label req">From</label>
             <input id={`${prefix}-start`} type="time" className="field" value={value.start} onChange={set("start")} />
           </div>
           <div>
-            <label htmlFor={`${prefix}-end`} className="field-label">Until</label>
+            <label htmlFor={`${prefix}-end`} className="field-label req">Until</label>
             <input id={`${prefix}-end`} type="time" className="field" value={value.end} onChange={set("end")} />
           </div>
         </div>

@@ -1,5 +1,6 @@
-/* A quiet fiddlehead flourish. Decoration only, used sparingly in a few
-   warm spots (never as a functional icon, never as the logo). */
+/* A quiet two-leaf seedling. Decoration only, used sparingly in a few
+   warm spots (never as a functional icon, never as the logo). Solid
+   shapes rather than a thin line, so it holds up at small sizes. */
 export default function Sprout({ size = 22, className = "" }: { size?: number; className?: string }) {
   return (
     <svg
@@ -10,14 +11,14 @@ export default function Sprout({ size = 22, className = "" }: { size?: number; c
       focusable="false"
       className={className}
     >
-      <path
-        d="M15 34 C15 24, 14 20, 18 17 C22 14, 26 16, 25.5 20 C25.2 22.5, 22.5 23.5, 21 21.8 C19.8 20.5, 21 18.8, 22.3 19.5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <g fill="currentColor">
+        {/* left leaf */}
+        <path d="M19.2 23.5 C11 24, 6 19.5, 6.5 12 C14.5 11.5, 19.5 16, 19.2 23.5 Z" />
+        {/* right leaf, a touch larger so it doesn't read as a symmetric bow */}
+        <path d="M20.8 23.5 C20.5 15, 26 9.5, 34.5 10 C35 18.5, 29.5 24, 20.8 23.5 Z" />
+        {/* stem */}
+        <path d="M18.6 34 C18.6 27, 19 24, 20 21.5 C21 24, 21.4 27, 21.4 34 Z" />
+      </g>
     </svg>
   );
 }

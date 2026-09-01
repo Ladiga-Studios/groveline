@@ -50,14 +50,19 @@ export async function moderateDropSubmission(input: {
 Title: ${input.title || "(none)"}
 Description: ${input.description || "(none)"}
 
-Flag it if photos show nudity, sexual content, graphic violence or gore, or anything clearly unsafe or inappropriate for a public family-friendly listing. Flag the text if it contains hate speech, sexual solicitation, or is clearly spam or a scam rather than a real local listing. Do not flag ordinary photos of food, plants, animals, crafts, or people at a market.
+Flag it if photos show nudity, sexual content, graphic violence or gore, or anything clearly unsafe or inappropriate for a public family-friendly listing. Flag the text ONLY if it contains hate speech, sexual solicitation, or is clearly spam or a scam. Do not flag ordinary photos of food, plants, animals, crafts, or people at a market.
+
+A listing being short, vague, plain, oddly worded, a placeholder, or a test is NOT a reason to flag it. "Drop", "test", "eggs", and "asdf" are all fine. These are real people typing on their phones, and a wrongly blocked listing costs a seller. When in doubt, allow it.
 
 Separately, flag it as "prohibited" if the listing is offering any of these, which are not allowed on Groveline:
 ${prohibitedForPrompt()}
 
 Judge what is actually being sold, not passing mentions. "Jam, no alcohol added" is jam. "Beeswax candles" is not alcohol. A photo of a barn cat next to a table of produce is produce, not a live animal sale. When it is genuinely ambiguous, allow it.
 
-Respond with ONLY this JSON and nothing else: {"ok": true} if everything is fine, or {"ok": false, "flagged": "photo"}, {"ok": false, "flagged": "text"}, or {"ok": false, "flagged": "prohibited", "reason": "<the category, a few words>"} if something needs to be removed or changed.`,
+Respond with ONLY this JSON and nothing else. If everything is fine: {"ok": true}. Otherwise include a "reason" of a few plain words naming the specific problem, which is shown to the seller:
+{"ok": false, "flagged": "photo", "reason": "<what's in the photo>"}
+{"ok": false, "flagged": "text", "reason": "<what's wrong with the wording>"}
+{"ok": false, "flagged": "prohibited", "reason": "<the category>"}`,
     },
     ...input.images.map((img) => ({
       type: "image" as const,
@@ -98,15 +103,17 @@ Respond with ONLY this JSON and nothing else: {"ok": true} if everything is fine
       return {
         ok: false,
         flagged: "text",
-        message:
-          "The title or description doesn't meet our listing guidelines. Please edit the wording and try again.",
+        message: parsed.reason
+          ? `We couldn't post this because of the wording: ${parsed.reason}. Reword it and try again, or use the support page if that's a misread.`
+          : "Something in the title or description got flagged. Try rewording it, or use the support page if that seems wrong.",
       };
     }
     return {
       ok: false,
       flagged: "photo",
-      message:
-        "One of the photos doesn't meet our content guidelines. Please remove it and try a different photo.",
+      message: parsed.reason
+        ? `One of the photos got flagged: ${parsed.reason}. Swap that photo out and try again.`
+        : "One of the photos got flagged. Try a different photo, or use the support page if that seems wrong.",
     };
   } catch {
     return { ok: true };

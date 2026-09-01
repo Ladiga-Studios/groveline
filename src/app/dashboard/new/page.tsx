@@ -242,17 +242,21 @@ export default function NewDropPage() {
         A few details and some photos. About a minute.
         {gate?.freeLeft !== null && gate?.freeLeft !== undefined && gate.freeLeft > 0 && ` This is one of your ${gate.freeLeft} free drop${gate.freeLeft === 1 ? "" : "s"}.`}
       </p>
+      <p className="mt-1 text-sm text-muted">
+        Fields marked <span className="font-semibold text-clay">*</span> are required. Everything else is
+        up to you.
+      </p>
 
       <form onSubmit={submit} className="mt-8 flex flex-col gap-8" noValidate>
         <section className="tag-card p-6">
           <h2 className="text-lg font-semibold">What are you selling</h2>
           <div className="mt-4 flex flex-col gap-5">
             <div>
-              <label htmlFor="d-title" className="field-label">Give it a name</label>
+              <label htmlFor="d-title" className="field-label req">Give it a name</label>
               <input id="d-title" className="field" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Sourdough loaves" />
             </div>
             <div>
-              <label htmlFor="d-cat" className="field-label">Category</label>
+              <label htmlFor="d-cat" className="field-label req">Category</label>
               <CategorySelect id="d-cat" value={category} onChange={setCategory} />
             </div>
             <div>
@@ -261,11 +265,11 @@ export default function NewDropPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="d-qty" className="field-label">How many you've got</label>
+                <label htmlFor="d-qty" className="field-label req">How many you've got</label>
                 <input id="d-qty" type="number" inputMode="numeric" min="1" className="field" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="12" />
               </div>
               <div>
-                <label htmlFor="d-price" className="field-label">Going rate, each</label>
+                <label htmlFor="d-price" className="field-label req">Going rate, each</label>
                 <div className="relative">
                   <span aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 font-semibold text-muted">$</span>
                   <input id="d-price" type="text" inputMode="decimal" className="field pl-8" value={price} onChange={(e) => setPrice(e.target.value.replace(/[^0-9.,]/g, ""))} onBlur={() => { const n = parsePrice(price); if (!isNaN(n)) setPrice(formatPriceInput(n)); }} placeholder="9.00" />
