@@ -33,6 +33,18 @@ export default function NewDropPage() {
   const toast = useToast();
   const router = useRouter();
 
+  /* Posting a drop swaps the form for the success panel without changing
+     the URL, so the global ScrollToTop never runs and you're left staring
+     at the footer. Same applies to any in-place view swap like this. */
+  useEffect(() => {
+    if (!created) return;
+    const html = document.documentElement;
+    const previous = html.style.scrollBehavior;
+    html.style.scrollBehavior = "auto";
+    window.scrollTo(0, 0);
+    html.style.scrollBehavior = previous;
+  }, [created]);
+
   useEffect(() => {
     (async () => {
       const supabase = supabaseBrowser();

@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
 import Image from "next/image";
@@ -54,6 +54,7 @@ export default function ClaimForm({
   const [turnstileToken, setTurnstileToken] = useState("");
   const turnstileRef = useRef<HTMLDivElement>(null);
   const [errors, setErrors] = useState<Errors>({});
+  const confirmRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
   const [claim, setClaim] = useState<{ position: number; token: string } | null>(null);
   const toast = useToast();
@@ -86,6 +87,13 @@ export default function ClaimForm({
     }
     return Object.keys(next).length === 0;
   }
+
+  /* The confirmation replaces the form in place, with no navigation, so
+     nothing scrolls it into view on its own. On a phone the form sits well
+     down the drop page and the confirmation would appear off-screen. */
+  useEffect(() => {
+    if (claim) confirmRef.current?.scrollIntoView({ block: "center" });
+  }, [claim]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -133,7 +141,7 @@ export default function ClaimForm({
 
   if (claim) {
     return (
-      <div className="tag-card p-6" role="status">
+      <div className="tag-card p-6" role="status" ref={confirmRef}>
         <div className="flex items-center gap-2">
           <Sprout size={24} className="text-leaf" />
           <p className="font-display text-2xl font-semibold text-grove">You're number {claim.position}.</p>

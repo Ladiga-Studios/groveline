@@ -46,6 +46,7 @@ export default async function OgImage({
     drop = null;
   }
   const shop = Array.isArray(drop?.shops) ? drop?.shops[0] : drop?.shops;
+  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://groveline.io";
 
   const title = drop?.title ?? "A local drop";
   const price = drop ? money(drop.price_cents ?? 0) : "";
@@ -93,6 +94,9 @@ export default async function OgImage({
               style={{ width: 470, height: 544, objectFit: "cover" }}
             />
           ) : (
+            /* No photo on the drop, so the panel carries the Groveline mark
+               instead of a placeholder glyph. Absolute URL because this
+               renders on the edge, where relative paths don't resolve. */
             <div
               style={{
                 display: "flex",
@@ -101,11 +105,16 @@ export default async function OgImage({
                 width: 300,
                 height: 544,
                 background: colors.grove,
-                color: colors.cream,
-                fontSize: 130,
               }}
             >
-              *
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`${site}/logo/mark-dark.png`}
+                alt=""
+                width={150}
+                height={283}
+                style={{ width: 150, height: 283, objectFit: "contain" }}
+              />
             </div>
           )}
           <div
