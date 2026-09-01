@@ -27,10 +27,25 @@ export async function POST(req: Request) {
     await admin.from("billing").upsert({ profile_id: user.id, stripe_customer_id: customerId });
   }
 
-  // A promo code typed on our pricing page gets looked up and applied
-  // directly. Otherwise Stripe's own promo box is available at checkout.
+  // The free-month code gives a real 30-day trial on either plan, so
+  // "one month free" means one month free no matter what they pick.
+  // Any other code gets looked up in Stripe as a normal coupon.
+  const freeMonthCode = (process.env.FREE_MONTH_CODE || "").trim().toUpperCase();
+  const typed = (promo || "").trim().toUpperCase();
+  const freeMonth = !!freeMonthCode && typed === freeMonthCode;
+
+  // Only one trial per customer. If they've ever had a subscription, no trial.
+  let trialAllowed = freeMonth;
+  if (freeMonth && customerId) {
+    const prior = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 1 });
+    if (prior.data.length > 0) trialAllowed = false;
+  }
+  if (freeMonth && !trialAllowed) {
+    return NextResponse.json({ error: "That code is for first-time subscribers only." }, { status: 400 });
+  }
+
   let discounts: { promotion_code: string }[] | undefined;
-  if (promo && promo.trim()) {
+  if (promo && promo.trim() && !freeMonth) {
     try {
       const codes = await stripe.promotionCodes.list({ code: promo.trim().toUpperCase(), active: true, limit: 1 });
       if (codes.data[0]) discounts = [{ promotion_code: codes.data[0].id }];
@@ -45,8 +60,11 @@ export async function POST(req: Request) {
     customer: customerId,
     line_items: [{ price, quantity: 1 }],
     metadata: { profile_id: user.id },
-    subscription_data: { metadata: { profile_id: user.id } },
-    ...(discounts ? { discounts } : { allow_promotion_codes: true }),
+    subscription_data: {
+      metadata: { profile_id: user.id },
+      ...(trialAllowed ? { trial_period_days: 30 } : {}),
+    },
+    ...(discounts ? { discounts } : trialAllowed ? {} : { allow_promotion_codes: true }),
     success_url: `${siteUrl()}/dashboard/new?subscribed=1`,
     cancel_url: `${siteUrl()}/dashboard`,
   });

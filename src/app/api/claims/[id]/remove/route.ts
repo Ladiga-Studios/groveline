@@ -25,8 +25,15 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   if (claim.payment_status === "authorized" && claim.payment_intent_id) {
     const stripe = getStripe();
     if (stripe) {
+      const { data: billing } = await supabaseAdmin()
+        .from("billing")
+        .select("stripe_account_id")
+        .eq("profile_id", shop.owner_id)
+        .maybeSingle();
       try {
-        await stripe.paymentIntents.cancel(claim.payment_intent_id);
+        await stripe.paymentIntents.cancel(claim.payment_intent_id, {
+          ...(billing?.stripe_account_id ? { stripeAccount: billing.stripe_account_id } : {}),
+        } as never);
       } catch {
         /* already released or expired */
       }

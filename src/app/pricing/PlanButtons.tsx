@@ -65,7 +65,7 @@ export default function PlanButtons({
         )}
       </div>
       <div className="mt-4 flex flex-col items-start gap-2 sm:flex-row sm:items-center">
-        <label htmlFor="promo" className="text-sm text-muted">Have a code?</label>
+        <label htmlFor="promo" className="text-sm text-muted">Have a code? It applies before you pay.</label>
         <input
           id="promo"
           className="field sm:w-56"

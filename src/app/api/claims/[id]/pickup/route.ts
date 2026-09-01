@@ -29,8 +29,20 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (picked_up && claim.payment_status === "authorized" && claim.payment_intent_id) {
     const stripe = getStripe();
     if (!stripe) return NextResponse.json({ error: "Payments unavailable" }, { status: 503 });
+    // Direct charges live on the seller's account, so the capture has to be
+    // made against that account too.
+    const { data: billing } = await admin
+      .from("billing")
+      .select("stripe_account_id")
+      .eq("profile_id", shop.owner_id)
+      .maybeSingle();
+    if (!billing?.stripe_account_id) {
+      return NextResponse.json({ error: "Card payments aren't set up on this shop." }, { status: 400 });
+    }
     try {
-      await stripe.paymentIntents.capture(claim.payment_intent_id);
+      await stripe.paymentIntents.capture(claim.payment_intent_id, undefined, {
+        stripeAccount: billing.stripe_account_id,
+      });
       update.payment_status = "captured";
       update.paid = true;
     } catch {

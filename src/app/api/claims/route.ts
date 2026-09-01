@@ -137,7 +137,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Card payments aren't working right now, try cash instead" }, { status: 503 });
     }
     try {
-      const session = await stripe.checkout.sessions.create({
+      // Direct charge: the checkout is created ON the seller's connected
+      // account, so the charge, the statement descriptor, the Stripe fee,
+      // and any dispute all belong to them. Groveline just orchestrates.
+      const session = await stripe.checkout.sessions.create(
+        {
         mode: "payment",
         line_items: [
           {
@@ -150,7 +154,6 @@ export async function POST(req: Request) {
         ],
         payment_intent_data: {
           capture_method: "manual",
-          transfer_data: { destination: billing.stripe_account_id },
           metadata: { claim_id: result.claim_id },
         },
         metadata: { claim_id: result.claim_id },
@@ -158,7 +161,9 @@ export async function POST(req: Request) {
         expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
         success_url: `${reservationUrl}?paid=1`,
         cancel_url: `${reservationUrl}?cancelled=1`,
-      });
+        },
+        { stripeAccount: billing.stripe_account_id }
+      );
       checkoutUrl = session.url;
     } catch {
       await admin.rpc("release_claim", { p_claim: result.claim_id });

@@ -18,26 +18,34 @@ export async function POST(_req: Request, { params }: { params: Promise<{ token:
   type Owner = { email: string | null; notify_on_claim: boolean };
   const drop = (Array.isArray(claim.drops) ? claim.drops[0] : claim.drops) as unknown as {
     id: string; title: string; pickup_end: string; seller_id: string;
-    shops: { owner: Owner | Owner[] | null } | { owner: Owner | Owner[] | null }[] | null;
+    shops: { owner_id: string; owner: Owner | Owner[] | null } | { owner_id: string; owner: Owner | Owner[] | null }[] | null;
   };
   if (claim.picked_up || new Date(drop.pickup_end) < new Date()) {
     return NextResponse.json({ error: "Too late to cancel" }, { status: 400 });
   }
 
+  const shopRowEarly = Array.isArray(drop.shops) ? drop.shops[0] : drop.shops;
   if (claim.payment_status === "authorized" && claim.payment_intent_id) {
     const stripe = getStripe();
-    if (stripe) {
+    if (stripe && shopRowEarly?.owner_id) {
+      const { data: billing } = await admin
+        .from("billing")
+        .select("stripe_account_id")
+        .eq("profile_id", shopRowEarly.owner_id)
+        .maybeSingle();
       try {
-        await stripe.paymentIntents.cancel(claim.payment_intent_id);
+        await stripe.paymentIntents.cancel(claim.payment_intent_id, {
+          ...(billing?.stripe_account_id ? { stripeAccount: billing.stripe_account_id } : {}),
+        } as never);
       } catch {
-        /* fine */
+        /* already released or expired */
       }
     }
   }
 
   await admin.rpc("release_claim", { p_claim: claim.id });
 
-  const shopRow = Array.isArray(drop.shops) ? drop.shops[0] : drop.shops;
+  const shopRow = shopRowEarly;
   const seller = Array.isArray(shopRow?.owner) ? shopRow?.owner[0] : shopRow?.owner;
   if (seller?.notify_on_claim && seller.email) {
     sendEmail(

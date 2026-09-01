@@ -39,7 +39,28 @@ export async function GET() {
     }
   }
 
+  // Live subscription details straight from Stripe, for the settings screen.
+  let plan: null | { interval: "month" | "year"; renewsAt: string; cancelAtPeriodEnd: boolean; trialing: boolean } = null;
+  if (stripe && billing?.stripe_customer_id && subscribed) {
+    try {
+      const subs = await stripe.subscriptions.list({ customer: billing.stripe_customer_id, status: "all", limit: 5 });
+      const live = subs.data.find((x) => ["active", "trialing", "past_due"].includes(x.status));
+      if (live) {
+        const item = live.items.data[0];
+        plan = {
+          interval: item?.price.recurring?.interval === "year" ? "year" : "month",
+          renewsAt: new Date(live.current_period_end * 1000).toISOString(),
+          cancelAtPeriodEnd: !!live.cancel_at_period_end,
+          trialing: live.status === "trialing",
+        };
+      }
+    } catch {
+      plan = null;
+    }
+  }
+
   return NextResponse.json({
+    plan,
     stripeConfigured,
     yearlyAvailable: !!process.env.STRIPE_PRICE_ID_YEARLY,
     subscribed,

@@ -25,6 +25,9 @@ export async function POST(req: Request) {
   switch (event.type) {
     case "checkout.session.completed": {
       const s = event.data.object as Stripe.Checkout.Session;
+      // Direct charges fire this on the seller's connected account, so the
+      // event arrives with event.account set. Either way the claim id is in
+      // the metadata we put there.
       if (s.mode === "payment" && s.metadata?.claim_id) {
         await admin
           .from("claims")

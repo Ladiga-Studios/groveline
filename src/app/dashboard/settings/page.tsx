@@ -6,6 +6,7 @@ import { useToast } from "@/components/Toast";
 import Avatar from "@/components/Avatar";
 import { STATES } from "@/lib/states";
 import { resizeImageFile } from "@/lib/image";
+import Modal from "@/components/Modal";
 
 type BillingStatus = {
   stripeConfigured: boolean;
@@ -13,6 +14,7 @@ type BillingStatus = {
   subscriptionStatus: string;
   hasStripeAccount: boolean;
   payoutsEnabled: boolean;
+  plan: null | { interval: "month" | "year"; renewsAt: string; cancelAtPeriodEnd: boolean; trialing: boolean };
 };
 
 export default function SettingsPage() {
@@ -25,6 +27,7 @@ export default function SettingsPage() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isSeller, setIsSeller] = useState(false);
   const [billing, setBilling] = useState<BillingStatus | null>(null);
+  const [confirmCancel, setConfirmCancel] = useState(false);
   const [busy, setBusy] = useState(false);
   const [avatarBusy, setAvatarBusy] = useState(false);
   const toast = useToast();
@@ -108,6 +111,24 @@ export default function SettingsPage() {
     const data = await res.json().catch(() => ({}));
     if (data.url) window.location.href = data.url;
     else toast(data.error || "Something didn't go through.", "error");
+  }
+
+  async function cancelPlan(resume: boolean) {
+    setBusy(true);
+    const res = await fetch("/api/stripe/cancel", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resume }),
+    });
+    setBusy(false);
+    setConfirmCancel(false);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      toast(data.error || "Couldn't update your plan. Try again.", "error");
+      return;
+    }
+    setBilling((b) => (b && b.plan ? { ...b, plan: { ...b.plan, cancelAtPeriodEnd: data.cancelAtPeriodEnd, renewsAt: data.renewsAt } } : b));
+    toast(resume ? "Welcome back. Your plan continues." : "Cancelled. You're good through the end of what you paid for.", "success");
   }
 
   async function logOut() {
@@ -199,19 +220,47 @@ export default function SettingsPage() {
           </section>
 
           <section className="tag-card mt-4 p-6">
-            <h2 className="text-lg font-semibold">Subscription</h2>
-            <p className="mt-1 text-sm text-muted">
-              {billing.subscribed ? "You're all set. Switch plans, update your card, or cancel whenever." : "Your first drop is free. After that, it's $10 a month or $60 a year."}
-            </p>
-            {billing.subscribed ? (
+            <h2 className="text-lg font-semibold">Your plan</h2>
+            {billing.subscribed && billing.plan ? (
+              <>
+                <p className="mt-1">
+                  <span className="font-semibold">{billing.plan.interval === "year" ? "$60 a year" : "$10 a month"}</span>
+                  {billing.plan.trialing ? ", free trial" : ""}.{" "}
+                  {billing.plan.cancelAtPeriodEnd
+                    ? `Ends ${new Date(billing.plan.renewsAt).toLocaleDateString("en-US", { month: "long", day: "numeric" })}. You keep everything until then.`
+                    : `${billing.plan.trialing ? "First charge" : "Renews"} ${new Date(billing.plan.renewsAt).toLocaleDateString("en-US", { month: "long", day: "numeric" })}.`}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {billing.plan.cancelAtPeriodEnd ? (
+                    <button className="btn btn-primary" onClick={() => cancelPlan(true)} disabled={busy}>Keep my plan</button>
+                  ) : (
+                    <button className="btn btn-outline" onClick={() => setConfirmCancel(true)} disabled={busy}>Cancel my plan</button>
+                  )}
+                  <button className="btn btn-outline" onClick={() => go("/api/stripe/portal")} disabled={busy}>Update card or switch plans</button>
+                </div>
+              </>
+            ) : billing.subscribed ? (
               <button className="btn btn-outline mt-3" onClick={() => go("/api/stripe/portal")} disabled={busy}>Manage billing</button>
             ) : (
-              <div className="mt-3 flex flex-wrap gap-2">
-                <button className="btn btn-outline" onClick={() => go("/api/stripe/subscribe", { interval: "month" })} disabled={busy}>$10 monthly</button>
-                <button className="btn btn-primary" onClick={() => go("/api/stripe/subscribe", { interval: "year" })} disabled={busy}>$60 yearly</button>
-              </div>
+              <>
+                <p className="mt-1 text-sm text-muted">Your first three drops are free. After that, it's $10 a month or $60 a year. Have a code? Use it on the <a href="/pricing" className="text-grove underline">pricing page</a>.</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button className="btn btn-outline" onClick={() => go("/api/stripe/subscribe", { interval: "month" })} disabled={busy}>$10 monthly</button>
+                  <button className="btn btn-primary" onClick={() => go("/api/stripe/subscribe", { interval: "year" })} disabled={busy}>$60 yearly</button>
+                </div>
+              </>
             )}
           </section>
+
+          <Modal open={confirmCancel} onClose={() => setConfirmCancel(false)} title="Cancel your plan?">
+            <p className="mb-4">
+              Nothing changes until {billing.plan ? new Date(billing.plan.renewsAt).toLocaleDateString("en-US", { month: "long", day: "numeric" }) : "the end of your billing period"}. You keep posting until then, and you won't be charged again. Your shop, your drops, and your followers all stay put, you'll just be back on the free tier.
+            </p>
+            <div className="flex gap-3">
+              <button className="btn btn-primary grow" onClick={() => cancelPlan(false)} disabled={busy}>Yes, cancel it</button>
+              <button className="btn btn-outline" onClick={() => setConfirmCancel(false)}>Never mind</button>
+            </div>
+          </Modal>
         </>
       )}
 
