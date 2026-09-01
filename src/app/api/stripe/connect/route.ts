@@ -7,6 +7,7 @@ import { getStripe, siteUrl } from "@/lib/stripe";
 export async function POST() {
   const stripe = getStripe();
   if (!stripe) return NextResponse.json({ error: "Payments not configured" }, { status: 503 });
+  try {
 
   const supabase = await supabaseServer();
   const {
@@ -32,10 +33,17 @@ export async function POST() {
   }
 
   const link = await stripe.accountLinks.create({
-    account: accountId,
-    refresh_url: `${siteUrl()}/dashboard/settings?connect=refresh`,
-    return_url: `${siteUrl()}/dashboard/settings?connect=return`,
-    type: "account_onboarding",
-  });
-  return NextResponse.json({ url: link.url });
+      account: accountId,
+      refresh_url: `${siteUrl()}/dashboard/settings?connect=refresh`,
+      return_url: `${siteUrl()}/dashboard/settings?connect=return`,
+      type: "account_onboarding",
+    });
+    return NextResponse.json({ url: link.url });
+  } catch (err) {
+    // Surface Stripe's own message. These are usually actionable, like
+    // Connect not being enabled, or a country/capability mismatch.
+    const message = err instanceof Error ? err.message : "Could not start payout setup.";
+    console.error("stripe connect error:", message);
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
 }

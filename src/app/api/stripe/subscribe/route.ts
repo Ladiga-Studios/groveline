@@ -55,7 +55,8 @@ export async function POST(req: Request) {
     }
   }
 
-  const session = await stripe.checkout.sessions.create({
+  try {
+    const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: customerId,
     line_items: [{ price, quantity: 1 }],
@@ -67,6 +68,11 @@ export async function POST(req: Request) {
     ...(discounts ? { discounts } : trialAllowed ? {} : { allow_promotion_codes: true }),
     success_url: `${siteUrl()}/dashboard/new?subscribed=1`,
     cancel_url: `${siteUrl()}/dashboard`,
-  });
-  return NextResponse.json({ url: session.url });
+    });
+    return NextResponse.json({ url: session.url });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Could not start checkout.";
+    console.error("stripe subscribe error:", message);
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
 }
