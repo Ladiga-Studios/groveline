@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseServer, supabaseAdmin } from "@/lib/supabase/server";
-import { undoPayment } from "@/lib/payments";
+import { undoPayment, undoNote } from "@/lib/payments";
 import { sendEmail } from "@/lib/email";
 import { siteUrl } from "@/lib/stripe";
 
@@ -37,9 +37,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   let released = 0;
   let refunded = 0;
+  const stuck: string[] = [];
   for (const c of claims ?? []) {
     if (c.picked_up) continue; // already handed over, that sale stands
     const undone = await undoPayment(c, billing?.stripe_account_id ?? null);
+    // A drop cancellation can't be half-done, so the reservation is
+    // released either way. But a payment we couldn't undo gets named back
+    // to the seller so they can settle it in Stripe themselves.
+    if (undone === "failed") stuck.push(c.buyer_name);
     await admin.rpc("release_claim", { p_claim: c.id });
     if (undone === "refunded") {
       await admin.from("claims").update({ payment_status: "refunded" }).eq("id", c.id);
@@ -49,11 +54,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       sendEmail(
         c.buyer_email,
         `Cancelled: ${drop.title}`,
-        `${shop?.name ?? "The seller"} had to cancel ${drop.title}.\n\nTheir note: ${why}\n\nYour reservation for ${c.quantity} is off the list.${undone === "cancelled" ? " The hold on your card has been released, you were not charged." : undone === "refunded" ? " Your card has been refunded in full; it usually shows up within a few days." : ""}\n\nSee what else is for sale: ${siteUrl()}/browse`
+        `${shop?.name ?? "The seller"} had to cancel ${drop.title}.\n\nTheir note: ${why}\n\nYour reservation for ${c.quantity} is off the list.${undoNote(undone)}\n\nSee what else is for sale: ${siteUrl()}/browse`
       );
     }
   }
 
   await admin.from("drops").update({ status: "closed", cancel_reason: why, cancelled_at: new Date().toISOString() }).eq("id", id);
-  return NextResponse.json({ ok: true, notified: (claims ?? []).filter((c) => !c.picked_up).length, released, refunded });
+  return NextResponse.json({
+    ok: true,
+    notified: (claims ?? []).filter((c) => !c.picked_up).length,
+    released,
+    refunded,
+    stuck,
+  });
 }

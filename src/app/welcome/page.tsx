@@ -5,6 +5,7 @@ import { supabaseBrowser } from "@/lib/supabase/client";
 import { slugify, shortId } from "@/lib/format";
 import { useToast } from "@/components/Toast";
 import { STATES } from "@/lib/states";
+import { MIN_AGE, TERMS_VERSION } from "@/lib/policy";
 import Link from "next/link";
 
 export default function WelcomePage() {
@@ -13,6 +14,7 @@ export default function WelcomePage() {
   const [usState, setUsState] = useState("AL");
   const [isSeller, setIsSeller] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [ofAge, setOfAge] = useState(false);
   const [farmName, setFarmName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -43,6 +45,10 @@ export default function WelcomePage() {
       setError("Name and town both need something in them.");
       return;
     }
+    if (!ofAge) {
+      setError(`You need to be ${MIN_AGE} or older to use Groveline.`);
+      return;
+    }
     if (!agreed) {
       setError("Give the terms and privacy policy a quick check.");
       return;
@@ -61,6 +67,8 @@ export default function WelcomePage() {
       id: user.id,
       email: user.email ?? null,
       accepted_terms_at: new Date().toISOString(),
+      terms_version: TERMS_VERSION,
+      age_confirmed_at: new Date().toISOString(),
       name: name.trim(),
       town: town.trim(),
       state: usState,
@@ -158,13 +166,19 @@ export default function WelcomePage() {
             />
           </div>
         )}
-        <label className="flex cursor-pointer items-start gap-3 text-sm">
-          <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-[#1e4d2b]" />
-          <span>
-            I agree to the <Link href="/terms" className="text-grove underline" target="_blank">terms</Link> and{" "}
-            <Link href="/privacy" className="text-grove underline" target="_blank">privacy policy</Link>.
-          </span>
-        </label>
+        <div className="flex flex-col gap-2.5">
+          <label className="flex cursor-pointer items-start gap-3 text-sm">
+            <input type="checkbox" checked={ofAge} onChange={(e) => setOfAge(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-[#1e4d2b]" />
+            <span>I&apos;m {MIN_AGE} or older.</span>
+          </label>
+          <label className="flex cursor-pointer items-start gap-3 text-sm">
+            <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-[#1e4d2b]" />
+            <span>
+              I agree to the <Link href="/terms" className="text-grove underline" target="_blank">terms</Link> and{" "}
+              <Link href="/privacy" className="text-grove underline" target="_blank">privacy policy</Link>.
+            </span>
+          </label>
+        </div>
         {error && <p className="field-error">{error}</p>}
         <button className="btn btn-primary" disabled={busy}>
           {busy ? "One second" : "All done"}

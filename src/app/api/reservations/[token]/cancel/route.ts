@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { siteUrl } from "@/lib/stripe";
-import { undoPayment } from "@/lib/payments";
+import { undoPayment, type UndoResult } from "@/lib/payments";
 import { sendEmail } from "@/lib/email";
 
 /* Buyer cancels from their reservation page. Frees the items and releases
@@ -26,10 +26,20 @@ export async function POST(_req: Request, { params }: { params: Promise<{ token:
   }
 
   const shopRowEarly = Array.isArray(drop.shops) ? drop.shops[0] : drop.shops;
-  let undone: "cancelled" | "refunded" | null = null;
+  let undone: UndoResult = null;
   if (shopRowEarly?.owner_id && ["authorized", "captured"].includes(claim.payment_status)) {
     const { data: billing } = await admin.from("billing").select("stripe_account_id").eq("profile_id", shopRowEarly.owner_id).maybeSingle();
     undone = await undoPayment(claim, billing?.stripe_account_id ?? null);
+  }
+
+  // If the money is still sitting on their card, don't cancel around it.
+  // Better they retry than be told they're free and clear while a hold
+  // runs for another week.
+  if (undone === "failed") {
+    return NextResponse.json(
+      { error: "We couldn't release the payment on your card just now, so nothing was cancelled. Give it a minute and try again." },
+      { status: 502 }
+    );
   }
 
   await admin.rpc("release_claim", { p_claim: claim.id });

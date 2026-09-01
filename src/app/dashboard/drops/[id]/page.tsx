@@ -75,7 +75,7 @@ export default async function DropAdminPage({
       </div>
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-12">
-        <div className="lg:order-1">
+        <div>
           <ClaimList
             dropId={drop.id}
             dropStatus={drop.status}

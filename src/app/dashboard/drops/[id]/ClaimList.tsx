@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { useToast } from "@/components/Toast";
 import Modal from "@/components/Modal";
@@ -18,6 +19,7 @@ export function InventoryControl({
   const [quantity, setQuantity] = useState(initialQuantity);
   const [busy, setBusy] = useState(false);
   const toast = useToast();
+  const router = useRouter();
   const available = quantity - claimed;
 
   async function adjust(delta: number) {
@@ -35,53 +37,62 @@ export function InventoryControl({
       return;
     }
     setQuantity(next);
+    // The batch size and the counts at the top of the page come from the
+    // server, so re-read them or they sit there contradicting this control.
+    router.refresh();
     toast(
       delta < 0
-        ? `Got it. ${next - claimed} left to claim online.`
-        : `Added. ${next - claimed} left to claim online.`,
+        ? `Batch is ${next} now. ${next - claimed} still up for grabs.`
+        : `Batch is ${next} now. ${next - claimed} up for grabs.`,
       "success"
     );
   }
 
   return (
     <div className="tag-card p-5">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="font-semibold">What's left to claim online</p>
-          <p className="text-sm text-muted">
-            Sold a few at your booth already? Pull them out here so nobody
-            online reserves what's actually gone. Made a fresh batch? Add
-            them right back in.
-          </p>
-        </div>
+      <p className="font-semibold">Batch size</p>
+      <p className="mt-0.5 text-sm text-muted">
+        Sold some at your booth? Take them off so nobody online reserves
+        what&apos;s gone. Made more? Add them back.
+      </p>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <div
           className="inline-flex items-center gap-1 rounded-full border-2 border-cream-dark bg-white p-1"
           role="group"
-          aria-label="Adjust available quantity"
+          aria-label="Adjust batch size"
         >
           <button
             type="button"
-            className="grid h-11 w-11 place-items-center rounded-full text-xl font-semibold hover:bg-cream-dark"
+            className="grid h-11 w-11 place-items-center rounded-full text-xl font-semibold hover:bg-cream-dark disabled:opacity-40"
             onClick={() => adjust(-1)}
-            disabled={busy || available <= 0}
-            aria-label="Remove one"
+            disabled={busy || quantity <= claimed || quantity <= 1}
+            aria-label="One fewer"
           >
             &minus;
           </button>
-          <span className="w-14 text-center font-display text-xl font-semibold text-grove" aria-live="polite">
-            {available}
+          <span className="w-12 text-center font-display text-xl font-semibold text-grove" aria-live="polite">
+            {quantity}
           </span>
           <button
             type="button"
-            className="grid h-11 w-11 place-items-center rounded-full text-xl font-semibold hover:bg-cream-dark"
+            className="grid h-11 w-11 place-items-center rounded-full text-xl font-semibold hover:bg-cream-dark disabled:opacity-40"
             onClick={() => adjust(1)}
             disabled={busy}
-            aria-label="Add one"
+            aria-label="One more"
           >
             +
           </button>
         </div>
+        <p className={`text-sm font-semibold ${available > 0 ? "text-grove" : "text-muted"}`}>
+          {available > 0 ? `${available} still up for grabs` : "All spoken for"}
+        </p>
       </div>
+      {quantity <= claimed && (
+        <p className="field-hint">
+          Can&apos;t go below {claimed}, that&apos;s how many are already reserved. Take a
+          reservation off the list first.
+        </p>
+      )}
     </div>
   );
 }
@@ -106,6 +117,7 @@ export default function ClaimList({
   const [removing, setRemoving] = useState<Claim | null>(null);
   const [busy, setBusy] = useState(false);
   const toast = useToast();
+  const router = useRouter();
 
   async function togglePickedUp(claim: Claim, trk?: string) {
     const next = !claim.picked_up;
@@ -159,6 +171,14 @@ export default function ClaimList({
     setCancelOpen(false);
     setStatus("closed");
     setClaims((cs) => cs.map((c) => (c.picked_up ? c : { ...c, cancelled_at: new Date().toISOString() })).filter((c) => !c.cancelled_at));
+    const stuck: string[] = data.stuck ?? [];
+    if (stuck.length > 0) {
+      toast(
+        `Cancelled, but Stripe wouldn't undo the payment for ${stuck.join(", ")}. Settle those in your Stripe dashboard.`,
+        "error"
+      );
+      return;
+    }
     toast(`Cancelled. ${data.notified} ${data.notified === 1 ? "buyer" : "buyers"} emailed${data.refunded ? `, ${data.refunded} refunded` : ""}${data.released ? `, ${data.released} ${data.released === 1 ? "hold" : "holds"} released` : ""}.`, "success");
   }
 
@@ -184,6 +204,8 @@ export default function ClaimList({
       return;
     }
     setClaims((cs) => cs.filter((c) => c.id !== claim.id));
+    // Frees inventory back up, so the counts above need a re-read.
+    router.refresh();
     toast(
       `Removed. ${claim.quantity} ${claim.quantity === 1 ? "item is" : "items are"} back up for grabs.`,
       "success"

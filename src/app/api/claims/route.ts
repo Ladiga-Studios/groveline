@@ -4,6 +4,7 @@ import { getStripe, siteUrl } from "@/lib/stripe";
 import { sendEmail } from "@/lib/email";
 import { pickupWindow, money } from "@/lib/format";
 import { captureModeFor } from "@/lib/payments";
+import { MIN_AGE, TERMS_VERSION } from "@/lib/policy";
 
 async function verifyTurnstile(token: string, ip: string | null) {
   if (!process.env.TURNSTILE_SECRET_KEY) return true;
@@ -36,6 +37,7 @@ export async function POST(req: Request) {
     delivery?: "pickup" | "shipping";
     shipAddress?: string;
     acceptedTerms?: boolean;
+    confirmedAge?: boolean;
     company?: string;
     renderedAt?: number;
     turnstileToken?: string;
@@ -51,6 +53,12 @@ export async function POST(req: Request) {
   const method = delivery === "shipping" || body.method === "card" ? "card" : "cash";
   const shipAddress = (body.shipAddress ?? "").trim().slice(0, 300);
   if (!body.acceptedTerms) return NextResponse.json({ error: "Give the terms a quick check first." }, { status: 400 });
+  if (!body.confirmedAge) {
+    return NextResponse.json(
+      { error: `You need to be ${MIN_AGE} or older to reserve.` },
+      { status: 400 }
+    );
+  }
   if (delivery === "shipping" && shipAddress.length < 10) return NextResponse.json({ error: "That shipping address needs a bit more to it." }, { status: 400 });
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
@@ -82,13 +90,60 @@ export async function POST(req: Request) {
   const admin = supabaseAdmin();
   const { data: drop } = await admin
     .from("drops")
-    .select("id, title, slug, price_cents, pickup_place, pickup_start, pickup_end, seller_id, fulfillment, shipping_cents, shops!drops_seller_id_fkey(name, owner_id, owner:profiles!shops_owner_id_fkey(email, notify_on_claim, notify_digest, payouts_enabled))")
+    .select("id, title, slug, price_cents, pickup_place, pickup_start, pickup_end, seller_id, fulfillment, shipping_cents, max_per_buyer, status, shops!drops_seller_id_fkey(name, owner_id, owner:profiles!shops_owner_id_fkey(email, notify_on_claim, notify_digest, payouts_enabled))")
     .eq("id", drop_id)
     .maybeSingle();
   if (!drop) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const shop = Array.isArray(drop.shops) ? drop.shops[0] : drop.shops;
   const seller = (Array.isArray(shop?.owner) ? shop?.owner[0] : shop?.owner) as { email: string | null; notify_on_claim: boolean; notify_digest: boolean; payouts_enabled: boolean } | undefined;
   const ownerId = shop?.owner_id as string | undefined;
+
+  // The window has closed. The page hides the form once this passes, but
+  // a stale tab or a direct post would otherwise reserve, and for a card
+  // claim put a real hold on a real card, against a drop that's over.
+  if (new Date(drop.pickup_end) < new Date()) {
+    return NextResponse.json(
+      { error: drop.fulfillment === "shipping" ? "Ordering closed on this one." : "That pickup window has already passed." },
+      { status: 400 }
+    );
+  }
+  if (drop.status !== "active") {
+    return NextResponse.json({ error: "This drop is closed." }, { status: 400 });
+  }
+
+  // Per-person limit. The form caps the stepper, but that's a convenience,
+  // not a control: enforce it here, counting anything this buyer already
+  // has on this drop so the limit can't be walked up one reservation at a
+  // time. Phone number is the only identifier every buyer has, since no
+  // account is needed to reserve.
+  if (drop.max_per_buyer && drop.max_per_buyer > 0) {
+    if (quantity > drop.max_per_buyer) {
+      return NextResponse.json(
+        { error: `This seller is limiting it to ${drop.max_per_buyer} per person.` },
+        { status: 400 }
+      );
+    }
+    const digits = phone.replace(/\D/g, "");
+    const { data: mine } = await admin
+      .from("claims")
+      .select("buyer_phone, buyer_user_id, quantity")
+      .eq("drop_id", drop_id)
+      .is("cancelled_at", null);
+    const already = (mine ?? [])
+      .filter((c) => c.buyer_phone?.replace(/\D/g, "") === digits || (buyerId && c.buyer_user_id === buyerId))
+      .reduce((sum, c) => sum + (c.quantity ?? 0), 0);
+    if (already + quantity > drop.max_per_buyer) {
+      const room = Math.max(0, drop.max_per_buyer - already);
+      return NextResponse.json(
+        {
+          error: room > 0
+            ? `You already have ${already} of these reserved. You can take ${room} more.`
+            : `You already have this seller's limit of ${drop.max_per_buyer} reserved.`,
+        },
+        { status: 400 }
+      );
+    }
+  }
 
   if (method === "card" && !seller?.payouts_enabled) {
     return NextResponse.json({ error: "This seller only takes cash for now." }, { status: 400 });
@@ -119,7 +174,14 @@ export async function POST(req: Request) {
   }
   const result = data as { position: number; claim_id: string; cancel_token: string };
 
-  if (ip) admin.from("claims").update({ ip_address: ip }).eq("id", result.claim_id).then();
+  // Stamp the claim with what was agreed to and when. Written straight
+  // after the atomic claim rather than inside it, so the claim function's
+  // signature stays stable across terms changes.
+  admin
+    .from("claims")
+    .update({ terms_version: TERMS_VERSION, age_confirmed: true, ...(ip ? { ip_address: ip } : {}) })
+    .eq("id", result.claim_id)
+    .then();
 
   const site = siteUrl();
   const reservationUrl = `${site}/r/${result.cancel_token}`;

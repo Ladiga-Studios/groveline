@@ -63,7 +63,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       update.paid = true;
     } catch {
       return NextResponse.json(
-        { error: "Could not charge the card. The hold may have expired. Take cash and mark it picked up again." },
+        {
+          error:
+            claim.delivery === "shipping"
+              ? "Could not charge the card. The hold expires seven days after the order, so it may be gone. You'll need to ask them to pay another way."
+              : "Could not charge the card. The hold may have expired. Take cash and mark it picked up again.",
+        },
         { status: 502 }
       );
     }

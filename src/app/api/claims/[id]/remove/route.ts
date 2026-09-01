@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseServer, supabaseAdmin } from "@/lib/supabase/server";
 import { siteUrl } from "@/lib/stripe";
-import { undoPayment } from "@/lib/payments";
+import { undoPayment, undoNote } from "@/lib/payments";
 import { sendEmail } from "@/lib/email";
 
 /* Seller removes a claim (no show, cancelled by text). Any card hold is
@@ -26,6 +26,14 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
 
   const { data: billing } = await admin.from("billing").select("stripe_account_id").eq("profile_id", shop.owner_id).maybeSingle();
   const undone = await undoPayment(claim, billing?.stripe_account_id ?? null);
+  // Their card still has the money on it. Leave the claim alone so the
+  // seller can try again rather than losing track of a live hold.
+  if (undone === "failed") {
+    return NextResponse.json(
+      { error: "Stripe wouldn't release the money on their card, so nothing was removed. Try again shortly, or refund it from your Stripe dashboard." },
+      { status: 502 }
+    );
+  }
 
   const { error } = await supabase.rpc("remove_claim", { p_claim: id });
   if (error) return NextResponse.json({ error: "Could not remove" }, { status: 500 });
@@ -37,7 +45,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     sendEmail(
       claim.buyer_email,
       `Reservation removed: ${d.title}`,
-      `${shopName} removed your reservation for ${claim.quantity} of ${d.title}.${undone === "cancelled" ? "\n\nThe hold on your card has been released. You were not charged." : undone === "refunded" ? "\n\nYour card has been refunded in full. Refunds usually show up in a few days." : ""}\n\nQuestions go to the seller directly. Find what else is for sale: ${siteUrl()}/browse`
+      `${shopName} removed your reservation for ${claim.quantity} of ${d.title}.${undoNote(undone) ? `\n\n${undoNote(undone).trim()}` : ""}\n\nQuestions go to the seller directly. Find what else is for sale: ${siteUrl()}/browse`
     );
   }
   return NextResponse.json({ ok: true });

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { MIN_AGE } from "@/lib/policy";
 
 export const metadata: Metadata = {
   title: "Privacy",
@@ -51,6 +52,14 @@ export default function PrivacyPage() {
             Data is stored with Supabase and the site runs on Vercel. Emails
             are sent through Resend. Payments in cash happen entirely between
             you and the seller and never touch us.
+          </p>
+        </section>
+        <section>
+          <h2 className="text-xl font-semibold">Children</h2>
+          <p className="mt-2">
+            Groveline is for people {MIN_AGE} and older, and we don&apos;t knowingly collect anything
+            from children. If you believe a child has given us information, email
+            hello@groveline.io and we will delete it and close the account.
           </p>
         </section>
         <section>

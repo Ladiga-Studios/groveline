@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { MIN_AGE, PROHIBITED, TERMS_VERSION } from "@/lib/policy";
 
 export const metadata: Metadata = {
   title: "Terms",
@@ -11,6 +13,7 @@ export default function TermsPage() {
     <div className="mx-auto max-w-2xl px-4 py-12">
       <h1 className="text-3xl font-semibold">Terms</h1>
       <p className="mt-2 text-muted">The short version, no legalese hiding anywhere. Using Groveline means you agree to this.</p>
+      <p className="mt-1 text-sm text-muted">Version {TERMS_VERSION}. Ladiga Studios LLC, Alabama.</p>
 
       <div className="mt-8 space-y-6">
         <section>
@@ -21,6 +24,17 @@ export default function TermsPage() {
             not the buyer, and not a party to any sale. We do not make, inspect, store, ship, or hand over
             anything. We do not hold anyone&apos;s money on cash sales, and on card sales the payment goes to
             the seller&apos;s own Stripe account, not ours.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-semibold">Who can use it</h2>
+          <p className="mt-2">
+            You have to be {MIN_AGE} or older to hold an account or reserve anything, and you confirm that
+            when you sign up and every time you reserve. Groveline is for people in the United States.
+            If we find out an account belongs to someone under {MIN_AGE}, we&apos;ll close it and delete what
+            we have. If you think a child has given us information, email hello@groveline.io and we&apos;ll
+            remove it.
           </p>
         </section>
 
@@ -89,37 +103,113 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold">What you can&apos;t do here</h2>
+          <h2 className="text-xl font-semibold">What can&apos;t be sold here</h2>
           <p className="mt-2">
-            Post things that are illegal, dangerous, or not yours to sell. Use anyone&apos;s contact information
-            for anything other than the order they placed. Post content that would get you thrown out of a
-            farmers market. We can remove listings or accounts that break these rules, without a refund of any
-            subscription time.
+            Some things are off the table no matter what&apos;s legal where you live, either because they need a
+            license Groveline can&apos;t verify or because the reservation flow isn&apos;t built to handle them safely.
+            Listings are checked automatically when you post, and anything on this list gets removed:
+          </p>
+          <dl className="mt-3 space-y-3">
+            {PROHIBITED.map((c) => (
+              <div key={c.label}>
+                <dt className="font-semibold">{c.label}</dt>
+                <dd className="text-muted">{c.detail}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-3">
+            Beyond that list: don&apos;t post anything illegal where you are, anything that isn&apos;t yours to sell,
+            or anything that would get you thrown out of a farmers market. Don&apos;t use a buyer&apos;s phone number
+            or address for anything other than the order they placed. We can remove listings or accounts that
+            break these rules, without refunding subscription time.
+          </p>
+          <p className="mt-2">
+            Automated checks catch what they can and no more. A listing going up is not Groveline vouching
+            for it, and the seller stays responsible for what they sell either way.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-semibold">Photos and what you post</h2>
+          <p className="mt-2">
+            What you post stays yours. You give Groveline permission to show it on the site and in link
+            previews and emails about your drops, which is what makes the thing work. Only post photos you
+            took or have the right to use. If something of yours is on Groveline and shouldn&apos;t be, email
+            hello@groveline.io with a link to it and what it is, and we&apos;ll take it down. Repeat infringers
+            lose their accounts.
           </p>
         </section>
 
         <section>
           <h2 className="text-xl font-semibold">The limits of what we&apos;re on the hook for</h2>
           <p className="mt-2">
-            Groveline is provided as is. We are a small operation doing our best, and we can&apos;t promise the
-            site will always be up, always be right, or always be free of mistakes. To the fullest extent the
-            law allows, Groveline and Ladiga Studios are not liable for anything that happens between a buyer
-            and a seller, including bad products, missed pickups, food that made someone sick, packages that
-            never arrived, or money that changed hands. If we are ever found liable for something anyway, the
-            most we owe is what you paid us in the last twelve months, which for buyers is nothing.
+            Groveline is provided as is and as available, without warranties of any kind, express or implied,
+            including any implied warranty of merchantability, fitness for a particular purpose, title, or
+            non-infringement. We are a small operation doing our best, and we can&apos;t promise the site will
+            always be up, always be right, or always be free of mistakes. We don&apos;t verify sellers, inspect
+            goods, or guarantee that anyone will show up.
           </p>
           <p className="mt-2">
-            If your use of Groveline gets us pulled into a dispute or a claim, you agree to cover the cost of
-            that, including reasonable legal fees. In plain words: your sale, your responsibility.
+            To the fullest extent the law allows, Groveline and Ladiga Studios LLC are not liable for anything
+            that happens between a buyer and a seller, including bad products, missed pickups, food that made
+            someone sick, packages that never arrived, or money that changed hands, and are not liable for
+            indirect, incidental, consequential, or punitive damages or for lost profits. If we are found
+            liable for something anyway, the most we owe you in total is what you paid Groveline in the twelve
+            months before the claim, which for buyers is nothing. Some states don&apos;t allow some of these
+            limits, so where that&apos;s true, they don&apos;t apply to you and the rest still stands.
+          </p>
+          <p className="mt-2">
+            If your use of Groveline, or anything you sell or post, gets us pulled into a claim by someone
+            else, you agree to defend and indemnify Groveline and Ladiga Studios LLC against it, including
+            reasonable legal fees. We&apos;ll tell you promptly if that happens and you can run the defense, but
+            we get a say in any settlement that costs us money or admits fault on our behalf. In plain words:
+            your sale, your responsibility.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-semibold">Disagreements between you and Groveline</h2>
+          <p className="mt-2">
+            This section is about disputes with <span className="font-semibold">Groveline</span>, not disputes
+            with a seller or a buyer. Those stay between the two of you.
+          </p>
+          <p className="mt-2">
+            Email hello@groveline.io first. Nearly everything gets sorted that way, and we ask that you give
+            us 30 days to fix it before going further.
+          </p>
+          <p className="mt-2">
+            If that doesn&apos;t work, you and Groveline agree to settle it by binding individual arbitration
+            administered by the American Arbitration Association under its Consumer Arbitration Rules, in
+            Calhoun County, Alabama, or by phone or video, or wherever you live if that&apos;s easier for you.
+            Either of us can still bring a claim in small claims court instead if it qualifies. Claims are
+            brought individually: no class actions, no collective or representative proceedings, and an
+            arbitrator can&apos;t combine claims from different people. You can opt out of arbitration entirely
+            by emailing hello@groveline.io within 30 days of first accepting these terms, and doing so
+            changes nothing else about your account.
+          </p>
+          <p className="mt-2">
+            If the class action waiver above is found unenforceable, this whole arbitration section drops out
+            and disputes go to the courts named below instead.
           </p>
         </section>
 
         <section>
           <h2 className="text-xl font-semibold">The fine print</h2>
           <p className="mt-2">
-            These terms are governed by the laws of the State of Alabama. They can change as Groveline grows,
-            and the current version always lives at this page. Questions or problems: hello@groveline.io, or
-            use the support page.
+            These terms are governed by the laws of the State of Alabama, without regard to conflict of law
+            rules. Anything not going to arbitration goes to the state or federal courts in Calhoun County,
+            Alabama. If any part of these terms turns out to be unenforceable, the rest still stands.
+          </p>
+          <p className="mt-2">
+            We&apos;ll change these terms as Groveline grows. The version number and date sit at the top of this
+            page, and every account and every reservation records the version that was live at the time. When
+            a change actually matters, we&apos;ll email account holders at least 14 days before it takes effect,
+            and using Groveline after that date means you accept the new version. If you&apos;d rather not, you
+            can close your account.
+          </p>
+          <p className="mt-2">
+            Questions or problems: hello@groveline.io, or use the{" "}
+            <Link href="/support" className="text-grove underline">support page</Link>.
           </p>
         </section>
       </div>

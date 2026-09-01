@@ -8,6 +8,7 @@ import { STATES } from "@/lib/states";
 import type { Drop } from "@/lib/types";
 import { money, pickupWindow, formatPhone } from "@/lib/format";
 import { captureModeFor } from "@/lib/payments";
+import { MIN_AGE } from "@/lib/policy";
 import { useToast } from "./Toast";
 import Sprout from "./Sprout";
 
@@ -47,6 +48,7 @@ export default function ClaimForm({
   const [method, setMethod] = useState<"cash" | "card">(shipOnly ? "card" : "cash");
   const [ship, setShip] = useState({ line1: "", city: "", state: "AL", zip: "" });
   const [agreed, setAgreed] = useState(false);
+  const [ofAge, setOfAge] = useState(false);
   const [company, setCompany] = useState("");
   const [renderedAt] = useState(() => Date.now());
   const [turnstileToken, setTurnstileToken] = useState("");
@@ -74,6 +76,10 @@ export default function ClaimForm({
       toast("Looks like the shipping address needs a bit more.", "error");
       return false;
     }
+    if (!ofAge) {
+      toast(`You need to be ${MIN_AGE} or older to reserve.`, "error");
+      return false;
+    }
     if (!agreed) {
       toast("Give the terms a quick check to reserve.", "error");
       return false;
@@ -98,6 +104,7 @@ export default function ClaimForm({
         delivery,
         shipAddress: delivery === "shipping" ? `${ship.line1.trim()}, ${ship.city.trim()}, ${ship.state} ${ship.zip.trim()}` : "",
         acceptedTerms: agreed,
+        confirmedAge: ofAge,
         company,
         renderedAt,
         turnstileToken,
@@ -259,14 +266,20 @@ export default function ClaimForm({
         </fieldset>
       )}
 
-      <label className="flex cursor-pointer items-start gap-3 text-sm">
-        <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-[#1e4d2b]" />
-        <span>
-          Reserving means I'm actually planning to come. I agree to the{" "}
-          <Link href="/terms" className="text-grove underline" target="_blank">terms</Link> and{" "}
-          <Link href="/privacy" className="text-grove underline" target="_blank">privacy policy</Link>.
-        </span>
-      </label>
+      <div className="flex flex-col gap-2.5 border-t border-cream-dark pt-4">
+        <label className="flex cursor-pointer items-start gap-3 text-sm">
+          <input type="checkbox" checked={ofAge} onChange={(e) => setOfAge(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-[#1e4d2b]" />
+          <span>I&apos;m {MIN_AGE} or older.</span>
+        </label>
+        <label className="flex cursor-pointer items-start gap-3 text-sm">
+          <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-[#1e4d2b]" />
+          <span>
+            Reserving means I&apos;m actually planning to come. I agree to the{" "}
+            <Link href="/terms" className="text-grove underline" target="_blank">terms</Link> and{" "}
+            <Link href="/privacy" className="text-grove underline" target="_blank">privacy policy</Link>.
+          </span>
+        </label>
+      </div>
 
       {/* Trap for bots that fill every field. Named so browsers never
           autofill it: no "company", "name", "email", or anything else
