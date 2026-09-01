@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     template: "%s | Groveline",
   },
   description:
-    "Local sellers post what they have. Buyers claim it in seconds and pick it up in person. Free until you sell.",
+    "Sell what you make in batches. Post what you have, share one link, and neighbors reserve it in seconds. Pickup or shipping, cash or card. First three drops free.",
   openGraph: {
     siteName: "Groveline",
     type: "website",
