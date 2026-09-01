@@ -29,7 +29,6 @@ export default function SettingsPage() {
   const [followEmails, setFollowEmails] = useState(true);
   const [following, setFollowing] = useState<{ id: string; name: string; slug: string; avatar_url: string | null }[]>([]);
   const [lists, setLists] = useState<{ id: string; name: string; slug: string; avatar_url: string | null }[]>([]);
-  const [testBusy, setTestBusy] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isSeller, setIsSeller] = useState(false);
   const [billing, setBilling] = useState<BillingStatus | null>(null);
@@ -163,15 +162,6 @@ export default function SettingsPage() {
     }
     setBilling((b) => (b && b.plan ? { ...b, plan: { ...b.plan, cancelAtPeriodEnd: data.cancelAtPeriodEnd, renewsAt: data.renewsAt } } : b));
     toast(resume ? "Welcome back. Your plan continues." : "Cancelled. You're good through the end of what you paid for.", "success");
-  }
-
-  async function testEmail() {
-    setTestBusy(true);
-    const res = await fetch("/api/email/test", { method: "POST" });
-    setTestBusy(false);
-    const data = await res.json().catch(() => ({}));
-    if (res.ok) toast("Sent. Check your inbox (and spam, the first time).", "success");
-    else toast(`Email failed: ${data.error || "unknown error"}${data.from ? ` (sending from ${data.from})` : " (RESEND_FROM not set)"}`, "error");
   }
 
   async function logOut() {
@@ -326,12 +316,6 @@ export default function SettingsPage() {
           </Modal>
         </>
       )}
-
-      <section className="tag-card mt-4 p-6">
-        <h2 className="text-lg font-semibold">Not getting emails?</h2>
-        <p className="mt-1 text-sm text-muted">Send yourself a test. If it fails, the message tells you exactly why.</p>
-        <button className="btn btn-outline mt-3" onClick={testEmail} disabled={testBusy}>{testBusy ? "Sending" : "Send me a test email"}</button>
-      </section>
 
       <section className="tag-card mt-8 border-2 border-clay/40 p-6">
         <h2 className="text-lg font-semibold">Close your account</h2>
