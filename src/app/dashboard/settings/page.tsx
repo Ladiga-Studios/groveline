@@ -250,7 +250,7 @@ export default function SettingsPage() {
               <button className="btn btn-grove" onClick={() => go("/api/stripe/connect")} disabled={busy}>
                 {billing.hasStripeAccount ? "Finish setting up payouts" : "Turn on card payments"}
               </button>
-              <p className="field-hint">Stripe walks you through it: bank account, ID, a few minutes.</p>
+              <p className="field-hint">Stripe walks you through it: you create a Stripe login, add your bank account and ID. About five minutes, once.</p>
             </div>
           )}
         </section>

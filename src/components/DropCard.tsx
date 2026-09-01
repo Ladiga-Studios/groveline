@@ -52,7 +52,7 @@ export default function DropCard({ drop }: { drop: Drop }) {
           <span
             className={`font-semibold ${soldOut ? "text-muted" : "text-grove"}`}
           >
-            {soldOut ? "Sold out" : `${left} of ${drop.quantity} left`}
+            {drop.status === "closed" ? "Closed" : soldOut ? "Sold out" : `${left} of ${drop.quantity} left`}
           </span>
           {drop.category && drop.category !== "other" && (
             <span className="rounded-full bg-cream-dark px-2 py-0.5 text-xs font-medium text-ink">

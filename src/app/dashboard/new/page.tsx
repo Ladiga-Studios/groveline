@@ -9,6 +9,7 @@ import PhotoPicker from "@/components/PhotoPicker";
 import CategorySelect from "@/components/CategorySelect";
 import PickupFields, { type Pickup } from "@/components/PickupFields";
 import { supabaseBrowser } from "@/lib/supabase/client";
+import { parsePrice, formatPriceInput, money } from "@/lib/format";
 
 const todayLocal = () =>
   new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
@@ -55,7 +56,7 @@ export default function NewDropPage() {
           setTitle(d.title);
           setCategory(d.category);
           setDescription(d.description || "");
-          setPrice(String(d.price_cents / 100));
+          setPrice(formatPriceInput(d.price_cents / 100));
           setQuantity(String(d.quantity));
           setPickup((v) => ({
             ...v,
@@ -98,7 +99,7 @@ export default function NewDropPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    const priceCents = Math.round(parseFloat(price) * 100);
+    const priceCents = Math.round(parsePrice(price) * 100);
     const qty = parseInt(quantity, 10);
     if (!title.trim()) return setError("It needs a name, something like Sourdough loaves.");
     if (!category) return setError("Pick a category so folks can actually find this.");
@@ -108,7 +109,7 @@ export default function NewDropPage() {
     if (!shipOnly && !pickup.place.trim()) return setError("Where should people pick this up?");
     if (!pickup.city.trim()) return setError("Which city is this in?");
     if (!pickup.date) return setError(shipOnly ? "When's the last day to order?" : "Pick a pickup date.");
-    if (pickup.fulfillment !== "pickup" && !(parseFloat(pickup.shipping) >= 0)) return setError("What's the shipping charge? Zero works fine too.");
+    if (pickup.fulfillment !== "pickup" && !(parsePrice(pickup.shipping || "0") >= 0)) return setError("What's the shipping charge? Zero works fine too.");
     const startAt = shipOnly ? new Date(`${pickup.date}T00:00`) : new Date(`${pickup.date}T${pickup.start}`);
     const endAt = shipOnly ? new Date(`${pickup.date}T23:59`) : new Date(`${pickup.date}T${pickup.end}`);
     if (endAt <= startAt) return setError("The end time needs to come after the start time.");
@@ -119,10 +120,10 @@ export default function NewDropPage() {
     body.set("title", title.trim());
     body.set("category", category);
     body.set("description", description.trim());
-    body.set("price", price);
+    body.set("price", String(parsePrice(price)));
     body.set("quantity", quantity);
     body.set("fulfillment", pickup.fulfillment);
-    body.set("shipping", pickup.shipping || "0");
+    body.set("shipping", String(isNaN(parsePrice(pickup.shipping)) ? 0 : parsePrice(pickup.shipping)));
     body.set("slug", customSlug);
     body.set("pickupPlace", pickup.place.trim());
     body.set("pickupAddress", pickup.address.trim());
@@ -147,8 +148,8 @@ export default function NewDropPage() {
     const data = await res.json();
     const url = `${window.location.origin}/d/${data.slug}`;
     const caption = shipOnly
-      ? `${title.trim()}, $${price} each, shipped to you. Order by ${endAt.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}: ${url}`
-      : `${title.trim()}, $${price} each. Pickup ${startAt.toLocaleDateString("en-US", { weekday: "long" })} at ${pickup.place.trim()}. Tap to reserve yours: ${url}`;
+      ? `${title.trim()}, ${money(priceCents)} each, shipped to you. Order by ${endAt.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}: ${url}`
+      : `${title.trim()}, ${money(priceCents)} each. Pickup ${startAt.toLocaleDateString("en-US", { weekday: "long" })} at ${pickup.place.trim()}. Tap to reserve yours: ${url}`;
     setCreated({ url, caption });
     fetch("/api/broadcast", {
       method: "POST",
@@ -267,7 +268,7 @@ export default function NewDropPage() {
                 <label htmlFor="d-price" className="field-label">Going rate, each</label>
                 <div className="relative">
                   <span aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 font-semibold text-muted">$</span>
-                  <input id="d-price" type="number" inputMode="decimal" min="0" step="0.01" className="field pl-8" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="9" />
+                  <input id="d-price" type="text" inputMode="decimal" className="field pl-8" value={price} onChange={(e) => setPrice(e.target.value.replace(/[^0-9.,]/g, ""))} onBlur={() => { const n = parsePrice(price); if (!isNaN(n)) setPrice(formatPriceInput(n)); }} placeholder="9.00" />
                 </div>
               </div>
             </div>

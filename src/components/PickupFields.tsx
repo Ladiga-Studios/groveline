@@ -1,5 +1,6 @@
 "use client";
 import { STATES } from "@/lib/states";
+import { parsePrice, formatPriceInput } from "@/lib/format";
 
 export type Pickup = {
   fulfillment: "pickup" | "shipping" | "both";
@@ -55,7 +56,7 @@ export default function PickupFields({
           <label htmlFor={`${prefix}-shipping`} className="field-label">Shipping charge <span className="font-normal text-muted">(flat, per order)</span></label>
           <div className="relative sm:w-48">
             <span aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 font-semibold text-muted">$</span>
-            <input id={`${prefix}-shipping`} type="number" inputMode="decimal" min="0" step="0.01" className="field pl-8" value={value.shipping} onChange={set("shipping")} placeholder="8" />
+            <input id={`${prefix}-shipping`} type="text" inputMode="decimal" className="field pl-8" value={value.shipping} onChange={(e) => onChange({ ...value, shipping: e.target.value.replace(/[^0-9.,]/g, "") })} onBlur={() => { const n = parsePrice(value.shipping); if (!isNaN(n)) onChange({ ...value, shipping: formatPriceInput(n) }); }} placeholder="8.00" />
           </div>
           <p className="field-hint">Buyers pay by card, and it charges once you mark the order shipped.</p>
         </div>

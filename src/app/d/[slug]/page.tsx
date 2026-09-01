@@ -71,6 +71,11 @@ export default async function DropPage({ params }: { params: Promise<{ slug: str
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  let isOwner = false;
+  if (user && drop.shops?.id) {
+    const { data: own } = await supabase.from("shops").select("id").eq("id", drop.shops.id).eq("owner_id", user.id).maybeSingle();
+    isOwner = !!own;
+  }
   let prefill: { name?: string; email?: string } | undefined;
   if (user) {
     const { data: me } = await supabase.from("profiles").select("name").eq("id", user.id).maybeSingle();
@@ -102,6 +107,17 @@ export default async function DropPage({ params }: { params: Promise<{ slug: str
     <div className="mx-auto max-w-2xl px-4 py-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
+      {isOwner && (
+        <div className="mb-6 rounded-2xl border-2 border-leaf bg-cream p-4">
+          <p className="font-semibold text-grove">This is your drop. {drop.claimed} of {drop.quantity} reserved{drop.status === "closed" ? ", closed" : ""}.</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Link href={`/dashboard/drops/${drop.id}`} className="btn btn-grove !min-h-10 !px-4 text-sm">See who reserved</Link>
+            <a href={`/api/drops/${drop.id}/report?format=pdf`} className="btn btn-outline !min-h-10 !px-4 text-sm">Print sheet</a>
+            <a href={`/api/drops/${drop.id}/report?format=xlsx`} className="btn btn-outline !min-h-10 !px-4 text-sm">Spreadsheet</a>
+            <Link href={`/dashboard/drops/${drop.id}/edit`} className="btn btn-outline !min-h-10 !px-4 text-sm">Edit</Link>
+          </div>
+        </div>
+      )}
       <PhotoGallery urls={photos} alt={drop.title} />
 
       <div className="flex flex-wrap items-baseline justify-between gap-2">

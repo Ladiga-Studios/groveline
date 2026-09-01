@@ -5,6 +5,7 @@ import Avatar from "./Avatar";
 import { useToast } from "./Toast";
 import { STATES } from "@/lib/states";
 import { resizeImageFile } from "@/lib/image";
+import { formatPhone } from "@/lib/format";
 import type { Shop } from "@/lib/types";
 
 /* Create or edit a shop. Used by the become-a-seller flow and Settings. */
@@ -107,7 +108,7 @@ export default function ShopForm({
       <div className="grid gap-4">
         <div>
           <label htmlFor="sh-phone" className="field-label">Phone for buyers <span className="font-normal text-muted">(optional)</span></label>
-          <input id="sh-phone" type="tel" className="field" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <input id="sh-phone" type="tel" className="field" value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} placeholder="256-555-0100" />
         </div>
         <div>
           <label htmlFor="sh-social" className="field-label">Facebook page or website <span className="font-normal text-muted">(optional)</span></label>

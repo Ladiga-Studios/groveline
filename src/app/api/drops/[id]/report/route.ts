@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import * as XLSX from "xlsx";
 import { supabaseServer } from "@/lib/supabase/server";
-import { money, pickupWindow, shortDate } from "@/lib/format";
+import { money, pickupWindow, shortDate, formatPhone } from "@/lib/format";
 
 export const runtime = "nodejs";
 
@@ -40,7 +40,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const data = [
       ["#", "Name", "Phone", "Email", "Qty", "Total", "Payment", "Delivery", "Ship to", "Done", "Reserved"],
       ...rows.map((c, i) => [
-        i + 1, c.buyer_name, c.buyer_phone, c.buyer_email ?? "", c.quantity, (drop.price_cents * c.quantity) / 100, payLabel(c),
+        i + 1, c.buyer_name, formatPhone(c.buyer_phone), c.buyer_email ?? "", c.quantity, (drop.price_cents * c.quantity) / 100, payLabel(c),
         c.delivery === "shipping" ? "Ship" : "Pickup", c.ship_address ?? "", c.picked_up ? "Yes" : "", new Date(c.created_at).toLocaleString("en-US"),
       ]),
       [],
@@ -108,7 +108,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     if (c.picked_up) text("X", M + 4.5, 9, bold, green);
     text(String(i + 1), M + 36, 10);
     text(c.buyer_name.slice(0, 28), M + 56, 10, bold);
-    text(c.buyer_phone, M + 216, 10);
+    text(formatPhone(c.buyer_phone), M + 216, 10);
     text(String(c.quantity), M + 316, 10);
     text(money(drop.price_cents * c.quantity), M + 350, 10);
     text(payLabel(c), M + 404, 9, font, muted);

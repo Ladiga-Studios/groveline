@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { STATES } from "@/lib/states";
 import type { Drop } from "@/lib/types";
-import { money, pickupWindow } from "@/lib/format";
+import { money, pickupWindow, formatPhone } from "@/lib/format";
 import { useToast } from "./Toast";
 import Sprout from "./Sprout";
 
@@ -153,9 +153,22 @@ export default function ClaimForm({
         <span className="field-label" id="qty-label">How many do you want</span>
         <div className="inline-flex items-center gap-1 rounded-full border-2 border-cream-dark bg-white p-1" role="group" aria-labelledby="qty-label">
           <button type="button" className="grid h-11 w-11 place-items-center rounded-full text-xl font-semibold hover:bg-cream-dark" onClick={() => setQty(Math.max(1, qty - 1))} aria-label="Fewer" disabled={qty <= 1}>&minus;</button>
-          <span className="w-10 text-center text-lg font-semibold" aria-live="polite">{qty}</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={maxQty}
+            value={qty}
+            onChange={(e) => {
+              const n = parseInt(e.target.value, 10);
+              if (!isNaN(n)) setQty(Math.min(maxQty, Math.max(1, n)));
+            }}
+            aria-labelledby="qty-label"
+            className="w-14 border-0 bg-transparent text-center text-lg font-semibold outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          />
           <button type="button" className="grid h-11 w-11 place-items-center rounded-full text-xl font-semibold hover:bg-cream-dark" onClick={() => setQty(Math.min(maxQty, qty + 1))} aria-label="More" disabled={qty >= maxQty}>+</button>
         </div>
+        <p className="field-hint">Type a number or use the buttons. {maxQty} available.</p>
         {drop.max_per_buyer && <p className="field-hint">Up to {drop.max_per_buyer} per person, so everybody gets a turn.</p>}
       </div>
 
@@ -167,7 +180,7 @@ export default function ClaimForm({
 
       <div>
         <label htmlFor="claim-phone" className="field-label">Best number to reach you</label>
-        <input id="claim-phone" type="tel" className="field" value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" inputMode="tel" aria-invalid={!!errors.phone} />
+        <input id="claim-phone" type="tel" className="field" value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} autoComplete="tel" inputMode="tel" placeholder="256-555-0100" aria-invalid={!!errors.phone} />
         {errors.phone && <p className="field-error">{errors.phone}</p>}
         <p className="field-hint">Only used if plans change on either end.</p>
       </div>
@@ -310,7 +323,7 @@ function WaitlistForm({ dropId }: { dropId: string }) {
       <p className="text-sm text-muted">Leave your number and the seller can reach out if more comes available.</p>
       <div>
         <label htmlFor="wl-phone" className="field-label">Phone number</label>
-        <input id="wl-phone" type="tel" className="field" value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" autoComplete="tel" aria-invalid={!!error} />
+        <input id="wl-phone" type="tel" className="field" value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} inputMode="tel" autoComplete="tel" placeholder="256-555-0100" aria-invalid={!!error} />
         {error && <p className="field-error">{error}</p>}
       </div>
       <button className="btn btn-grove" disabled={busy}>{busy ? "One second" : "Join the waitlist"}</button>

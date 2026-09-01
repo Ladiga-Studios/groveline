@@ -26,29 +26,24 @@ export async function POST() {
     //   fees_collector: account    (the seller pays Stripe's processing fee)
     // If they don't match, Stripe rejects account creation with a misleading
     // "complete your platform profile" error.
-    // Matches the "Create account" form in the Stripe dashboard exactly:
-    // the seller accepts payments from their own customers (direct charges),
-    // pays their own Stripe fees, gets the Express dashboard, and Stripe
-    // carries unrecoverable losses. Express + Stripe-owned losses is a
-    // public-preview combination, so the API version header opts into it.
-    // Only card_payments is requested; "transfers" is a destination-charge
-    // capability and doesn't belong on a direct-charge account.
-    const account = await stripe.accounts.create(
-      {
-        country: "US",
-        email: user.email ?? undefined,
-        business_type: "individual",
-        capabilities: { card_payments: { requested: true } },
-        controller: {
-          losses: { payments: "stripe" },
-          fees: { payer: "account" },
-          stripe_dashboard: { type: "express" },
-          requirement_collection: "stripe",
-        },
-        metadata: { profile_id: user.id },
+    // Standard connected account: the seller accepts payments from their
+    // own customers (direct charges), pays their own Stripe fees, gets a
+    // full Stripe dashboard login, and Stripe carries unrecoverable losses.
+    // Express with Stripe-owned losses is a preview feature the API rejects
+    // today, so Standard is the supported way to get this arrangement.
+    const account = await stripe.accounts.create({
+      country: "US",
+      email: user.email ?? undefined,
+      business_type: "individual",
+      capabilities: { card_payments: { requested: true } },
+      controller: {
+        losses: { payments: "stripe" },
+        fees: { payer: "account" },
+        stripe_dashboard: { type: "full" },
+        requirement_collection: "stripe",
       },
-      process.env.STRIPE_CONNECT_API_VERSION ? { apiVersion: process.env.STRIPE_CONNECT_API_VERSION } : undefined
-    );
+      metadata: { profile_id: user.id },
+    });
     accountId = account.id;
     await admin.from("billing").upsert({ profile_id: user.id, stripe_account_id: accountId });
   }

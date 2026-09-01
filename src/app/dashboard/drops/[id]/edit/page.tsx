@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
+import { parsePrice, formatPriceInput } from "@/lib/format";
 import { useToast } from "@/components/Toast";
 import Modal from "@/components/Modal";
 import PhotoPicker from "@/components/PhotoPicker";
@@ -55,7 +56,7 @@ export default function EditDropPage() {
       setTitle(d.title);
       setCategory(d.category || "other");
       setDescription(d.description || "");
-      setPrice(String(d.price_cents / 100));
+      setPrice(formatPriceInput(d.price_cents / 100));
       setQuantity(String(d.quantity));
       setExistingUrls(d.photo_urls?.length ? d.photo_urls : d.photo_url ? [d.photo_url] : []);
       const start = new Date(d.pickup_start);
@@ -83,7 +84,7 @@ export default function EditDropPage() {
   async function save(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    const priceCents = Math.round(parseFloat(price) * 100);
+    const priceCents = Math.round(parsePrice(price) * 100);
     const qty = parseInt(quantity, 10);
     if (!title.trim()) return setError("This still needs a name.");
     if (!priceCents || priceCents <= 0) return setError("What's it going for?");
@@ -104,10 +105,10 @@ export default function EditDropPage() {
     body.set("title", title.trim());
     body.set("category", category);
     body.set("description", description.trim());
-    body.set("price", price);
+    body.set("price", String(parsePrice(price)));
     body.set("quantity", quantity);
     body.set("fulfillment", pickup.fulfillment);
-    body.set("shipping", pickup.shipping || "0");
+    body.set("shipping", String(isNaN(parsePrice(pickup.shipping)) ? 0 : parsePrice(pickup.shipping)));
     body.set("slug", slug);
     body.set("pickupPlace", pickup.place.trim());
     body.set("pickupAddress", pickup.address.trim());
@@ -218,13 +219,15 @@ export default function EditDropPage() {
                   </span>
                   <input
                     id="e-price"
-                    type="number"
+                    type="text"
                     inputMode="decimal"
-                    min="0"
-                    step="0.01"
                     className="field pl-8"
                     value={price}
-                    onChange={(e) => setPrice(e.target.value)}
+                    onChange={(e) => setPrice(e.target.value.replace(/[^0-9.,]/g, ""))}
+                    onBlur={() => {
+                      const n = parsePrice(price);
+                      if (!isNaN(n)) setPrice(formatPriceInput(n));
+                    }}
                   />
                 </div>
               </div>

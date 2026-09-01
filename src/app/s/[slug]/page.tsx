@@ -140,9 +140,12 @@ export default async function ShopPage({ params }: { params: Promise<{ slug: str
             <h2 id="active-drops" className="text-2xl font-semibold">Up for grabs right now</h2>
             {live.length > 0 && <p className="text-sm text-muted">{live.length} {live.length === 1 ? "drop" : "drops"}</p>}
           </div>
+          {isOwner && live.length > 0 && (
+            <p className="mt-1 text-sm text-muted">This is your shop. Tap any drop to see who reserved, print the pickup sheet, or close it.</p>
+          )}
           {live.length > 0 ? (
             <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {live.map((d) => <ProductCard key={d.id} drop={d} />)}
+              {live.map((d) => <ProductCard key={d.id} drop={d} manage={isOwner} />)}
             </div>
           ) : (
             <div className="tag-card mt-4 p-8 text-center">
@@ -176,7 +179,7 @@ export default async function ShopPage({ params }: { params: Promise<{ slug: str
           <section className="mt-12" aria-labelledby="past-drops">
             <h2 id="past-drops" className="text-xl font-semibold text-muted">What they&apos;ve posted before</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {(past as Drop[]).map((d) => <ProductCard key={d.id} drop={d} muted />)}
+              {(past as Drop[]).map((d) => <ProductCard key={d.id} drop={d} muted manage={isOwner} />)}
             </div>
           </section>
         )}

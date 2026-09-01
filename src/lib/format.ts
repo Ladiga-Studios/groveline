@@ -1,6 +1,28 @@
 export function money(cents: number) {
   const d = cents / 100;
-  return d % 1 === 0 ? `$${d}` : `$${d.toFixed(2)}`;
+  const whole = d % 1 === 0;
+  return "$" + d.toLocaleString("en-US", { minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: 2 });
+}
+
+/* 2565550100 -> 256-555-0100, as they type. Handles a leading 1. */
+export function formatPhone(input: string) {
+  let digits = input.replace(/\D/g, "");
+  if (digits.length === 11 && digits.startsWith("1")) digits = digits.slice(1);
+  digits = digits.slice(0, 10);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
+/* "1,000" or "$1,000.50" -> 1000.5. NaN if it isn't a number. */
+export function parsePrice(input: string) {
+  return parseFloat(input.replace(/[^0-9.]/g, ""));
+}
+
+/* 1000.5 -> "1,000.50" for showing back in a text field. */
+export function formatPriceInput(value: number) {
+  if (!isFinite(value)) return "";
+  return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 export function pickupWindow(startIso: string, endIso: string) {

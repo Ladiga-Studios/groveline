@@ -4,6 +4,7 @@ import { supabaseBrowser } from "@/lib/supabase/client";
 import { useToast } from "@/components/Toast";
 import Modal from "@/components/Modal";
 import type { Claim } from "@/lib/types";
+import { formatPhone } from "@/lib/format";
 
 export function InventoryControl({
   dropId,
@@ -182,8 +183,8 @@ export default function ClaimList({
                   <p className="text-sm">Ship to: {c.ship_address}</p>
                 )}
                 <p className="text-sm text-muted">
-                  <a href={`tel:${c.buyer_phone}`} className="underline">
-                    {c.buyer_phone}
+                  <a href={`tel:${c.buyer_phone.replace(/\D/g, "")}`} className="underline">
+                    {formatPhone(c.buyer_phone)}
                   </a>{" "}
                   {c.method === "cash"
                     ? "Cash at pickup"

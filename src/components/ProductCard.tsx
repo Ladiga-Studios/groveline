@@ -4,13 +4,13 @@ import type { Drop } from "@/lib/types";
 import { money, whenLabel } from "@/lib/format";
 
 /* Storefront tile: photo up top, the essentials underneath. */
-export default function ProductCard({ drop, muted = false }: { drop: Drop; muted?: boolean }) {
+export default function ProductCard({ drop, muted = false, manage = false }: { drop: Drop; muted?: boolean; manage?: boolean }) {
   const left = drop.quantity - drop.claimed;
   const soldOut = left <= 0 || drop.status !== "active";
   const cover = drop.photo_urls?.[0] || drop.photo_url;
   return (
     <Link
-      href={`/d/${drop.slug}`}
+      href={manage ? `/dashboard/drops/${drop.id}` : `/d/${drop.slug}`}
       className={`tag-card block overflow-hidden ${muted ? "opacity-80" : ""}`}
       aria-label={`${drop.title}, ${money(drop.price_cents)}${soldOut ? ", sold out" : `, ${left} left`}`}
     >
@@ -20,7 +20,9 @@ export default function ProductCard({ drop, muted = false }: { drop: Drop; muted
         ) : (
           <div aria-hidden="true" className="grid h-full w-full place-items-center text-4xl text-leaf">*</div>
         )}
-        {soldOut ? (
+        {drop.status === "closed" ? (
+          <span className="absolute left-3 top-3 rounded-full bg-ink/80 px-2.5 py-1 text-xs font-semibold text-cream">Closed</span>
+        ) : soldOut ? (
           <span className="absolute left-3 top-3 rounded-full bg-ink/80 px-2.5 py-1 text-xs font-semibold text-cream">Sold out</span>
         ) : left <= 3 ? (
           <span className="absolute left-3 top-3 rounded-full bg-peach px-2.5 py-1 text-xs font-semibold text-ink">Only {left} left</span>
@@ -36,6 +38,11 @@ export default function ProductCard({ drop, muted = false }: { drop: Drop; muted
         </div>
         <p className="mt-1 text-sm text-muted">{whenLabel(drop)}</p>
         {!soldOut && <p className="mt-1 text-sm font-medium text-grove">{left} of {drop.quantity} left</p>}
+        {manage && (
+          <p className="mt-2 text-sm font-semibold text-grove">
+            {drop.claimed} reserved. Tap to manage, print, or close.
+          </p>
+        )}
       </div>
     </Link>
   );
