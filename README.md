@@ -51,7 +51,7 @@ Stripe dashboard checklist for card payments to work:
 1. Settings, Connect, click Get started and complete the platform profile (your business info, what you're building). Stripe won't let sellers onboard until this is done.
 2. Settings, Connect, Branding: add the Groveline name, icon, and green so sellers see it during onboarding.
 3. Developers, Webhooks: add `https://groveline.io/api/stripe/webhook` with the five events listed above. Copy the signing secret into `STRIPE_WEBHOOK_SECRET`.
-4. On the webhook endpoint, turn on **"Listen to events on connected accounts"**. Card payments are direct charges created on the seller's account, so `checkout.session.completed` fires there, not on the platform account. Without this the payment succeeds but Groveline never marks it authorized.
+4. Create a **second** event destination, scoped to **Connected accounts**, pointing at the same URL, listening for `checkout.session.completed` and `checkout.session.expired`. Card payments are direct charges created on the seller's account, so those events fire there rather than on the platform account, and without this destination a payment succeeds but Groveline never marks it authorized. Put its signing secret in `STRIPE_WEBHOOK_SECRET_CONNECT`. The route accepts either secret.
 5. Flip the dashboard to Live mode and make sure the keys in Vercel are the live ones (`sk_live_...`), not test keys.
 6. Post a real drop, turn on card payments in Settings, complete the Express onboarding yourself, and reserve it with a real card from another browser. Then mark it picked up and watch the charge land.
 

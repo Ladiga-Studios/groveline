@@ -8,17 +8,27 @@ export const runtime = "nodejs";
 /* Stripe tells us what happened; we mirror it into the database. */
 export async function POST(req: Request) {
   const stripe = getStripe();
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!stripe || !secret) return NextResponse.json({ ok: true });
+  // Two Stripe event destinations point here: one for the platform account
+  // (subscriptions) and one for connected accounts (direct charge checkouts).
+  // Each has its own signing secret, so try both.
+  const secrets = [
+    process.env.STRIPE_WEBHOOK_SECRET,
+    process.env.STRIPE_WEBHOOK_SECRET_CONNECT,
+  ].filter(Boolean) as string[];
+  if (!stripe || secrets.length === 0) return NextResponse.json({ ok: true });
 
   const sig = req.headers.get("stripe-signature") ?? "";
   const raw = await req.text();
-  let event: Stripe.Event;
-  try {
-    event = stripe.webhooks.constructEvent(raw, sig, secret);
-  } catch {
-    return NextResponse.json({ error: "Bad signature" }, { status: 400 });
+  let event: Stripe.Event | null = null;
+  for (const secret of secrets) {
+    try {
+      event = stripe.webhooks.constructEvent(raw, sig, secret);
+      break;
+    } catch {
+      /* try the next secret */
+    }
   }
+  if (!event) return NextResponse.json({ error: "Bad signature" }, { status: 400 });
 
   const admin = supabaseAdmin();
 
