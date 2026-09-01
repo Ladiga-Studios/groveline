@@ -20,12 +20,23 @@ export async function POST() {
 
   let accountId = billing?.stripe_account_id ?? undefined;
   if (!accountId) {
+    // These must match the platform's configured responsibilities exactly,
+    // visible in the Stripe dashboard under Settings, Connect, Platform setup:
+    //   losses_collector: stripe   (Stripe carries unrecoverable losses)
+    //   fees_collector: account    (the seller pays Stripe's processing fee)
+    // If they don't match, Stripe rejects account creation with a misleading
+    // "complete your platform profile" error.
+    // No "type" here on purpose: Stripe rejects type and controller
+    // together, and the controller is what encodes the express dashboard.
     const account = await stripe.accounts.create({
-      type: process.env.STRIPE_CONNECT_TYPE === "standard" ? "standard" : "express",
       country: "US",
       email: user.email ?? undefined,
       capabilities: { card_payments: { requested: true }, transfers: { requested: true } },
-      business_type: "individual",
+      controller: {
+        losses: { payments: "stripe" },
+        fees: { payer: "account" },
+        stripe_dashboard: { type: "express" },
+      },
       metadata: { profile_id: user.id },
     });
     accountId = account.id;
