@@ -62,7 +62,7 @@ export default function OgImage() {
           it in seconds.
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 22, marginTop: 44 }}>
+        <div style={{ display: "flex", marginTop: 44 }}>
           <div
             style={{
               display: "flex",
@@ -75,9 +75,6 @@ export default function OgImage() {
             }}
           >
             groveline.io
-          </div>
-          <div style={{ display: "flex", fontSize: 30, color: colors.cream, opacity: 0.7 }}>
-            Bread, soap, plants, plate sales
           </div>
         </div>
       </div>
