@@ -31,11 +31,13 @@ export async function POST() {
     // full Stripe dashboard login, and Stripe carries unrecoverable losses.
     // Express with Stripe-owned losses is a preview feature the API rejects
     // today, so Standard is the supported way to get this arrangement.
+    // Stripe requires "transfers" alongside "card_payments" even on
+    // direct-charge accounts; it's a prerequisite, not a money route.
     const account = await stripe.accounts.create({
       country: "US",
       email: user.email ?? undefined,
       business_type: "individual",
-      capabilities: { card_payments: { requested: true } },
+      capabilities: { card_payments: { requested: true }, transfers: { requested: true } },
       controller: {
         losses: { payments: "stripe" },
         fees: { payer: "account" },
