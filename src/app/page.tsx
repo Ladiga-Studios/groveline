@@ -55,7 +55,10 @@ async function getFreshDrops(): Promise<Drop[]> {
   }
 }
 
-export default async function Home() {
+export default async function Home({ searchParams }: { searchParams: Promise<{ closed?: string }> }) {
+  // Someone who just closed their account lands here with no session, so
+  // this banner is the only confirmation they get in the browser.
+  const { closed } = await searchParams;
   const [fresh, viewer] = await Promise.all([getFreshDrops(), getViewer()]);
   const sellHref = viewer.isSeller
     ? "/dashboard/new"
@@ -70,6 +73,13 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      {closed && (
+        <div className="bg-grove px-4 py-3 text-center text-cream">
+          <p className="mx-auto max-w-3xl">
+            Your account is closed and everything under it is deleted. Thanks for giving Groveline a try.
+          </p>
+        </div>
+      )}
 
       {/* Hero */}
       <section className="mx-auto max-w-6xl px-4 pb-12 pt-10 sm:pt-16">

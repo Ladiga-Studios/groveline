@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { supabaseServer } from "@/lib/supabase/server";
+import { supabaseServer, supabaseAdmin } from "@/lib/supabase/server";
+import { settleShopBeforeDelete } from "@/lib/deletion";
 import { moderateDropSubmission } from "@/lib/moderation";
 import { cleanSlug } from "@/lib/format";
 
@@ -51,4 +52,49 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   const { error } = await supabase.from("shops").update(update).eq("id", id);
   if (error) return NextResponse.json({ error: "That didn't save. Try again." }, { status: 500 });
   return NextResponse.json({ ok: true, slug: (update.slug as string) ?? existing.slug });
+}
+
+/* Delete a shop you own.
+
+   Every open reservation on it is cancelled and every card hold released
+   or charge refunded before a single row goes away, because once the shop
+   is deleted the drops, claims, followers, and email list all cascade with
+   it and there'd be nothing left to refund against. */
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const supabase = await supabaseServer();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Not logged in" }, { status: 401 });
+
+  const { data: shop } = await supabase
+    .from("shops")
+    .select("id, name")
+    .eq("id", id)
+    .eq("owner_id", user.id)
+    .maybeSingle();
+  if (!shop) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const { confirm } = (await req.json().catch(() => ({}))) as { confirm?: string };
+  if ((confirm ?? "").trim().toLowerCase() !== shop.name.trim().toLowerCase()) {
+    return NextResponse.json({ error: "Type the shop's name exactly to confirm." }, { status: 400 });
+  }
+
+  const settled = await settleShopBeforeDelete(
+    shop.id,
+    shop.name,
+    "The seller closed this shop on Groveline."
+  );
+  if (!settled.ok) return NextResponse.json({ error: settled.error }, { status: 502 });
+
+  const admin = supabaseAdmin();
+  const { error } = await admin.from("shops").delete().eq("id", shop.id);
+  if (error) {
+    console.error("shop delete failed:", error.message);
+    return NextResponse.json({ error: "That didn't delete. Try again." }, { status: 500 });
+  }
+  await admin.from("deletion_log").insert({ kind: "shop", subject_id: shop.id, subject_name: shop.name, contact_email: user.email ?? null });
+
+  return NextResponse.json({ ok: true });
 }

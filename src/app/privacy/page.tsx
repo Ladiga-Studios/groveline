@@ -65,9 +65,20 @@ export default function PrivacyPage() {
         <section>
           <h2 className="text-xl font-semibold">Want something removed?</h2>
           <p className="mt-2">
-            Email hello@groveline.io and we will delete your information. If
-            you have an account, deleting it removes your profile, follows,
-            and subscriptions.
+            You can close your account yourself in Settings. That deletes your
+            profile, your shops, their drops, your follows, and your email list
+            subscriptions, and cancels any plan you&apos;re on. Open reservations
+            are refunded and the people affected are told.
+          </p>
+          <p className="mt-2">
+            Reservations you placed as a buyer stay on the seller&apos;s record of
+            that sale, with your name, phone, email, and address stripped out, so
+            they keep an accurate count of what they sold without keeping you.
+            Payment records stay in Stripe, which we don&apos;t control and which
+            keeps them for its own legal and tax reasons.
+          </p>
+          <p className="mt-2">
+            Prefer we do it? Email hello@groveline.io and we&apos;ll handle it.
           </p>
         </section>
       </div>

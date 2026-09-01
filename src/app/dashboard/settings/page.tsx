@@ -34,6 +34,9 @@ export default function SettingsPage() {
   const [isSeller, setIsSeller] = useState(false);
   const [billing, setBilling] = useState<BillingStatus | null>(null);
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteTyped, setDeleteTyped] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const [busy, setBusy] = useState(false);
   const [avatarBusy, setAvatarBusy] = useState(false);
   const toast = useToast();
@@ -122,6 +125,26 @@ export default function SettingsPage() {
     const data = await res.json().catch(() => ({}));
     if (data.url) window.location.href = data.url;
     else toast(data.error || "Something didn't go through.", "error");
+  }
+
+  async function deleteAccount() {
+    setDeleting(true);
+    const res = await fetch("/api/account/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ confirm: deleteTyped }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setDeleting(false);
+    if (!res.ok) {
+      toast(data.error || "That didn't work. Try again.", "error");
+      return;
+    }
+    // The account is gone, so there's no session left to sign out of
+    // cleanly. Send them to a plain page rather than anything that would
+    // try to read a profile that no longer exists.
+    await supabaseBrowser().auth.signOut();
+    window.location.href = "/?closed=1";
   }
 
   async function cancelPlan(resume: boolean) {
@@ -283,7 +306,7 @@ export default function SettingsPage() {
               <button className="btn btn-outline mt-3" onClick={() => go("/api/stripe/portal")} disabled={busy}>Manage billing</button>
             ) : (
               <>
-                <p className="mt-1 text-sm text-muted">Your first three drops are free. After that, it's $10 a month or $60 a year. Have a code? Use it on the <a href="/pricing" className="text-grove underline">pricing page</a>.</p>
+                <p className="mt-1 text-sm text-muted">Your first three drops are free. After that, it's $10 a month or $60 a year. Got a code? There&apos;s a spot for it at checkout.</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button className="btn btn-outline" onClick={() => go("/api/stripe/subscribe", { interval: "month" })} disabled={busy}>$10 monthly</button>
                   <button className="btn btn-primary" onClick={() => go("/api/stripe/subscribe", { interval: "year" })} disabled={busy}>$60 yearly</button>
@@ -309,6 +332,49 @@ export default function SettingsPage() {
         <p className="mt-1 text-sm text-muted">Send yourself a test. If it fails, the message tells you exactly why.</p>
         <button className="btn btn-outline mt-3" onClick={testEmail} disabled={testBusy}>{testBusy ? "Sending" : "Send me a test email"}</button>
       </section>
+
+      <section className="tag-card mt-8 border-2 border-clay/40 p-6">
+        <h2 className="text-lg font-semibold">Close your account</h2>
+        <p className="mt-1 text-sm text-muted">
+          This deletes your profile, your shops, their drops, and everyone following them. Any plan you&apos;re
+          on is cancelled, open reservations are refunded, and the people affected are emailed. It can&apos;t be
+          undone.
+        </p>
+        <button className="btn btn-outline mt-4" onClick={() => { setDeleteTyped(""); setConfirmDelete(true); }}>
+          Close my account
+        </button>
+      </section>
+
+      <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)} title="Close your account for good?">
+        <p className="mb-3">
+          Everything goes: your profile, your shops, every drop under them, your followers and email lists,
+          and your reservations as a buyer. Anyone holding a reservation with you gets cancelled, refunded if
+          they paid by card, and emailed. Any plan you&apos;re on is cancelled right now.
+        </p>
+        <p className="mb-4 text-sm text-muted">
+          If you take card payments, your Stripe account stays yours and keeps your payout and tax records.
+          Groveline just stops pointing at it.
+        </p>
+        <label htmlFor="confirm-delete" className="field-label">Type DELETE to confirm</label>
+        <input
+          id="confirm-delete"
+          className="field"
+          value={deleteTyped}
+          onChange={(e) => setDeleteTyped(e.target.value.toUpperCase())}
+          autoComplete="off"
+          autoCapitalize="characters"
+        />
+        <div className="mt-4 flex gap-3">
+          <button
+            className="btn btn-primary grow"
+            onClick={deleteAccount}
+            disabled={deleting || deleteTyped.trim() !== "DELETE"}
+          >
+            {deleting ? "Closing" : "Delete my account"}
+          </button>
+          <button className="btn btn-outline" onClick={() => setConfirmDelete(false)}>Keep it</button>
+        </div>
+      </Modal>
 
       <div className="mt-8 text-center">
         <button onClick={logOut} className="btn btn-outline">Log out</button>
