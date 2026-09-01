@@ -10,6 +10,7 @@ import Modal from "@/components/Modal";
 
 type BillingStatus = {
   stripeConfigured: boolean;
+  plansConfigured: boolean;
   subscribed: boolean;
   subscriptionStatus: string;
   hasStripeAccount: boolean;
@@ -201,23 +202,37 @@ export default function SettingsPage() {
         <button className="btn btn-primary" disabled={busy}>{busy ? "Saving" : "Save changes"}</button>
       </form>
 
-      {isSeller && billing?.stripeConfigured && (
-        <>
-          <section className="tag-card mt-4 p-6">
-            <h2 className="text-lg font-semibold">Card payments</h2>
-            <p className="mt-1 text-sm text-muted">
-              Let buyers pay by card right when they reserve. The money goes straight to your bank through
-              Stripe, it never passes through us. We put a hold on their card at reservation and only charge it
-              once you mark them picked up, so a no-show never costs anyone anything.
-            </p>
-            {billing.payoutsEnabled ? (
-              <p className="mt-3 font-medium text-grove">Card payments are live. Buyers will see the option when they reserve.</p>
-            ) : (
-              <button className="btn btn-grove mt-3" onClick={() => go("/api/stripe/connect")} disabled={busy}>
+      {isSeller && (
+        <section className="tag-card mt-4 p-6">
+          <h2 className="text-lg font-semibold">Card payments and shipping</h2>
+          <p className="mt-1 text-sm text-muted">
+            Let buyers pay by card right when they reserve. The money goes straight to your bank through
+            Stripe, it never passes through us. We put a hold on their card at reservation and only charge it
+            once you mark them picked up, so a no-show never costs anyone anything.
+          </p>
+          <p className="mt-2 text-sm text-muted">
+            Shipping rides on this too. Once card payments are on, every drop you post gets a pickup, shipping,
+            or both option, and you set the shipping charge per drop.
+          </p>
+          {!billing ? (
+            <p className="mt-3 text-sm text-muted">Checking your setup</p>
+          ) : !billing.stripeConfigured ? (
+            <p className="mt-3 text-sm text-muted">Card payments are being connected. Cash at pickup works in the meantime.</p>
+          ) : billing.payoutsEnabled ? (
+            <p className="mt-3 font-medium text-grove">Card payments are live. Buyers see the option when they reserve, and shipping is unlocked on your drops.</p>
+          ) : (
+            <div className="mt-3">
+              <button className="btn btn-grove" onClick={() => go("/api/stripe/connect")} disabled={busy}>
                 {billing.hasStripeAccount ? "Finish setting up payouts" : "Turn on card payments"}
               </button>
-            )}
-          </section>
+              <p className="field-hint">Stripe walks you through it: bank account, ID, a few minutes.</p>
+            </div>
+          )}
+        </section>
+      )}
+
+      {isSeller && billing?.plansConfigured && (
+        <>
 
           <section className="tag-card mt-4 p-6">
             <h2 className="text-lg font-semibold">Your plan</h2>

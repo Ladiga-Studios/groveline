@@ -27,23 +27,34 @@ export default async function OgImage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-  const { data: drop } = await supabase
-    .from("drops")
-    .select("*, shops!drops_seller_id_fkey(name, town)")
-    .eq("slug", slug)
-    .maybeSingle();
+  type ShopBit = { name?: string; town?: string };
+  type DropBit = {
+    title?: string; price_cents?: number; quantity?: number; claimed?: number; pickup_start?: string;
+    pickup_city?: string | null; photo_url?: string | null; photo_urls?: string[] | null;
+    shops?: ShopBit | ShopBit[] | null;
+  };
+  let drop: DropBit | null = null;
+  try {
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+    const res = await supabase
+      .from("drops")
+      .select("title, price_cents, quantity, claimed, pickup_start, pickup_city, photo_url, photo_urls, shops!drops_seller_id_fkey(name, town)")
+      .eq("slug", slug)
+      .maybeSingle();
+    drop = (res.data as unknown as DropBit | null) ?? null;
+  } catch {
+    drop = null;
+  }
+  const shop = Array.isArray(drop?.shops) ? drop?.shops[0] : drop?.shops;
 
   const title = drop?.title ?? "A local drop";
-  const price = drop ? money(drop.price_cents) : "";
-  const seller = drop?.shops?.name || "";
-  const town = drop?.pickup_city || drop?.shops?.town || "";
-  const left = drop ? drop.quantity - drop.claimed : 0;
-  const photo = drop?.photo_url as string | undefined;
-  const pickup = drop
+  const price = drop ? money(drop.price_cents ?? 0) : "";
+  const seller = shop?.name || "";
+  const town = drop?.pickup_city || shop?.town || "";
+  const left = drop ? (drop.quantity ?? 0) - (drop.claimed ?? 0) : 0;
+  const photos = drop?.photo_urls ?? [];
+  const photo = photos[0] || drop?.photo_url || undefined;
+  const pickup = drop?.pickup_start
     ? new Date(drop.pickup_start).toLocaleDateString("en-US", {
         weekday: "long",
         month: "short",
@@ -77,7 +88,9 @@ export default async function OgImage({
             <img
               src={photo}
               alt=""
-              style={{ width: 470, height: "100%", objectFit: "cover" }}
+              width={470}
+              height={544}
+              style={{ width: 470, height: 544, objectFit: "cover" }}
             />
           ) : (
             <div
@@ -86,7 +99,7 @@ export default async function OgImage({
                 alignItems: "center",
                 justifyContent: "center",
                 width: 300,
-                height: "100%",
+                height: 544,
                 background: colors.grove,
                 color: colors.cream,
                 fontSize: 130,

@@ -42,6 +42,14 @@ Set `ANTHROPIC_API_KEY`. Every drop, on posting or editing, gets checked in one 
 
 Free, and reuses the same Cloudflare account already handling your DNS. In the Cloudflare dashboard, add a Turnstile site for groveline.io, choose the invisible/managed widget, and you'll get a site key and a secret key. Set `NEXT_PUBLIC_TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY`. Leave both blank and reservations still work, just without this extra bot check, the honeypot field and timing check still apply either way.
 
+### Email forwarding for hello@groveline.io
+
+Cloudflare Email Routing forwards mail sent to hello@groveline.io to a real inbox, free. In the Cloudflare dashboard open groveline.io, then Email, then Email Routing. Enable it (Cloudflare adds the MX records itself), add a destination address, click the verification link Cloudflare sends there, then create a custom address `hello` forwarding to it. Outbound mail from the app still goes through Resend on `send.groveline.io`, which does not conflict.
+
+### Facebook link previews
+
+Facebook caches the preview for a link the first time it sees it. After changing a drop's photo, paste the link into https://developers.facebook.com/tools/debug/ and click Scrape Again to refresh it.
+
 ### 6. Stripe (card payments and the subscription)
 
 Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. In the Stripe dashboard create one product (the seller subscription) with two recurring prices, $10 monthly and $60 yearly, and put their ids (start with `price_`) in `STRIPE_PRICE_ID_MONTHLY` and `STRIPE_PRICE_ID_YEARLY`. Yearly is optional; leave it blank to offer monthly only. Add a webhook endpoint at `https://groveline.io/api/stripe/webhook` listening for `checkout.session.completed`, `checkout.session.expired`, `customer.subscription.updated`, `customer.subscription.deleted`, and `account.updated`. Enable Stripe Connect (Express) in your Stripe settings so sellers can onboard.

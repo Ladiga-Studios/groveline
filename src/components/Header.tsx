@@ -60,7 +60,9 @@ export default function Header({ user }: { user: HeaderUser }) {
 
   const accountItems = user
     ? [
-        ...(user.shopCount > 0 ? [{ href: "/dashboard", label: "My drops" }] : [{ href: "/dashboard", label: "Start selling" }]),
+        ...(user.shopCount > 0
+          ? [{ href: "/dashboard", label: "My drops" }, { href: "/dashboard/shops", label: "My shops" }]
+          : [{ href: "/dashboard", label: "Start selling" }]),
         { href: "/reservations", label: "My reservations" },
         { href: "/following", label: "Sellers I follow" },
         { href: `/u/${user.slug}`, label: "My profile" },

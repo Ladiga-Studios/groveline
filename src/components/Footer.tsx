@@ -30,7 +30,7 @@ export default function Footer() {
             <Sprout size={18} className="text-leaf" />
             Grown in Alabama.
           </p>
-          <p>Copyright {new Date().getFullYear()} Groveline. All rights reserved.</p>
+          <p>Copyright {new Date().getFullYear()} Ladiga Studios LLC. All rights reserved.</p>
         </div>
       </div>
     </footer>

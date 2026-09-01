@@ -104,7 +104,7 @@ export default function ShopForm({
         <label htmlFor="sh-bio" className="field-label">Tell people a little about it <span className="font-normal text-muted">(optional)</span></label>
         <textarea id="sh-bio" className="field min-h-24" value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Small farm outside town. Bread on Saturdays, eggs most weeks." />
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4">
         <div>
           <label htmlFor="sh-phone" className="field-label">Phone for buyers <span className="font-normal text-muted">(optional)</span></label>
           <input id="sh-phone" type="tel" className="field" value={phone} onChange={(e) => setPhone(e.target.value)} />

@@ -35,11 +35,23 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const when = whenLabel(drop) + (drop.pickup_place && drop.fulfillment !== "shipping" ? ` at ${drop.pickup_place}` : "");
   const short = `${money(drop.price_cents)} each from ${seller}. ${when}. Reserve in seconds, no account needed.`;
   const long = drop.description ? `${drop.description.slice(0, 220)}${drop.description.length > 220 ? "..." : ""}\n\n${short}` : short;
+  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://groveline.io";
+  const photos = drop.photo_urls?.length ? drop.photo_urls : drop.photo_url ? [drop.photo_url] : [];
   return {
     title: drop.title,
     description: short.slice(0, 160),
     alternates: { canonical: `/d/${drop.slug}` },
-    openGraph: { title: `${drop.title}, ${money(drop.price_cents)} each`, description: long },
+    openGraph: {
+      title: `${drop.title}, ${money(drop.price_cents)} each`,
+      description: long,
+      url: `${site}/d/${drop.slug}`,
+      type: "website",
+      images: [
+        { url: `${site}/d/${drop.slug}/opengraph-image`, width: 1200, height: 630, alt: drop.title },
+        ...photos.slice(0, 1).map((u) => ({ url: u, alt: drop.title })),
+      ],
+    },
+    twitter: { card: "summary_large_image", title: `${drop.title}, ${money(drop.price_cents)} each`, description: short.slice(0, 200) },
   };
 }
 

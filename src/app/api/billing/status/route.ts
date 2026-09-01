@@ -22,7 +22,8 @@ export async function GET() {
   ]);
 
   const stripe = getStripe();
-  const stripeConfigured = !!stripe && !!(process.env.STRIPE_PRICE_ID_MONTHLY || process.env.STRIPE_PRICE_ID);
+  const stripeConfigured = !!stripe;
+  const plansConfigured = !!stripe && !!(process.env.STRIPE_PRICE_ID_MONTHLY || process.env.STRIPE_PRICE_ID);
   const subscribed = ["active", "trialing", "past_due"].includes(billing?.subscription_status ?? "none");
 
   // Refresh payout status from Stripe if an account exists but isn't enabled yet.
@@ -66,8 +67,9 @@ export async function GET() {
     subscribed,
     subscriptionStatus: billing?.subscription_status ?? "none",
     dropsCount: dropsCount ?? 0,
-    needsSubscription: stripeConfigured && !profile?.is_admin && !subscribed && (dropsCount ?? 0) >= 3,
-    freeLeft: stripeConfigured && !profile?.is_admin && !subscribed ? Math.max(0, 3 - (dropsCount ?? 0)) : null,
+    plansConfigured,
+    needsSubscription: plansConfigured && !profile?.is_admin && !subscribed && (dropsCount ?? 0) >= 3,
+    freeLeft: plansConfigured && !profile?.is_admin && !subscribed ? Math.max(0, 3 - (dropsCount ?? 0)) : null,
     hasStripeAccount: !!billing?.stripe_account_id,
     payoutsEnabled,
   });
