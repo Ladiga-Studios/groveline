@@ -33,6 +33,7 @@ export default function LoginPage() {
         const { data: profile } = await supabase
           .from("profiles")
           .select("id, is_seller")
+          .eq("id", user.id)
           .maybeSingle();
         router.replace(
           profile ? (profile.is_seller ? "/dashboard" : "/browse") : "/welcome"
@@ -50,10 +51,12 @@ export default function LoginPage() {
 
   async function goWhereTheyBelong() {
     const supabase = supabaseBrowser();
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id, is_seller")
-      .maybeSingle();
+    const {
+      data: { user: me },
+    } = await supabase.auth.getUser();
+    const { data: profile } = me
+      ? await supabase.from("profiles").select("id, is_seller").eq("id", me.id).maybeSingle()
+      : { data: null };
     router.push(profile ? (profile.is_seller ? "/dashboard" : "/browse") : "/welcome");
     router.refresh();
   }

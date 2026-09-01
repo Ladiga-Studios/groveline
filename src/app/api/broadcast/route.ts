@@ -42,14 +42,15 @@ export async function POST(req: Request) {
       .eq("seller_id", drop.seller_id),
     admin
       .from("follows")
-      .select("profiles!follows_buyer_id_fkey(email)")
+      .select("profiles!follows_buyer_id_fkey(email, follow_emails)")
       .eq("seller_id", drop.seller_id),
   ]);
 
   const followerEmails = (followerRows ?? [])
     .map((r) => {
       const prof = Array.isArray(r.profiles) ? r.profiles[0] : r.profiles;
-      return prof?.email as string | null;
+      if (!prof || prof.follow_emails === false) return null;
+      return prof.email as string | null;
     })
     .filter(Boolean) as string[];
 
@@ -78,9 +79,15 @@ export async function POST(req: Request) {
   }));
 
   try {
-    await resend.batch.send(batch);
-  } catch {
-    return NextResponse.json({ ok: false }, { status: 500 });
+    const { error } = await resend.batch.send(batch);
+    if (error) {
+      console.error("broadcast failed:", error.message);
+      return NextResponse.json({ error: error.message }, { status: 502 });
+    }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Send failed";
+    console.error("broadcast failed:", msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
   await admin.from("drops").update({ last_broadcast_at: new Date().toISOString() }).eq("id", drop.id);
   return NextResponse.json({ ok: true, sent: batch.length });

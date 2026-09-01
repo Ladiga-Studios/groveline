@@ -22,7 +22,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
 ANTHROPIC_API_KEY=...
 RESEND_API_KEY=...
-RESEND_FROM="Groveline <hello@groveline.io>"
+RESEND_FROM="Groveline <hello@send.groveline.io>"
 ```
 
 The service role key stays server side only. It powers the atomic claim function and email sends.
@@ -30,7 +30,7 @@ The service role key stays server side only. It powers the atomic claim function
 ### 3. Resend (email)
 
 1. Verify the groveline.io domain in Resend so mail comes from your address.
-2. Set `RESEND_FROM` to a verified sender.
+2. Set `RESEND_FROM` to a sender on the domain you verified. This project verified `send.groveline.io`, so use `Groveline <hello@send.groveline.io>`. A plain `hello@groveline.io` gets rejected by Resend and every email silently fails. The "Send me a test email" button in Settings shows Resend's exact error if this is wrong.
 
 Emails sent: buyer claim confirmations (when they leave an email) and new drop announcements to a seller's subscriber list. If `RESEND_API_KEY` is missing, the app runs fine and just skips email.
 

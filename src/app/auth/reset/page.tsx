@@ -46,10 +46,12 @@ export default function ResetPage() {
       return;
     }
     toast("Password updated.", "success");
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id, is_seller")
-      .maybeSingle();
+    const {
+      data: { user: me },
+    } = await supabase.auth.getUser();
+    const { data: profile } = me
+      ? await supabase.from("profiles").select("id, is_seller").eq("id", me.id).maybeSingle()
+      : { data: null };
     router.push(profile ? (profile.is_seller ? "/dashboard" : "/browse") : "/welcome");
     router.refresh();
   }

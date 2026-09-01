@@ -7,6 +7,7 @@ import Avatar from "@/components/Avatar";
 import { STATES } from "@/lib/states";
 import { resizeImageFile } from "@/lib/image";
 import Modal from "@/components/Modal";
+import Subscriptions from "./Subscriptions";
 
 type BillingStatus = {
   stripeConfigured: boolean;
@@ -25,6 +26,10 @@ export default function SettingsPage() {
   const [usState, setUsState] = useState("AL");
   const [notify, setNotify] = useState(true);
   const [digest, setDigest] = useState(true);
+  const [followEmails, setFollowEmails] = useState(true);
+  const [following, setFollowing] = useState<{ id: string; name: string; slug: string; avatar_url: string | null }[]>([]);
+  const [lists, setLists] = useState<{ id: string; name: string; slug: string; avatar_url: string | null }[]>([]);
+  const [testBusy, setTestBusy] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isSeller, setIsSeller] = useState(false);
   const [billing, setBilling] = useState<BillingStatus | null>(null);
@@ -54,6 +59,11 @@ export default function SettingsPage() {
       setUsState(p.state || "AL");
       setNotify(p.notify_on_claim ?? true);
       setDigest(p.notify_digest ?? true);
+      setFollowEmails(p.follow_emails ?? true);
+      const { data: f } = await supabase.from("follows").select("shops!follows_seller_id_fkey(id, name, slug, avatar_url)").eq("buyer_id", user.id);
+      setFollowing((f ?? []).map((r) => (Array.isArray(r.shops) ? r.shops[0] : r.shops)).filter(Boolean) as { id: string; name: string; slug: string; avatar_url: string | null }[]);
+      const lr = await fetch("/api/newsletter/mine");
+      if (lr.ok) setLists(await lr.json());
       setAvatarUrl(p.avatar_url);
       setIsSeller(p.is_seller);
       setLoaded(true);
@@ -81,7 +91,7 @@ export default function SettingsPage() {
     if (!user) return router.replace("/login");
     const { error } = await supabase
       .from("profiles")
-      .update({ name: name.trim(), town: town.trim(), state: usState, notify_on_claim: notify, notify_digest: digest })
+      .update({ name: name.trim(), town: town.trim(), state: usState, notify_on_claim: notify, notify_digest: digest, follow_emails: followEmails })
       .eq("id", user.id);
     setBusy(false);
     toast(error ? "Couldn't save that. Try again." : "Saved.", error ? "error" : "success");
@@ -132,6 +142,15 @@ export default function SettingsPage() {
     toast(resume ? "Welcome back. Your plan continues." : "Cancelled. You're good through the end of what you paid for.", "success");
   }
 
+  async function testEmail() {
+    setTestBusy(true);
+    const res = await fetch("/api/email/test", { method: "POST" });
+    setTestBusy(false);
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) toast("Sent. Check your inbox (and spam, the first time).", "success");
+    else toast(`Email failed: ${data.error || "unknown error"}${data.from ? ` (sending from ${data.from})` : " (RESEND_FROM not set)"}`, "error");
+  }
+
   async function logOut() {
     await supabaseBrowser().auth.signOut();
     router.push("/");
@@ -176,6 +195,10 @@ export default function SettingsPage() {
             </select>
           </div>
         </div>
+        <label className="flex min-h-11 cursor-pointer items-center gap-3">
+          <input type="checkbox" checked={followEmails} onChange={(e) => setFollowEmails(e.target.checked)} className="h-5 w-5 accent-[#1e4d2b]" />
+          <span>Email me when a shop I follow posts a new drop</span>
+        </label>
         {isSeller && (
           <>
             <fieldset className="rounded-xl border-2 border-cream-dark p-4">
@@ -201,6 +224,8 @@ export default function SettingsPage() {
         )}
         <button className="btn btn-primary" disabled={busy}>{busy ? "Saving" : "Save changes"}</button>
       </form>
+
+      <Subscriptions following={following} lists={lists} />
 
       {isSeller && (
         <section className="tag-card mt-4 p-6">
@@ -278,6 +303,12 @@ export default function SettingsPage() {
           </Modal>
         </>
       )}
+
+      <section className="tag-card mt-4 p-6">
+        <h2 className="text-lg font-semibold">Not getting emails?</h2>
+        <p className="mt-1 text-sm text-muted">Send yourself a test. If it fails, the message tells you exactly why.</p>
+        <button className="btn btn-outline mt-3" onClick={testEmail} disabled={testBusy}>{testBusy ? "Sending" : "Send me a test email"}</button>
+      </section>
 
       <div className="mt-8 text-center">
         <button onClick={logOut} className="btn btn-outline">Log out</button>

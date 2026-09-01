@@ -26,6 +26,7 @@ it ships, new changes get a new file.
 - 0007_shipping_terms_contact_digest.sql
 - 0008_shops.sql
 - 0009_support_messages.sql
+- 0010_follow_emails.sql
 
 ## History
 
@@ -39,3 +40,4 @@ it ships, new changes get a new file.
 - 0007: shipping and fulfillment on drops, delivery and address on claims, terms acceptance, seller contact info, notification digest preference, claim_drop_v3
 - 0008: shops table (one account, many seller profiles), drops/follows/subscribers repointed to shops, owns_shop helper, policies rewritten, remove_claim and seller_stats updated
 - 0009: support_messages table for the support form
+- 0010: follow_emails on profiles, a per-person switch for new-drop emails from followed shops

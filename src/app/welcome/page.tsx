@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { slugify, shortId } from "@/lib/format";
@@ -18,6 +18,23 @@ export default function WelcomePage() {
   const [error, setError] = useState("");
   const toast = useToast();
   const router = useRouter();
+
+  // Anyone who already has a profile has no business here. Send them on.
+  useEffect(() => {
+    (async () => {
+      const supabase = supabaseBrowser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        router.replace("/login");
+        return;
+      }
+      const { data: existing } = await supabase.from("profiles").select("is_seller").eq("id", user.id).maybeSingle();
+      if (existing) router.replace(existing.is_seller ? "/dashboard" : "/browse");
+    })();
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,7 +57,7 @@ export default function WelcomePage() {
       return;
     }
     const base = slugify(farmName || name) || "seller";
-    const { error: err } = await supabase.from("profiles").insert({
+    const { error: err } = await supabase.from("profiles").upsert({
       id: user.id,
       email: user.email ?? null,
       accepted_terms_at: new Date().toISOString(),
