@@ -16,9 +16,9 @@ export default async function FollowingPage() {
 
   const { data: follows } = await supabase
     .from("follows")
-    .select("seller_id, profiles!follows_seller_id_fkey(id, name, farm_name, town, state, slug, avatar_url)")
+    .select("seller_id, shops!follows_seller_id_fkey(id, name, town, state, slug, avatar_url)")
     .eq("buyer_id", user.id);
-  const sellers = (follows ?? []).map((f) => (Array.isArray(f.profiles) ? f.profiles[0] : f.profiles)).filter(Boolean);
+  const sellers = (follows ?? []).map((f) => (Array.isArray(f.shops) ? f.shops[0] : f.shops)).filter(Boolean);
   const ids = sellers.map((s) => s.id);
   const { data: live } = ids.length
     ? await supabase.from("drops").select("seller_id").in("seller_id", ids).eq("status", "active").gte("pickup_end", new Date().toISOString())
@@ -41,9 +41,9 @@ export default async function FollowingPage() {
             const n = count.get(s.id) ?? 0;
             return (
               <Link key={s.id} href={`/s/${s.slug}`} className="tag-card flex items-center gap-4 p-4">
-                <Avatar url={s.avatar_url} name={s.farm_name || s.name} size={48} />
+                <Avatar url={s.avatar_url} name={s.name} size={48} />
                 <div className="min-w-0">
-                  <p className="truncate font-semibold">{s.farm_name || s.name}</p>
+                  <p className="truncate font-semibold">{s.name}</p>
                   <p className="text-sm text-muted">{s.town}, {s.state}</p>
                   <p className={`text-sm font-medium ${n > 0 ? "text-grove" : "text-muted"}`}>{n > 0 ? `${n} claimable now` : "Nothing active"}</p>
                 </div>

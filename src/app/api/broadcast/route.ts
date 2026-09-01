@@ -23,10 +23,11 @@ export async function POST(req: Request) {
   const admin = supabaseAdmin();
   const { data: drop } = await admin
     .from("drops")
-    .select("id, seller_id, title, price_cents, pickup_place, pickup_start, pickup_end, slug, fulfillment, last_broadcast_at, profiles!drops_seller_id_fkey(name, farm_name)")
+    .select("id, seller_id, title, price_cents, pickup_place, pickup_start, pickup_end, slug, fulfillment, last_broadcast_at, shops!drops_seller_id_fkey(name, owner_id)")
     .eq("slug", body.slug)
     .maybeSingle();
-  if (!drop || drop.seller_id !== user.id) {
+  const shopRow = Array.isArray(drop?.shops) ? drop?.shops[0] : drop?.shops;
+  if (!drop || shopRow?.owner_id !== user.id) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   const isUpdate = body.kind === "update";
@@ -38,11 +39,11 @@ export async function POST(req: Request) {
     admin
       .from("newsletter_subscribers")
       .select("email")
-      .eq("seller_id", user.id),
+      .eq("seller_id", drop.seller_id),
     admin
       .from("follows")
       .select("profiles!follows_buyer_id_fkey(email)")
-      .eq("seller_id", user.id),
+      .eq("seller_id", drop.seller_id),
   ]);
 
   const followerEmails = (followerRows ?? [])
@@ -57,8 +58,7 @@ export async function POST(req: Request) {
   );
   if (emails.length === 0) return NextResponse.json({ ok: true, sent: 0 });
 
-  const profile = Array.isArray(drop.profiles) ? drop.profiles[0] : drop.profiles;
-  const sellerName = profile?.farm_name || profile?.name || "Your seller";
+  const sellerName = shopRow?.name || "Your seller";
   const site = process.env.NEXT_PUBLIC_SITE_URL || "https://groveline.io";
   const price = (drop.price_cents / 100).toFixed(2).replace(/\.00$/, "");
   const day = new Date(drop.pickup_start).toLocaleDateString("en-US", {
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
     from: process.env.RESEND_FROM || "Groveline <hello@groveline.io>",
     to: email,
     subject: isUpdate ? `Update from ${sellerName}: ${drop.title}` : `New drop from ${sellerName}: ${drop.title}`,
-    text: `${sellerName} ${isUpdate ? "has an update on a drop" : "just posted a new drop"}.\n\n${drop.title}, $${price} each\n${where}\n\n${isUpdate ? "See what changed" : "Reserve yours"}: ${site}/d/${drop.slug}\n\nYou get these because you follow or subscribed to ${sellerName} on Groveline.\nStop these emails: ${site}/unsubscribe?s=${user.id}&e=${encodeURIComponent(email)}`,
+    text: `${sellerName} ${isUpdate ? "has an update on a drop" : "just posted a new drop"}.\n\n${drop.title}, $${price} each\n${where}\n\n${isUpdate ? "See what changed" : "Reserve yours"}: ${site}/d/${drop.slug}\n\nYou get these because you follow or subscribed to ${sellerName} on Groveline.\nStop these emails: ${site}/unsubscribe?s=${drop.seller_id}&e=${encodeURIComponent(email)}`,
   }));
 
   try {

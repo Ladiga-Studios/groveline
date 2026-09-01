@@ -19,9 +19,9 @@ export default async function AdminPage() {
 
   const [{ data: reports }, { data: drops }, { count: sellers }, { count: buyers }, { count: claims }] = await Promise.all([
     admin.from("reports").select("*, drops(title, slug, status)").eq("resolved", false).order("created_at", { ascending: false }).limit(50),
-    admin.from("drops").select("id, title, slug, status, created_at, views, claimed, quantity, profiles!drops_seller_id_fkey(name, farm_name)").order("created_at", { ascending: false }).limit(40),
-    admin.from("profiles").select("*", { count: "exact", head: true }).eq("is_seller", true),
-    admin.from("profiles").select("*", { count: "exact", head: true }).eq("is_seller", false),
+    admin.from("drops").select("id, title, slug, status, created_at, views, claimed, quantity, shops!drops_seller_id_fkey(name)").order("created_at", { ascending: false }).limit(40),
+    admin.from("shops").select("*", { count: "exact", head: true }),
+    admin.from("profiles").select("*", { count: "exact", head: true }),
     admin.from("claims").select("*", { count: "exact", head: true }).is("cancelled_at", null),
   ]);
 
@@ -29,7 +29,7 @@ export default async function AdminPage() {
     <div className="mx-auto max-w-5xl px-4 py-10">
       <h1 className="text-3xl font-semibold">Admin</h1>
       <dl className="mt-4 grid grid-cols-3 gap-3">
-        {[["Sellers", sellers ?? 0], ["Buyers", buyers ?? 0], ["Reservations", claims ?? 0]].map(([l, v]) => (
+        {[["Shops", sellers ?? 0], ["Accounts", buyers ?? 0], ["Reservations", claims ?? 0]].map(([l, v]) => (
           <div key={String(l)} className="tag-card p-4 text-center">
             <dd className="font-display text-2xl font-semibold text-grove">{v}</dd>
             <dt className="text-xs text-muted">{l}</dt>
@@ -61,12 +61,12 @@ export default async function AdminPage() {
       <h2 className="mt-10 text-xl font-semibold">Recent drops</h2>
       <div className="mt-3 grid gap-2">
         {(drops ?? []).map((d) => {
-          const s = Array.isArray(d.profiles) ? d.profiles[0] : d.profiles;
+          const s = Array.isArray(d.shops) ? d.shops[0] : d.shops;
           return (
             <div key={d.id} className="tag-card flex flex-wrap items-center justify-between gap-3 p-3 text-sm">
               <div>
                 <Link href={`/d/${d.slug}`} className="font-semibold text-grove underline">{d.title}</Link>
-                <span className="text-muted"> by {s?.farm_name || s?.name}. {d.claimed}/{d.quantity} claimed, {d.views} views, {d.status}</span>
+                <span className="text-muted"> by {s?.name}. {d.claimed}/{d.quantity} claimed, {d.views} views, {d.status}</span>
               </div>
               {d.status !== "removed" && <TakeDownButton dropId={d.id} />}
             </div>

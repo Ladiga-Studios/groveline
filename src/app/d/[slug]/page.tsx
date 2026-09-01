@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { supabaseServer, supabaseAdmin } from "@/lib/supabase/server";
 import ClaimForm from "@/components/ClaimForm";
 import ShareButton from "@/components/ShareButton";
+import FacebookShareButton from "@/components/FacebookShareButton";
 import PhotoGallery from "@/components/PhotoGallery";
 import PickupMap from "@/components/PickupMap";
 import ReportButton from "@/components/ReportButton";
@@ -20,7 +21,7 @@ async function getDrop(slug: string): Promise<Drop | null> {
   const supabase = await supabaseServer();
   const { data } = await supabase
     .from("drops")
-    .select("*, profiles!drops_seller_id_fkey(id, name, farm_name, town, state, slug, avatar_url, payouts_enabled, contact_phone)")
+    .select("*, shops!drops_seller_id_fkey(id, name, town, state, slug, avatar_url, contact_phone, owner:profiles!shops_owner_id_fkey(payouts_enabled))")
     .eq("slug", slug)
     .maybeSingle();
   return data as Drop | null;
@@ -30,13 +31,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const drop = await getDrop(slug);
   if (!drop || drop.status === "removed") return { title: "Drop not found" };
-  const seller = drop.profiles?.farm_name || drop.profiles?.name || "a local seller";
-  const desc = `${money(drop.price_cents)} each from ${seller}. Pickup ${pickupWindow(drop.pickup_start, drop.pickup_end)} at ${drop.pickup_place}. Reserve in seconds, no account needed.`;
+  const seller = drop.shops?.name || "a local seller";
+  const when = whenLabel(drop) + (drop.pickup_place && drop.fulfillment !== "shipping" ? ` at ${drop.pickup_place}` : "");
+  const short = `${money(drop.price_cents)} each from ${seller}. ${when}. Reserve in seconds, no account needed.`;
+  const long = drop.description ? `${drop.description.slice(0, 220)}${drop.description.length > 220 ? "..." : ""}\n\n${short}` : short;
   return {
     title: drop.title,
-    description: desc.slice(0, 160),
+    description: short.slice(0, 160),
     alternates: { canonical: `/d/${drop.slug}` },
-    openGraph: { title: `${drop.title} for ${money(drop.price_cents)}`, description: desc },
+    openGraph: { title: `${drop.title}, ${money(drop.price_cents)} each`, description: long },
   };
 }
 
@@ -63,7 +66,8 @@ export default async function DropPage({ params }: { params: Promise<{ slug: str
   }
 
   const left = drop.quantity - drop.claimed;
-  const seller = drop.profiles;
+  const seller = drop.shops as (Partial<import("@/lib/types").Shop> & { owner?: { payouts_enabled?: boolean } | { payouts_enabled?: boolean }[] }) | undefined;
+  const owner = Array.isArray(seller?.owner) ? seller?.owner[0] : seller?.owner;
   const address = fullAddress(drop);
   const ended = new Date(drop.pickup_end) < new Date();
   const photos = drop.photo_urls?.length ? drop.photo_urls : drop.photo_url ? [drop.photo_url] : [];
@@ -97,9 +101,9 @@ export default async function DropPage({ params }: { params: Promise<{ slug: str
 
       {seller && (
         <Link href={`/s/${seller.slug}`} className="mt-3 inline-flex items-center gap-3 rounded-full pr-3 hover:bg-cream-dark">
-          <Avatar url={seller.avatar_url} name={seller.farm_name || seller.name || ""} size={40} />
+          <Avatar url={seller.avatar_url} name={seller.name || ""} size={40} />
           <span>
-            <span className="block font-medium text-grove">{seller.farm_name || seller.name}</span>
+            <span className="block font-medium text-grove">{seller.name}</span>
             <span className="block text-sm text-muted">{drop.pickup_city || seller.town}{drop.pickup_state ? `, ${drop.pickup_state}` : ""}</span>
           </span>
         </Link>
@@ -127,30 +131,30 @@ export default async function DropPage({ params }: { params: Promise<{ slug: str
           <div className="tag-card p-6">
             <p className="font-display text-xl font-semibold">This pickup time has passed.</p>
             <p className="mt-2 text-muted">
-              {seller ? `Follow ${seller.farm_name || seller.name} or join their email list to catch the next one.` : "Check the browse page for what is claimable now."}
+              {seller ? `Follow ${seller.name} or join their email list to catch the next one.` : "Check the browse page for what is claimable now."}
             </p>
             <Link href="/browse" className="btn btn-primary mt-4">See what is claimable now</Link>
           </div>
         ) : (
-          <ClaimForm drop={drop} acceptsCard={!!seller?.payouts_enabled} prefill={prefill} />
+          <ClaimForm drop={drop} acceptsCard={!!owner?.payouts_enabled} prefill={prefill} />
         )}
       </div>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <FacebookShareButton url={`${process.env.NEXT_PUBLIC_SITE_URL || "https://groveline.io"}/d/${drop.slug}`} />
           <ShareButton
             url={`${process.env.NEXT_PUBLIC_SITE_URL || "https://groveline.io"}/d/${drop.slug}`}
             title={`${drop.title} for ${money(drop.price_cents)}`}
             text="Reserve yours before it is gone."
           />
-          <p className="text-sm text-muted">Know somebody who would want this?</p>
         </div>
         <ReportButton dropId={drop.id} />
       </div>
 
       {seller && (
         <section className="tag-card mt-8 p-6">
-          <h2 className="text-lg font-semibold">Get an email when {seller.farm_name || seller.name} posts</h2>
+          <h2 className="text-lg font-semibold">Get an email when {seller.name} posts</h2>
           <p className="mb-3 mt-1 text-sm text-muted">One email per drop. Unsubscribe any time.{seller.contact_phone ? ` Questions? Text ${seller.contact_phone}.` : ""}</p>
           <NewsletterForm sellerId={seller.id!} />
         </section>

@@ -42,10 +42,11 @@ export default function EditDropPage() {
         return;
       }
       const [{ data: d }, { count }] = await Promise.all([
-        supabase.from("drops").select("*").eq("id", id).eq("seller_id", user.id).maybeSingle(),
+        supabase.from("drops").select("*, shops!drops_seller_id_fkey(owner_id)").eq("id", id).maybeSingle(),
         supabase.from("claims").select("*", { count: "exact", head: true }).eq("drop_id", id),
       ]);
-      if (!d) {
+      const owner = Array.isArray(d?.shops) ? d?.shops[0] : d?.shops;
+      if (!d || owner?.owner_id !== user.id) {
         router.replace("/dashboard");
         return;
       }

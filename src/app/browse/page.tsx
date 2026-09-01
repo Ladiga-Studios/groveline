@@ -127,7 +127,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
 
   let query = supabase
     .from("drops")
-    .select("*, profiles!drops_seller_id_fkey(name, farm_name, town, state, slug, avatar_url)")
+    .select("*, shops!drops_seller_id_fkey(name, town, state, slug, avatar_url)")
     .eq("status", "active")
     .gte("pickup_end", nowIso)
     .order("pickup_start", { ascending: true })

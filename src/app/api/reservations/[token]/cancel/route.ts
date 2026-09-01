@@ -10,14 +10,15 @@ export async function POST(_req: Request, { params }: { params: Promise<{ token:
   const admin = supabaseAdmin();
   const { data: claim } = await admin
     .from("claims")
-    .select("id, buyer_name, quantity, picked_up, cancelled_at, payment_status, payment_intent_id, drops!inner(id, title, pickup_end, seller_id, profiles!drops_seller_id_fkey(email, notify_on_claim))")
+    .select("id, buyer_name, quantity, picked_up, cancelled_at, payment_status, payment_intent_id, drops!inner(id, title, pickup_end, seller_id, shops!drops_seller_id_fkey(owner:profiles!shops_owner_id_fkey(email, notify_on_claim)))")
     .eq("cancel_token", token)
     .maybeSingle();
   if (!claim) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (claim.cancelled_at) return NextResponse.json({ ok: true });
-  const drop = (Array.isArray(claim.drops) ? claim.drops[0] : claim.drops) as {
+  type Owner = { email: string | null; notify_on_claim: boolean };
+  const drop = (Array.isArray(claim.drops) ? claim.drops[0] : claim.drops) as unknown as {
     id: string; title: string; pickup_end: string; seller_id: string;
-    profiles: { email: string | null; notify_on_claim: boolean } | { email: string | null; notify_on_claim: boolean }[] | null;
+    shops: { owner: Owner | Owner[] | null } | { owner: Owner | Owner[] | null }[] | null;
   };
   if (claim.picked_up || new Date(drop.pickup_end) < new Date()) {
     return NextResponse.json({ error: "Too late to cancel" }, { status: 400 });
@@ -36,7 +37,8 @@ export async function POST(_req: Request, { params }: { params: Promise<{ token:
 
   await admin.rpc("release_claim", { p_claim: claim.id });
 
-  const seller = Array.isArray(drop.profiles) ? drop.profiles[0] : drop.profiles;
+  const shopRow = Array.isArray(drop.shops) ? drop.shops[0] : drop.shops;
+  const seller = Array.isArray(shopRow?.owner) ? shopRow?.owner[0] : shopRow?.owner;
   if (seller?.notify_on_claim && seller.email) {
     sendEmail(
       seller.email,

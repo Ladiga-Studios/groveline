@@ -20,8 +20,8 @@ async function getViewer() {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return { loggedIn: false, isSeller: false };
-    const { data: profile } = await supabase.from("profiles").select("is_seller").eq("id", user.id).maybeSingle();
-    return { loggedIn: true, isSeller: !!profile?.is_seller };
+    const { count } = await supabase.from("shops").select("*", { count: "exact", head: true }).eq("owner_id", user.id);
+    return { loggedIn: true, isSeller: (count ?? 0) > 0 };
   } catch {
     return { loggedIn: false, isSeller: false };
   }
@@ -30,7 +30,7 @@ async function getViewer() {
 const faq = [
   {
     q: "Do I need a business license or anything?",
-    a: "That depends on what you sell and where you live. Cottage food laws cover most home baking in Alabama, and other states have their own rules. Groveline is a list, not a license. What you sell and how you sell it is on you, same as it is on Facebook.",
+    a: "That depends on what you sell and where you live. Every state has cottage food rules for home baked goods, and they differ a lot, so look yours up. Groveline is a list, not a license. What you sell and how you sell it is on you, same as it is on Facebook.",
   },
   {
     q: "Do my buyers need an account?",

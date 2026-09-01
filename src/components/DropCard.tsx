@@ -42,10 +42,9 @@ export default function DropCard({ drop }: { drop: Drop }) {
             {money(drop.price_cents)}
           </span>
         </div>
-        {drop.profiles && (
+        {drop.shops && (
           <p className="truncate text-sm text-muted">
-            {drop.profiles.farm_name || drop.profiles.name} in{" "}
-            {drop.pickup_city || drop.profiles.town}
+            {drop.shops.name} in {drop.pickup_city || drop.shops.town}
           </p>
         )}
         <p className="mt-1 text-sm">{whenLabel(drop)}</p>

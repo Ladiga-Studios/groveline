@@ -16,7 +16,7 @@ export default async function ReservationsPage() {
 
   const { data: claims } = await supabase
     .from("claims")
-    .select("*, drops!inner(title, slug, pickup_place, pickup_start, pickup_end, price_cents, fulfillment, profiles!drops_seller_id_fkey(name, farm_name))")
+    .select("*, drops!inner(title, slug, pickup_place, pickup_start, pickup_end, price_cents, fulfillment, shops!drops_seller_id_fkey(name))")
     .eq("buyer_user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(100);
@@ -26,13 +26,13 @@ export default async function ReservationsPage() {
   const past = list.filter((c) => c.cancelled_at || new Date(c.drops.pickup_end) < new Date());
 
   const Row = ({ c }: { c: (typeof list)[number] }) => {
-    const seller = Array.isArray(c.drops.profiles) ? c.drops.profiles[0] : c.drops.profiles;
+    const seller = Array.isArray(c.drops.shops) ? c.drops.shops[0] : c.drops.shops;
     return (
       <Link href={`/r/${c.cancel_token}`} className="tag-card flex flex-wrap items-center justify-between gap-3 p-4">
         <div>
           <p className="font-semibold">{c.drops.title} <span className="font-normal text-muted">x{c.quantity}</span></p>
           <p className="text-sm text-muted">
-            {seller?.farm_name || seller?.name}. {c.delivery === "shipping" ? "Shipping to you" : `${whenLabel(c.drops)}${c.drops.pickup_place ? ` at ${c.drops.pickup_place}` : ""}`}
+            {seller?.name}. {c.delivery === "shipping" ? "Shipping to you" : `${whenLabel(c.drops)}${c.drops.pickup_place ? ` at ${c.drops.pickup_place}` : ""}`}
           </p>
         </div>
         <p className="text-sm font-medium">

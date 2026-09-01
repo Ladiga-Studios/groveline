@@ -46,6 +46,8 @@ Free, and reuses the same Cloudflare account already handling your DNS. In the C
 
 Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. In the Stripe dashboard create one product (the seller subscription) with two recurring prices, $10 monthly and $60 yearly, and put their ids (start with `price_`) in `STRIPE_PRICE_ID_MONTHLY` and `STRIPE_PRICE_ID_YEARLY`. Yearly is optional; leave it blank to offer monthly only. Add a webhook endpoint at `https://groveline.io/api/stripe/webhook` listening for `checkout.session.completed`, `checkout.session.expired`, `customer.subscription.updated`, `customer.subscription.deleted`, and `account.updated`. Enable Stripe Connect (Express) in your Stripe settings so sellers can onboard.
 
+Connected accounts are Express by default (a short in-app signup for sellers). Stripe bills the platform about $2 per month for each Express account that gets a payout that month. Set `STRIPE_CONNECT_TYPE=standard` to switch to Standard accounts, which have no monthly fee but ask the seller to create a full Stripe login. Either way Stripe's card processing fee (about 2.9% plus 30 cents) comes out of each card payment, and Groveline takes nothing.
+
 How it works: sellers set up payouts from Settings and money goes straight to their bank. When a buyer pays by card, a hold is placed at reservation and only captured when the seller marks the claim picked up. Removing a claim or the buyer cancelling releases the hold. Leave Stripe blank and everything runs cash-only with no subscription gate.
 
 ### 7. Scheduled jobs
@@ -91,6 +93,11 @@ Push to your repo, import in Vercel, add the same environment variables, deploy.
 - Terms and privacy acceptance at signup and on every reservation
 - Seller contact info on their page, hourly reservation digests, one-tap update emails to followers
 - A following page for buyers, and sellers can follow each other
+- One account can run several shops, each with its own page, photo, link, followers, and drops
+- Public profile page for every account showing their shops and who they follow
+- Printable pickup sheet (PDF) and spreadsheet export per drop
+- Themed landing pages: /for/kitchen, /for/workshop, /for/greenhouse, /for/fundraisers
+- Share to Facebook buttons that hand the post over with photo, title, price, and description
 - Pickup day reminder emails, listing reports, admin takedowns, view counts, post again
 
 ## Deliberately not in v1

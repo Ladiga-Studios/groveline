@@ -33,14 +33,14 @@ export default async function OgImage({
   );
   const { data: drop } = await supabase
     .from("drops")
-    .select("*, profiles!drops_seller_id_fkey(name, farm_name, town)")
+    .select("*, shops!drops_seller_id_fkey(name, town)")
     .eq("slug", slug)
     .maybeSingle();
 
   const title = drop?.title ?? "A local drop";
   const price = drop ? money(drop.price_cents) : "";
-  const seller = drop?.profiles?.farm_name || drop?.profiles?.name || "";
-  const town = drop?.profiles?.town || "";
+  const seller = drop?.shops?.name || "";
+  const town = drop?.pickup_city || drop?.shops?.town || "";
   const left = drop ? drop.quantity - drop.claimed : 0;
   const photo = drop?.photo_url as string | undefined;
   const pickup = drop

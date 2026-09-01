@@ -56,6 +56,13 @@ export default function WelcomePage() {
       setError("Could not save. Try again.");
       return;
     }
+    if (isSeller) {
+      const body = new FormData();
+      body.set("name", farmName.trim() || name.trim());
+      body.set("town", town.trim());
+      body.set("state", usState);
+      await fetch("/api/shops", { method: "POST", body });
+    }
     toast(`Welcome to Groveline, ${name.trim().split(" ")[0]}.`, "success");
     router.push(isSeller ? "/dashboard" : "/browse");
     router.refresh();

@@ -4,6 +4,7 @@ import { moderateDropSubmission } from "@/lib/moderation";
 import { slugify, shortId, cleanSlug } from "@/lib/format";
 import { isValidCategory } from "@/lib/categories";
 import { geocode } from "@/lib/geocode";
+import { getCurrentShop } from "@/lib/shops";
 
 export const runtime = "nodejs";
 
@@ -14,13 +15,16 @@ export async function POST(req: Request) {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not logged in" }, { status: 401 });
 
-  // Subscription gate: first drop free, then $10/month. Off if Stripe isn't set up.
+  const { shop, shops } = await getCurrentShop(supabase, user.id);
+  if (!shop) return NextResponse.json({ error: "Set up your shop first." }, { status: 400 });
+
+  // Subscription gate: three drops free across all shops, then a plan. Off if Stripe isn't set up.
   const admin = supabaseAdmin();
   if (process.env.STRIPE_SECRET_KEY && (process.env.STRIPE_PRICE_ID_MONTHLY || process.env.STRIPE_PRICE_ID)) {
     const [{ data: profile }, { data: billing }, { count }] = await Promise.all([
       admin.from("profiles").select("is_admin").eq("id", user.id).maybeSingle(),
       admin.from("billing").select("subscription_status").eq("profile_id", user.id).maybeSingle(),
-      admin.from("drops").select("*", { count: "exact", head: true }).eq("seller_id", user.id),
+      admin.from("drops").select("*", { count: "exact", head: true }).in("seller_id", shops.map((x) => x.id)),
     ]);
     const subscribed = ["active", "trialing", "past_due"].includes(billing?.subscription_status ?? "none");
     if (!profile?.is_admin && !subscribed && (count ?? 0) >= 3) {
@@ -87,7 +91,7 @@ export async function POST(req: Request) {
 
   const slug = requestedSlug || `${slugify(title)}-${shortId()}`;
   const { error: insErr } = await supabase.from("drops").insert({
-    seller_id: user.id,
+    seller_id: shop.id,
     slug,
     title,
     category,

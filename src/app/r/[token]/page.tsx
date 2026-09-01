@@ -22,13 +22,13 @@ export default async function ReservationPage({
   const admin = supabaseAdmin();
   const { data: claim } = await admin
     .from("claims")
-    .select("*, drops!inner(*, profiles!drops_seller_id_fkey(name, farm_name, slug))")
+    .select("*, drops!inner(*, shops!drops_seller_id_fkey(name, slug))")
     .eq("cancel_token", token)
     .maybeSingle();
   if (!claim) notFound();
 
   const d = Array.isArray(claim.drops) ? claim.drops[0] : claim.drops;
-  const seller = Array.isArray(d.profiles) ? d.profiles[0] : d.profiles;
+  const seller = Array.isArray(d.shops) ? d.shops[0] : d.shops;
   const ended = new Date(d.pickup_end) < new Date();
   const status = claim.cancelled_at
     ? "cancelled"
@@ -56,7 +56,7 @@ export default async function ReservationPage({
         <p className="mt-1 text-muted">
           {claim.quantity} at {money(d.price_cents)} each, {money(d.price_cents * claim.quantity)} total
         </p>
-        <p className="mt-3">Reserved under <span className="font-semibold">{claim.buyer_name}</span>{seller ? ` with ${seller.farm_name || seller.name}` : ""}.</p>
+        <p className="mt-3">Reserved under <span className="font-semibold">{claim.buyer_name}</span>{seller ? ` with ${seller.name}` : ""}.</p>
         <p className="mt-1">{claim.delivery === "shipping" ? `Ships to ${claim.ship_address}` : whenLabel(d)}</p>
         <p className="mt-3 text-sm">
           Payment:{" "}

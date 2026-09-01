@@ -24,6 +24,7 @@ it ships, new changes get a new file.
 - 0005_multi_photo_and_claim_ip.sql
 - 0006_operational_platform.sql
 - 0007_shipping_terms_contact_digest.sql
+- 0008_shops.sql
 
 ## History
 
@@ -35,3 +36,4 @@ it ships, new changes get a new file.
 - 0005: photo_urls array on drops for multi-photo support, ip_address on claims for spam rate limiting
 - 0006: expanded categories, pickup address and coordinates, avatar and admin on profiles, billing table, buyer-linked claims with cancel tokens and payment tracking, reports, claim_drop_v2, release_claim, increment_views, seller_stats
 - 0007: shipping and fulfillment on drops, delivery and address on claims, terms acceptance, seller contact info, notification digest preference, claim_drop_v3
+- 0008: shops table (one account, many seller profiles), drops/follows/subscribers repointed to shops, owns_shop helper, policies rewritten, remove_claim and seller_stats updated

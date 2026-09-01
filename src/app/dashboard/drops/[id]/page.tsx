@@ -5,6 +5,7 @@ import type { Claim, Drop } from "@/lib/types";
 import Link from "next/link";
 import ClaimList, { InventoryControl } from "./ClaimList";
 import CopyButton from "@/components/CopyButton";
+import FacebookShareButton from "@/components/FacebookShareButton";
 import NotifyFollowersButton from "./NotifyFollowersButton";
 
 export const dynamic = "force-dynamic";
@@ -23,13 +24,14 @@ export default async function DropAdminPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: drop } = await supabase
+  const { data: dropRow } = await supabase
     .from("drops")
-    .select("*")
+    .select("*, shops!drops_seller_id_fkey(owner_id, name)")
     .eq("id", id)
-    .eq("seller_id", user.id)
-    .maybeSingle<Drop>();
-  if (!drop) notFound();
+    .maybeSingle();
+  const shopRow = Array.isArray(dropRow?.shops) ? dropRow?.shops[0] : dropRow?.shops;
+  if (!dropRow || shopRow?.owner_id !== user.id) notFound();
+  const drop = dropRow as Drop;
 
   const [{ data: claims }, { data: waitlist }] = await Promise.all([
     supabase
@@ -58,6 +60,7 @@ export default async function DropAdminPage({
         <span className="ml-3 text-base font-normal text-muted">{drop.views} views</span>
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
+        <FacebookShareButton url={url} />
         <Link href={`/dashboard/drops/${drop.id}/edit`} className="btn btn-outline">
           Edit drop
         </Link>
@@ -65,6 +68,8 @@ export default async function DropAdminPage({
           Post again
         </Link>
         <NotifyFollowersButton slug={drop.slug} />
+        <a href={`/api/drops/${drop.id}/report?format=pdf`} className="btn btn-outline">Print list (PDF)</a>
+        <a href={`/api/drops/${drop.id}/report?format=xlsx`} className="btn btn-outline">Spreadsheet</a>
         <CopyButton text={url} />
         <CopyButton
           text={(claims ?? [])

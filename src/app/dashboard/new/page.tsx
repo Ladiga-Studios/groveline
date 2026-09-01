@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/components/Toast";
 import CopyButton from "@/components/CopyButton";
 import ShareButton from "@/components/ShareButton";
+import FacebookShareButton from "@/components/FacebookShareButton";
 import PhotoPicker from "@/components/PhotoPicker";
 import CategorySelect from "@/components/CategorySelect";
 import PickupFields, { type Pickup } from "@/components/PickupFields";
@@ -48,8 +49,9 @@ export default function NewDropPage() {
       // "Post again" prefill from a previous drop.
       const from = new URLSearchParams(window.location.search).get("from");
       if (from) {
-        const { data: d } = await supabase.from("drops").select("*").eq("id", from).eq("seller_id", user.id).maybeSingle();
-        if (d) {
+        const { data: d } = await supabase.from("drops").select("*, shops!drops_seller_id_fkey(owner_id)").eq("id", from).maybeSingle();
+        const owner = Array.isArray(d?.shops) ? d?.shops[0] : d?.shops;
+        if (d && owner?.owner_id === user.id) {
           setTitle(d.title);
           setCategory(d.category);
           setDescription(d.description || "");
@@ -166,7 +168,8 @@ export default function NewDropPage() {
             <p className="font-semibold">1. Grab your link</p>
             <p className="mt-1 break-all font-mono text-sm text-muted">{created.url}</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <ShareButton url={created.url} title={title || "My new drop on Groveline"} text="Reserve yours before it is gone." primary />
+              <FacebookShareButton url={created.url} label="Post to Facebook" />
+              <ShareButton url={created.url} title={title || "My new drop on Groveline"} text="Reserve yours before it is gone." />
               <CopyButton text={created.url} />
               <CopyButton text={created.caption} label="Copy a ready caption" />
             </div>
@@ -174,7 +177,7 @@ export default function NewDropPage() {
           <li className="tag-card p-4">
             <p className="font-semibold">2. Paste it where your buyers already are</p>
             <p className="mt-1 text-sm text-muted">
-              The Facebook groups you always post in, your page, your story, a text to your regulars. The link turns into a card with your photo and price by itself.
+              Post to Facebook opens Facebook with your link ready to go. The post shows your first photo, the title, the price, and the first lines of your description by itself. Add a sentence in your own words and hit post.
             </p>
           </li>
           <li className="tag-card p-4">

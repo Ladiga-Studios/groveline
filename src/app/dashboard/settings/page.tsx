@@ -20,12 +20,8 @@ export default function SettingsPage() {
   const [name, setName] = useState("");
   const [town, setTown] = useState("");
   const [usState, setUsState] = useState("AL");
-  const [farmName, setFarmName] = useState("");
-  const [bio, setBio] = useState("");
   const [notify, setNotify] = useState(true);
   const [digest, setDigest] = useState(true);
-  const [contactPhone, setContactPhone] = useState("");
-  const [socialUrl, setSocialUrl] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isSeller, setIsSeller] = useState(false);
   const [billing, setBilling] = useState<BillingStatus | null>(null);
@@ -52,12 +48,8 @@ export default function SettingsPage() {
       setName(p.name);
       setTown(p.town);
       setUsState(p.state || "AL");
-      setFarmName(p.farm_name || "");
-      setBio(p.bio || "");
       setNotify(p.notify_on_claim ?? true);
       setDigest(p.notify_digest ?? true);
-      setContactPhone(p.contact_phone || "");
-      setSocialUrl(p.social_url || "");
       setAvatarUrl(p.avatar_url);
       setIsSeller(p.is_seller);
       setLoaded(true);
@@ -85,7 +77,7 @@ export default function SettingsPage() {
     if (!user) return router.replace("/login");
     const { error } = await supabase
       .from("profiles")
-      .update({ name: name.trim(), town: town.trim(), state: usState, farm_name: farmName.trim() || null, bio: bio.trim() || null, notify_on_claim: notify, notify_digest: digest, contact_phone: contactPhone.trim() || null, social_url: socialUrl.trim() || null })
+      .update({ name: name.trim(), town: town.trim(), state: usState, notify_on_claim: notify, notify_digest: digest })
       .eq("id", user.id);
     setBusy(false);
     toast(error ? "Could not save. Try again." : "Saved.", error ? "error" : "success");
@@ -129,12 +121,15 @@ export default function SettingsPage() {
   return (
     <div className="mx-auto max-w-xl px-4 py-10">
       <h1 className="text-3xl font-semibold">Settings</h1>
+      {isSeller && (
+        <p className="mt-2 text-sm text-muted">Shop names, photos, bios, and contact info live under <a href="/dashboard/shops" className="text-grove underline">My shops</a>. This page is your own account.</p>
+      )}
 
       <section className="tag-card mt-6 flex items-center gap-5 p-6">
-        <Avatar url={avatarUrl} name={farmName || name} size={72} />
+        <Avatar url={avatarUrl} name={name} size={72} />
         <div>
           <p className="font-semibold">Profile photo</p>
-          <p className="text-sm text-muted">Shows on your page and your drops. A friendly face sells more bread.</p>
+          <p className="text-sm text-muted">This is you, the person. Each shop has its own photo too.</p>
           <label className="btn btn-outline mt-2 !min-h-10 cursor-pointer">
             {avatarBusy ? "Uploading" : avatarUrl ? "Change photo" : "Add a photo"}
             <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadAvatar(e.target.files[0])} disabled={avatarBusy} />
@@ -161,25 +156,6 @@ export default function SettingsPage() {
         </div>
         {isSeller && (
           <>
-            <div>
-              <label htmlFor="st-farm" className="field-label">Farm or business name <span className="font-normal text-muted">(optional)</span></label>
-              <input id="st-farm" className="field" value={farmName} onChange={(e) => setFarmName(e.target.value)} />
-            </div>
-            <div>
-              <label htmlFor="st-bio" className="field-label">About you <span className="font-normal text-muted">(optional)</span></label>
-              <textarea id="st-bio" className="field min-h-24" value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Small farm outside Piedmont. Bread on Saturdays, eggs most weeks." />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="st-phone" className="field-label">Phone for buyers <span className="font-normal text-muted">(optional)</span></label>
-                <input id="st-phone" type="tel" className="field" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="256 555 0100" />
-                <p className="field-hint">Shows on your page so folks can text you.</p>
-              </div>
-              <div>
-                <label htmlFor="st-social" className="field-label">Facebook page or website <span className="font-normal text-muted">(optional)</span></label>
-                <input id="st-social" type="url" className="field" value={socialUrl} onChange={(e) => setSocialUrl(e.target.value)} placeholder="https://facebook.com/millerfarm" />
-              </div>
-            </div>
             <fieldset className="rounded-xl border-2 border-cream-dark p-4">
               <legend className="px-1 font-semibold">Reservation emails</legend>
               <label className="flex min-h-11 cursor-pointer items-center gap-3">

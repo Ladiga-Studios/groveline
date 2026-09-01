@@ -11,10 +11,14 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: "Not logged in" }, { status: 401 });
 
   const admin = supabaseAdmin();
+  const { data: myShops } = await admin.from("shops").select("id").eq("owner_id", user.id);
+  const shopIds = (myShops ?? []).map((x) => x.id);
   const [{ data: profile }, { data: billing }, { count: dropsCount }] = await Promise.all([
     admin.from("profiles").select("is_admin, payouts_enabled").eq("id", user.id).maybeSingle(),
     admin.from("billing").select("*").eq("profile_id", user.id).maybeSingle(),
-    admin.from("drops").select("*", { count: "exact", head: true }).eq("seller_id", user.id),
+    shopIds.length
+      ? admin.from("drops").select("*", { count: "exact", head: true }).in("seller_id", shopIds)
+      : Promise.resolve({ count: 0 }),
   ]);
 
   const stripe = getStripe();

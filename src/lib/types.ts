@@ -11,11 +11,26 @@ export type Profile = {
   email: string | null;
   avatar_url: string | null;
   notify_on_claim: boolean;
+  notify_digest: boolean;
   payouts_enabled: boolean;
   contact_phone: string | null;
   social_url: string | null;
-  notify_digest: boolean;
   created_at: string;
+};
+
+export type Shop = {
+  id: string;
+  owner_id: string;
+  name: string;
+  slug: string;
+  bio: string | null;
+  avatar_url: string | null;
+  town: string;
+  state: string;
+  contact_phone: string | null;
+  social_url: string | null;
+  created_at: string;
+  owner?: Partial<Profile>;
 };
 
 export type Drop = {
@@ -45,7 +60,7 @@ export type Drop = {
   status: "active" | "closed" | "removed";
   views: number;
   created_at: string;
-  profiles?: Partial<Profile>;
+  shops?: Partial<Shop>;
 };
 
 export type Claim = {

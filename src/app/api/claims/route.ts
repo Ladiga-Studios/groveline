@@ -81,11 +81,13 @@ export async function POST(req: Request) {
   const admin = supabaseAdmin();
   const { data: drop } = await admin
     .from("drops")
-    .select("id, title, slug, price_cents, pickup_place, pickup_start, pickup_end, seller_id, fulfillment, shipping_cents, profiles!drops_seller_id_fkey(name, farm_name, email, notify_on_claim, notify_digest, payouts_enabled)")
+    .select("id, title, slug, price_cents, pickup_place, pickup_start, pickup_end, seller_id, fulfillment, shipping_cents, shops!drops_seller_id_fkey(name, owner_id, owner:profiles!shops_owner_id_fkey(email, notify_on_claim, notify_digest, payouts_enabled))")
     .eq("id", drop_id)
     .maybeSingle();
   if (!drop) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const seller = Array.isArray(drop.profiles) ? drop.profiles[0] : drop.profiles;
+  const shop = Array.isArray(drop.shops) ? drop.shops[0] : drop.shops;
+  const seller = (Array.isArray(shop?.owner) ? shop?.owner[0] : shop?.owner) as { email: string | null; notify_on_claim: boolean; notify_digest: boolean; payouts_enabled: boolean } | undefined;
+  const ownerId = shop?.owner_id as string | undefined;
 
   if (method === "card" && !seller?.payouts_enabled) {
     return NextResponse.json({ error: "This seller only takes cash." }, { status: 400 });
@@ -128,7 +130,7 @@ export async function POST(req: Request) {
     const { data: billing } = await admin
       .from("billing")
       .select("stripe_account_id")
-      .eq("profile_id", drop.seller_id)
+      .eq("profile_id", ownerId ?? "")
       .maybeSingle();
     if (!stripe || !billing?.stripe_account_id) {
       await admin.rpc("release_claim", { p_claim: result.claim_id });

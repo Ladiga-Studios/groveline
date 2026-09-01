@@ -17,10 +17,11 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
   const { data: existing } = await supabase
     .from("drops")
-    .select("id, seller_id, claimed, pickup_address, pickup_city, pickup_state, pickup_zip, pickup_lat, pickup_lng")
+    .select("id, seller_id, claimed, pickup_address, pickup_city, pickup_state, pickup_zip, pickup_lat, pickup_lng, shops!drops_seller_id_fkey(owner_id)")
     .eq("id", id)
     .maybeSingle();
-  if (!existing || existing.seller_id !== user.id) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const owner = Array.isArray(existing?.shops) ? existing?.shops[0] : existing?.shops;
+  if (!existing || owner?.owner_id !== user.id) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const form = await req.formData();
   const title = String(form.get("title") ?? "").trim();

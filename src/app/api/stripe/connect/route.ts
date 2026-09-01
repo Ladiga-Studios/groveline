@@ -20,7 +20,7 @@ export async function POST() {
   let accountId = billing?.stripe_account_id ?? undefined;
   if (!accountId) {
     const account = await stripe.accounts.create({
-      type: "express",
+      type: process.env.STRIPE_CONNECT_TYPE === "standard" ? "standard" : "express",
       country: "US",
       email: user.email ?? undefined,
       capabilities: { card_payments: { requested: true }, transfers: { requested: true } },

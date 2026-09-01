@@ -17,11 +17,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const admin = supabaseAdmin();
   const { data: claim } = await admin
     .from("claims")
-    .select("id, payment_status, payment_intent_id, drops!inner(seller_id)")
+    .select("id, payment_status, payment_intent_id, drops!inner(seller_id, shops!drops_seller_id_fkey(owner_id))")
     .eq("id", id)
     .maybeSingle();
   const drop = Array.isArray(claim?.drops) ? claim?.drops[0] : claim?.drops;
-  if (!claim || drop?.seller_id !== user.id) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const shop = Array.isArray(drop?.shops) ? drop?.shops[0] : drop?.shops;
+  if (!claim || shop?.owner_id !== user.id) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const update: Record<string, unknown> = { picked_up: !!picked_up };
 

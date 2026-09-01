@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/fraunces";
 import "@fontsource-variable/instrument-sans";
 import "./globals.css";
-import Header from "@/components/Header";
+import Header, { type HeaderUser } from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ToastProvider } from "@/components/Toast";
 import { supabaseServer } from "@/lib/supabase/server";
@@ -36,27 +36,28 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  let loggedIn = false;
-  let isSeller = false;
+  let headerUser: HeaderUser = null;
   try {
     const supabase = await supabaseServer();
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    loggedIn = !!user;
     if (user) {
-      const { data: p } = await supabase.from("profiles").select("is_seller").eq("id", user.id).maybeSingle();
-      isSeller = !!p?.is_seller;
+      const [{ data: p }, { count }] = await Promise.all([
+        supabase.from("profiles").select("name, avatar_url, slug, is_admin").eq("id", user.id).maybeSingle(),
+        supabase.from("shops").select("*", { count: "exact", head: true }).eq("owner_id", user.id),
+      ]);
+      if (p) headerUser = { name: p.name, avatarUrl: p.avatar_url, slug: p.slug, shopCount: count ?? 0, isAdmin: !!p.is_admin };
     }
   } catch {
-    loggedIn = false;
+    headerUser = null;
   }
 
   return (
     <html lang="en">
       <body>
         <ToastProvider>
-          <Header loggedIn={loggedIn} isSeller={isSeller} />
+          <Header user={headerUser} />
           <main id="main">{children}</main>
           <Footer />
         </ToastProvider>

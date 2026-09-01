@@ -32,12 +32,8 @@ async function getViewer() {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return { loggedIn: false, isSeller: false };
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_seller")
-      .eq("id", user.id)
-      .maybeSingle();
-    return { loggedIn: true, isSeller: !!profile?.is_seller };
+    const { count } = await supabase.from("shops").select("*", { count: "exact", head: true }).eq("owner_id", user.id);
+    return { loggedIn: true, isSeller: (count ?? 0) > 0 };
   } catch {
     return { loggedIn: false, isSeller: false };
   }
@@ -48,7 +44,7 @@ async function getFreshDrops(): Promise<Drop[]> {
     const supabase = await supabaseServer();
     const { data } = await supabase
       .from("drops")
-      .select("*, profiles!drops_seller_id_fkey(name, farm_name, town, state, slug)")
+      .select("*, shops!drops_seller_id_fkey(name, town, state, slug, avatar_url)")
       .eq("status", "active")
       .gte("pickup_end", new Date().toISOString())
       .order("pickup_start", { ascending: true })
@@ -137,13 +133,13 @@ export default async function Home() {
           </p>
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { img: "/illustrations/goods.jpg", alt: "Bread, tomatoes, eggs, and a jar of preserves", t: "From the kitchen and the garden", d: "Sourdough, cakes, cookies. Tomatoes, greens, sweet corn. Eggs by the dozen. Jam, honey, pickles, hot sauce." , g: "baked" },
-              { img: "/illustrations/handmade.jpg", alt: "A woman arranging soap and candles at a market table", t: "From the workshop", d: "Soap, candles, wax melts. Cutting boards and signs. Quilts, crochet, pottery, leather. If your hands made it, it fits.", g: "handmade" },
-              { img: "/illustrations/plants.jpg", alt: "A plant stand with seedlings, houseplants, and cut flowers", t: "From the greenhouse", d: "Seedlings and vegetable starts in spring. Cut flowers and bouquets all summer. Wreaths and Christmas trees when it turns cold.", g: "plants" },
-              { img: "/illustrations/plates.jpg", alt: "A volunteer handing a plate of food across a table", t: "From the fire hall", d: "Plate sales, Boston butts, fish fries, bake sales. Know how many to cook before you light the grill.", g: "prepared" },
+              { img: "/illustrations/goods.jpg", alt: "Bread, tomatoes, eggs, and a jar of preserves", t: "From the kitchen and the garden", d: "Sourdough, cakes, cookies. Tomatoes, greens, sweet corn. Eggs by the dozen. Jam, honey, pickles, hot sauce.", g: "kitchen" },
+              { img: "/illustrations/handmade.jpg", alt: "A woman arranging soap and candles at a market table", t: "From the workshop", d: "Soap, candles, wax melts. Cutting boards and signs. Quilts, crochet, pottery, leather. If your hands made it, it fits.", g: "workshop" },
+              { img: "/illustrations/plants.jpg", alt: "A plant stand with seedlings, houseplants, and cut flowers", t: "From the greenhouse", d: "Seedlings and vegetable starts in spring. Cut flowers and bouquets all summer. Wreaths and Christmas trees when it turns cold.", g: "greenhouse" },
+              { img: "/illustrations/plates.jpg", alt: "A volunteer handing a plate of food across a table", t: "From the fire hall", d: "Plate sales, Boston butts, fish fries, bake sales. Know how many to cook before you light the grill.", g: "fundraisers" },
             ].map((c, i) => (
               <Reveal key={c.t} delay={i * 70}>
-                <Link href={`/browse?group=${c.g}`} className="tag-card block h-full overflow-hidden !pl-0">
+                <Link href={`/for/${c.g}`} className="tag-card block h-full overflow-hidden !pl-0">
                   <Image src={c.img} alt={c.alt} width={600} height={450} className="aspect-[4/3] w-full object-cover" sizes="(max-width: 640px) 100vw, 300px" />
                   <div className="p-4">
                     <h3 className="font-semibold">{c.t}</h3>
