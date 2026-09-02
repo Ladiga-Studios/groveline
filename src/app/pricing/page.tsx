@@ -30,6 +30,16 @@ const faq = [
   ["Is buying free?", "Always. Buyers never pay Groveline anything, and they don't need an account."],
 ];
 
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faq.map(([q, a]) => ({
+    "@type": "Question",
+    name: q,
+    acceptedAnswer: { "@type": "Answer", text: a },
+  })),
+};
+
 export default async function PricingPage() {
   const supabase = await supabaseServer();
   const {
@@ -45,12 +55,28 @@ export default async function PricingPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <div className="max-w-2xl">
         <h1 className="text-4xl font-semibold">Simple, and it stays that way</h1>
         <p className="mt-4 text-lg">
           Your first three drops are free. After that it&apos;s one flat price, and we never take a cut of what you
           sell. Buying is free for everyone, always.
         </p>
+      </div>
+
+      {/* The flat price in real numbers, since a percentage is what most
+          people are used to paying elsewhere. */}
+      <div className="mt-8 grid gap-3 sm:grid-cols-3">
+        {[
+          ["$200 / month in sales", "$10"],
+          ["$800 / month in sales", "$10"],
+          ["$2,000 / month in sales", "$10"],
+        ].map(([sales, bill]) => (
+          <div key={sales} className="rounded-xl border border-cream-dark bg-white px-4 py-3">
+            <p className="text-sm text-muted">{sales}</p>
+            <p className="font-display text-2xl font-semibold text-grove">{bill} <span className="text-sm font-normal text-muted">to Groveline</span></p>
+          </div>
+        ))}
       </div>
 
       <div className="mt-10">

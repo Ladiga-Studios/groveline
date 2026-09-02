@@ -354,15 +354,6 @@ body[data-modal-open="true"] {
   opacity: 0.55;
 }
 
-/* Invisible to real people, irresistible to basic bots that fill every
-   field they find. If this has anything in it, the submission is fake. */
-.hp-field {
-  position: absolute;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-}
 .pattern-bg {
   background-image:
     linear-gradient(rgba(250, 246, 239, 0.45), rgba(250, 246, 239, 0.45)),

@@ -49,7 +49,6 @@ export default function ClaimForm({
   const [ship, setShip] = useState({ line1: "", city: "", state: "AL", zip: "" });
   const [agreed, setAgreed] = useState(false);
   const [ofAge, setOfAge] = useState(false);
-  const [company, setCompany] = useState("");
   const [renderedAt] = useState(() => Date.now());
   const [turnstileToken, setTurnstileToken] = useState("");
   const turnstileRef = useRef<HTMLDivElement>(null);
@@ -113,7 +112,6 @@ export default function ClaimForm({
         shipAddress: delivery === "shipping" ? `${ship.line1.trim()}, ${ship.city.trim()}, ${ship.state} ${ship.zip.trim()}` : "",
         acceptedTerms: agreed,
         confirmedAge: ofAge,
-        company,
         renderedAt,
         turnstileToken,
       }),
@@ -289,14 +287,10 @@ export default function ClaimForm({
         </label>
       </div>
 
-      {/* Trap for bots that fill every field. Named so browsers never
-          autofill it: no "company", "name", "email", or anything else
-          autofill recognizes. */}
-      <div className="hp-field" aria-hidden="true">
-        <label htmlFor="gl-leave-blank">Leave this blank</label>
-        <input id="gl-leave-blank" name="gl_leave_blank" tabIndex={-1} autoComplete="off" value={company} onChange={(e) => setCompany(e.target.value)} />
-      </div>
-
+      {/* No honeypot here on purpose. Password managers and autofill can
+          fill hidden inputs, and a tripped honeypot handed the buyer a fake
+          confirmation while the seller never saw the order. Bot defense is
+          the time-on-page check and Turnstile when it's configured. */}
       {TURNSTILE_SITE_KEY && (
         <>
           <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer onLoad={renderTurnstile} />

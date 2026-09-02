@@ -56,19 +56,24 @@ export const PROHIBITED: ProhibitedCategory[] = [
   {
     label: "Firearms, ammunition, and weapons",
     detail: "Guns, ammunition, gun parts, explosives, and fireworks.",
-    terms: ["firearm", "handgun", "shotgun", "rifle", "ammo", "ammunition", "fireworks", "silencer", "suppressor"],
+    /* "shotgun" and "rifle" alone hit shotgun-shell wreaths and Rifle Paper
+       stationery; "fireworks" alone hits Fourth of July cookies. */
+    terms: ["firearm", "handgun", "shotgun for sale", "rifle for sale", "ammo", "ammunition", "fireworks for sale", "silencer", "suppressor"],
   },
   {
     label: "Drugs and supplements that make health claims",
     detail:
       "Prescription medication, controlled substances, and anything sold as curing, treating, or preventing a disease. Selling honey is fine. Selling honey that cures anything is not.",
-    terms: ["prescription", "adderall", "oxycodone", "xanax", "antibiotic", "cures cancer", "cure cancer", "cures diabetes"],
+    /* No "antibiotic" or "prescription" here: "antibiotic free" is on half
+       the egg and meat listings in the country, and that is a selling
+       point, not a health claim. */
+    terms: ["adderall", "oxycodone", "xanax", "cures cancer", "cure cancer", "cures diabetes", "treats diabetes"],
   },
   {
     label: "Live animals",
     detail:
       "Chicks, poultry, livestock, and pets. Live animal sales carry their own state and federal rules, including NPIP requirements for poultry, and Groveline's reservation flow isn't built for them. Eggs, meat, hatching eggs, and animal feed are all fine.",
-    terms: ["live chicks", "day old chicks", "started pullets", "puppies", "kittens", "live goat", "live rabbit"],
+    terms: ["live chicks", "day old chicks", "started pullets", "puppies for sale", "kittens for sale", "live goat", "live rabbit"],
   },
   {
     label: "Wild game meat",
@@ -79,7 +84,8 @@ export const PROHIBITED: ProhibitedCategory[] = [
   {
     label: "Anything counterfeit, stolen, or recalled",
     detail: "Knockoffs, goods that aren't yours to sell, and products under an active recall.",
-    terms: ["replica", "knockoff", "counterfeit"],
+    /* "replica" alone blocked replica vintage signs and reproduction furniture. */
+    terms: ["knockoff", "counterfeit"],
   },
 ];
 

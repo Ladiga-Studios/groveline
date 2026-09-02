@@ -17,12 +17,30 @@ export const metadata: Metadata = {
 
 const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "Organization",
-  name: "Groveline",
-  url: "https://groveline.io",
-  email: "hello@groveline.io",
-  description:
-    "Groveline lets local sellers post a drop, share one link, and track claims, pickups, and buyer emails automatically.",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://groveline.io/#org",
+      name: "Groveline",
+      url: "https://groveline.io",
+      email: "hello@groveline.io",
+      logo: "https://groveline.io/logo/mark-dark.png",
+      description:
+        "Groveline lets local sellers post a drop, share one link, and track claims, pickups, and buyer emails automatically.",
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://groveline.io/#site",
+      url: "https://groveline.io",
+      name: "Groveline",
+      publisher: { "@id": "https://groveline.io/#org" },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: { "@type": "EntryPoint", urlTemplate: "https://groveline.io/browse?q={search_term_string}" },
+        "query-input": "required name=search_term_string",
+      },
+    },
+  ],
 };
 
 async function getViewer() {
@@ -95,15 +113,15 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
               Reserving takes about fifteen seconds. Then meet up in person, or ship it anywhere in the country.
             </p>
             <div className="rise rise-2 mt-8 flex flex-wrap gap-3">
-              <Link href="/browse" className="btn btn-primary text-lg">
-                See what&apos;s for sale
-              </Link>
-              <Link href={sellHref} className="btn btn-grove text-lg">
+              <Link href={sellHref} className="btn btn-primary text-lg">
                 {sellLabel}
+              </Link>
+              <Link href="/browse" className="btn btn-grove text-lg">
+                See what&apos;s for sale
               </Link>
             </div>
             <p className="rise rise-3 mt-4 text-sm text-muted">
-              No account needed to buy anything. Your first three drops as a seller are on the house.
+              First three drops free, no card needed, never a cut of a sale. Buying needs no account at all.
             </p>
           </div>
           <Image
@@ -173,10 +191,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
 
       {/* How selling works */}
       <section className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="how">
-        <h2 id="how" className="text-3xl font-semibold">How it works</h2>
+        <h2 id="how" className="text-3xl font-semibold">How selling works</h2>
         <p className="mt-2 max-w-2xl text-muted">
           You already know how to sell your own stuff. This just handles the part you never wanted to do,
-          which is keeping track of who ordered what.
+          which is keeping track of who ordered what.{" "}
+          <Link href="/sell" className="text-grove underline underline-offset-2">Everything a drop comes with</Link>.
         </p>
         <Reveal>
           <Image
@@ -328,6 +347,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
           <p className="mx-auto mt-3 max-w-xl text-lg">
             Your first three drops are free, no card required. After that, it's $10 a month or $60 a year,
             flat. We never take a cut of what you sell, whether someone pays cash or card.
+          </p>
+          <p className="mx-auto mt-2 max-w-xl text-muted">
+            Sell $200 in a month or $2,000, the bill is still $10.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link href={viewer.isSeller ? "/dashboard/new" : viewer.loggedIn ? "/dashboard" : "/login?mode=register"} className="btn btn-primary text-lg">

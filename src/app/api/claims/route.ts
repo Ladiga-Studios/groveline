@@ -38,7 +38,6 @@ export async function POST(req: Request) {
     shipAddress?: string;
     acceptedTerms?: boolean;
     confirmedAge?: boolean;
-    company?: string;
     renderedAt?: number;
     turnstileToken?: string;
   };
@@ -48,7 +47,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }
 
-  const { drop_id, quantity, name, phone, email, company, renderedAt, turnstileToken } = body;
+  const { drop_id, quantity, name, phone, email, renderedAt, turnstileToken } = body;
   const delivery = body.delivery === "shipping" ? "shipping" : "pickup";
   const method = delivery === "shipping" || body.method === "card" ? "card" : "cash";
   const shipAddress = (body.shipAddress ?? "").trim().slice(0, 300);
@@ -65,8 +64,13 @@ export async function POST(req: Request) {
     req.headers.get("x-real-ip") ||
     null;
 
-  if (company) return NextResponse.json({ position: 1 });
-  if (renderedAt && Date.now() - renderedAt < 2500) return NextResponse.json({ position: 1 });
+  // A submit under two seconds is almost always a script. It used to get a
+  // silent fake success, but a real person with autofill can be that quick
+  // too, and they'd walk away thinking they were on the list. Now it's an
+  // honest "try again": a bot gains nothing from it, a person loses nothing.
+  if (renderedAt && Date.now() - renderedAt < 2000) {
+    return NextResponse.json({ error: "That went through a little fast. Tap Reserve once more." }, { status: 400 });
+  }
   if (!(await verifyTurnstile(turnstileToken || "", ip))) {
     return NextResponse.json({ error: "Verification failed" }, { status: 403 });
   }

@@ -5,15 +5,14 @@ import { usePathname, useRouter } from "next/navigation";
 import Logo from "./Logo";
 import Avatar from "./Avatar";
 import { supabaseBrowser } from "@/lib/supabase/client";
-import { FOR_PAGES } from "@/lib/for";
 
-/* Top-level links. "Start selling" also opens a dropdown on desktop with
-   the themed landing pages, which used to be reachable only from the
-   home page. */
+/* Top-level links. "Sell" goes straight to the selling page; the themed
+   "made for" pages are linked from there and the footer instead of a
+   dropdown, so one tap gets people to the pitch. */
 const links = [
   { href: "/browse", label: "Browse drops" },
   { href: "/sellers", label: "Shops" },
-  { href: "/sell", label: "Start selling", menu: true },
+  { href: "/sell", label: "Sell" },
   { href: "/pricing", label: "Pricing" },
 ];
 
@@ -36,12 +35,9 @@ function Chevron({ open = false }: { open?: boolean }) {
 export default function Header({ user }: { user: HeaderUser }) {
   const [open, setOpen] = useState(false); // mobile sheet
   const [menu, setMenu] = useState(false); // account dropdown
-  const [sell, setSell] = useState(false); // start selling dropdown
   const [scrolled, setScrolled] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const acctRef = useRef<HTMLDivElement>(null);
-  const sellRef = useRef<HTMLDivElement>(null);
-  const sellTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -56,22 +52,19 @@ export default function Header({ user }: { user: HeaderUser }) {
   useEffect(() => {
     setOpen(false);
     setMenu(false);
-    setSell(false);
   }, [pathname]);
 
   useEffect(() => {
-    if (!open && !menu && !sell) return;
+    if (!open && !menu) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setOpen(false);
         setMenu(false);
-        setSell(false);
       }
     };
     const onClick = (e: MouseEvent) => {
       const t = e.target as Node;
       if (menu && acctRef.current && !acctRef.current.contains(t)) setMenu(false);
-      if (sell && sellRef.current && !sellRef.current.contains(t)) setSell(false);
     };
     document.addEventListener("keydown", onKey);
     document.addEventListener("mousedown", onClick);
@@ -80,15 +73,7 @@ export default function Header({ user }: { user: HeaderUser }) {
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("mousedown", onClick);
     };
-  }, [open, menu, sell]);
-
-  // Hover opens the selling menu with a small grace period so the pointer
-  // can travel from the trigger into the panel without it snapping shut.
-  function hoverSell(next: boolean) {
-    if (sellTimer.current) clearTimeout(sellTimer.current);
-    if (next) setSell(true);
-    else sellTimer.current = setTimeout(() => setSell(false), 140);
-  }
+  }, [open, menu]);
 
   async function logOut() {
     await supabaseBrowser().auth.signOut();
@@ -99,7 +84,8 @@ export default function Header({ user }: { user: HeaderUser }) {
   }
 
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/"));
-  const onSellPages = pathname === "/sell" || pathname.startsWith("/for/");
+  // The themed /for pages are part of the selling pitch, so "Sell" stays lit there.
+  const isSellActive = (href: string) => href === "/sell" && pathname.startsWith("/for/");
 
   /* Account menu, grouped by what you're doing: selling, buying, then the
      account itself. */
@@ -145,58 +131,11 @@ export default function Header({ user }: { user: HeaderUser }) {
 
         {/* Desktop nav */}
         <nav aria-label="Primary" className="hidden items-center gap-1 md:flex">
-          {links.map((l) =>
-            l.menu ? (
-              <div
-                key={l.href}
-                ref={sellRef}
-                className="relative"
-                onMouseEnter={() => hoverSell(true)}
-                onMouseLeave={() => hoverSell(false)}
-              >
-                <button
-                  type="button"
-                  onClick={() => setSell(!sell)}
-                  aria-expanded={sell}
-                  aria-haspopup="true"
-                  aria-controls="sell-menu"
-                  className={`${navLink} inline-flex items-center gap-1.5 ${onSellPages ? navActive : ""}`}
-                >
-                  {l.label}
-                  <Chevron open={sell} />
-                </button>
-                {sell && (
-                  <div
-                    id="sell-menu"
-                    className="absolute left-1/2 top-full z-50 mt-1 w-[22rem] -translate-x-1/2 overflow-hidden rounded-2xl border border-cream-dark bg-white p-2 shadow-lift"
-                  >
-                    <Link href="/sell" className="block rounded-xl px-3 py-2.5 hover:bg-cream">
-                      <span className="block font-semibold text-grove">How selling works</span>
-                      <span className="block text-sm text-muted">Post, share one link, hand it out. Three drops free.</span>
-                    </Link>
-                    <p className="mt-2 px-3 pb-1 text-sm font-semibold">Made for</p>
-                    <ul>
-                      {FOR_PAGES.map((p) => (
-                        <li key={p.slug}>
-                          <Link
-                            href={`/for/${p.slug}`}
-                            className={`block rounded-xl px-3 py-2 hover:bg-cream ${isActive(`/for/${p.slug}`) ? "bg-cream" : ""}`}
-                          >
-                            <span className="block font-medium">{p.heading}</span>
-                            <span className="block text-sm text-muted">{p.tagline}</span>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <Link key={l.href} href={l.href} className={`${navLink} ${isActive(l.href) ? navActive : ""}`}>
-                {l.label}
-              </Link>
-            )
-          )}
+          {links.map((l) => (
+            <Link key={l.href} href={l.href} className={`${navLink} ${isActive(l.href) || isSellActive(l.href) ? navActive : ""}`}>
+              {l.label}
+            </Link>
+          ))}
         </nav>
 
         {/* Desktop actions */}
@@ -282,15 +221,8 @@ export default function Header({ user }: { user: HeaderUser }) {
           <nav aria-label="Mobile" className="flex flex-col gap-1">
             <Link href="/" className={`rounded-lg px-3 py-3 font-medium hover:bg-cream-dark ${pathname === "/" ? "text-grove" : ""}`}>Home</Link>
             {links.map((l) => (
-              <Link key={l.href} href={l.href} className={`rounded-lg px-3 py-3 font-medium hover:bg-cream-dark ${isActive(l.href) ? "text-grove" : ""}`}>
+              <Link key={l.href} href={l.href} className={`rounded-lg px-3 py-3 font-medium hover:bg-cream-dark ${isActive(l.href) || isSellActive(l.href) ? "text-grove" : ""}`}>
                 {l.label}
-              </Link>
-            ))}
-            <p className="mt-2 px-3 pt-2 text-sm font-semibold text-muted">Made for</p>
-            {FOR_PAGES.map((p) => (
-              <Link key={p.slug} href={`/for/${p.slug}`} className="rounded-lg px-3 py-2.5 hover:bg-cream-dark">
-                <span className="block font-medium">{p.heading}</span>
-                <span className="block text-sm text-muted">{p.tagline}</span>
               </Link>
             ))}
             {user ? (
