@@ -9,38 +9,20 @@ import type { Drop } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Groveline | Local food and goods, reserved in seconds",
+  title: "Groveline | Sell what you make in batches, reserved in seconds",
   description:
-    "Sellers post what they have. Neighbors reserve it in seconds and pick it up in person. Bread, produce, beef shares, plants, handmade goods, and plate sales.",
+    "Post a batch, share one link, and Groveline keeps the list. Bread, produce, shirts, tumblers, jewelry, soap, plants, and plate sales. Buyers reserve in seconds with no account.",
   alternates: { canonical: "/" },
 };
 
 const jsonLd = {
   "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": "https://groveline.io/#org",
-      name: "Groveline",
-      url: "https://groveline.io",
-      email: "hello@groveline.io",
-      logo: "https://groveline.io/logo/mark-dark.png",
-      description:
-        "Groveline lets local sellers post a drop, share one link, and track claims, pickups, and buyer emails automatically.",
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://groveline.io/#site",
-      url: "https://groveline.io",
-      name: "Groveline",
-      publisher: { "@id": "https://groveline.io/#org" },
-      potentialAction: {
-        "@type": "SearchAction",
-        target: { "@type": "EntryPoint", urlTemplate: "https://groveline.io/browse?q={search_term_string}" },
-        "query-input": "required name=search_term_string",
-      },
-    },
-  ],
+  "@type": "Organization",
+  name: "Groveline",
+  url: "https://groveline.io",
+  email: "hello@groveline.io",
+  description:
+    "Groveline lets local sellers post a drop, share one link, and track claims, pickups, and buyer emails automatically.",
 };
 
 async function getViewer() {
@@ -108,27 +90,28 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
               <span className="block text-gold">Let&apos;s find it a home.</span>
             </h1>
             <p className="rise rise-1 mt-6 max-w-xl text-lg">
-              Groveline is where people who sell in batches post what they have, so neighbors can claim it
-              before it&apos;s gone. Bread, eggs, beef, honey, soap, seedlings, plate sales, whatever you make.
-              Reserving takes about fifteen seconds. Then meet up in person, or ship it anywhere in the country.
+              Groveline is where people who sell in batches post what they have, so buyers can claim it
+              before it&apos;s gone. A dozen shirts, a run of tumblers, twenty bars of soap, Saturday&apos;s
+              sourdough, a hundred plates for the fire hall. Reserving takes about fifteen seconds. Then meet
+              up in person, or ship it anywhere in the country.
             </p>
             <div className="rise rise-2 mt-8 flex flex-wrap gap-3">
-              <Link href={sellHref} className="btn btn-primary text-lg">
-                {sellLabel}
-              </Link>
-              <Link href="/browse" className="btn btn-grove text-lg">
+              <Link href="/browse" className="btn btn-primary text-lg">
                 See what&apos;s for sale
+              </Link>
+              <Link href={sellHref} className="btn btn-grove text-lg">
+                {sellLabel}
               </Link>
             </div>
             <p className="rise rise-3 mt-4 text-sm text-muted">
-              First three drops free, no card needed, never a cut of a sale. Buying needs no account at all.
+              No account needed to buy anything. Your first three drops as a seller are on the house.
             </p>
           </div>
           <Image
-            src="/illustrations/hero-side.jpg"
-            alt="A seller under a green striped awning handing a bag of vegetables across the stall to a neighbor"
-            width={1473}
-            height={1068}
+            src="/illustrations/booth.jpg"
+            alt="A seller under a green striped awning arranging folded shirts, tumblers, and candles on a booth table while a customer looks over the goods"
+            width={1448}
+            height={1086}
             priority
             className="rise rise-2 w-full rounded-2xl"
             sizes="(max-width: 1024px) 100vw, 540px"
@@ -140,31 +123,43 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
       <section className="mx-auto max-w-6xl px-4 pb-16 pt-10" aria-labelledby="what">
         <h2 id="what" className="text-3xl font-semibold">What people are selling</h2>
         <p className="mt-3 max-w-2xl text-lg">
-          If you make it, grow it, or cook it in batches, there is a place for it here. Pick the one that
-          sounds like you.
+          If you make it, press it, grow it, or cook it in batches, there is a place for it here. Pick the
+          one that sounds like you.
         </p>
-        <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
+        {/* Five audiences. On phones the last card goes full width so nothing sits alone in a half row. */}
+        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-6 lg:grid-cols-5">
           {[
-            { img: "/illustrations/goods.jpg", alt: "Bread, tomatoes, eggs, and a jar of preserves", t: "From the kitchen and the garden", d: "Sourdough, cakes, cookies. Tomatoes, greens, sweet corn. Eggs by the dozen. Jam, honey, pickles, hot sauce.", g: "kitchen" },
-            { img: "/illustrations/workshop.jpg", alt: "A woodworker sanding a cutting board, finished boards stacked beside him", t: "From the workshop", d: "Cutting boards and signs. Soap, candles, wax melts. Quilts, crochet, pottery, leather. If your hands made it, it fits.", g: "workshop" },
-            { img: "/illustrations/plants.jpg", alt: "A plant stand with seedlings, houseplants, and cut flowers", t: "From the greenhouse", d: "Seedlings and vegetable starts in spring. Cut flowers and bouquets all summer. Wreaths and Christmas trees when it turns cold.", g: "greenhouse" },
-            { img: "/illustrations/plates.jpg", alt: "A volunteer handing a plate of food across a table", t: "From the fire hall", d: "Plate sales, Boston butts, fish fries, bake sales. Know how many to cook before you light the grill.", g: "fundraisers" },
-          ].map((c, i) => (
-            <Reveal key={c.t} delay={i * 70}>
-              <Link href={`/for/${c.g}`} className="tag-card block h-full overflow-hidden !pl-0">
-                <Image src={c.img} alt={c.alt} width={600} height={450} className="aspect-[4/3] w-full object-cover" sizes="(max-width: 640px) 100vw, 300px" />
-                <div className="p-3 sm:p-4">
-                  <h3 className="text-sm font-semibold sm:text-base">{c.t}</h3>
-                  <p className="mt-1 hidden text-sm text-muted sm:block">{c.d}</p>
-                </div>
-              </Link>
-            </Reveal>
-          ))}
+            { img: "/illustrations/goods.jpg", alt: "Bread, tomatoes, eggs, and a jar of preserves", t: "From the kitchen and the garden", d: "Sourdough, cakes, cookies. Tomatoes, greens, sweet corn. Eggs by the dozen. Jam, honey, pickles, hot sauce.", href: "/for/kitchen" },
+            { img: "/illustrations/shirts.jpg", alt: "A woman lifting a freshly pressed t-shirt from a heat press, folded shirts stacked beside her", t: "From the craft table", d: "Shirts, tumblers, jewelry, crochet. Vinyl, sublimation, embroidery. If it sells at a craft fair, it sells here.", href: "/browse?group=handmade" },
+            { img: "/illustrations/workshop.jpg", alt: "A woodworker sanding a cutting board, finished boards stacked beside him", t: "From the workshop", d: "Cutting boards and signs. Soap, candles, wax melts. Pottery, leather, quilts. If your hands made it, it fits.", href: "/for/workshop" },
+            { img: "/illustrations/plants.jpg", alt: "A plant stand with seedlings, houseplants, and cut flowers", t: "From the greenhouse", d: "Seedlings and vegetable starts in spring. Cut flowers and bouquets all summer. Wreaths and Christmas trees when it turns cold.", href: "/for/greenhouse" },
+            { img: "/illustrations/plates.jpg", alt: "A volunteer handing a plate of food across a table", t: "From the fire hall", d: "Plate sales, Boston butts, fish fries, bake sales. Know how many to cook before you light the grill.", href: "/for/fundraisers" },
+          ].map((c, i, all) => {
+            const last = i === all.length - 1;
+            return (
+              <Reveal key={c.t} delay={i * 70} className={last ? "col-span-2 sm:col-span-1" : ""}>
+                <Link href={c.href} className="tag-card block h-full overflow-hidden !pl-0">
+                  <Image
+                    src={c.img}
+                    alt={c.alt}
+                    width={600}
+                    height={450}
+                    className={`${last ? "aspect-[2/1] sm:aspect-[4/3]" : "aspect-[4/3]"} w-full object-cover`}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 220px"
+                  />
+                  <div className="p-3 sm:p-4">
+                    <h3 className="text-sm font-semibold sm:text-base">{c.t}</h3>
+                    <p className="mt-1 hidden text-sm text-muted sm:block">{c.d}</p>
+                  </div>
+                </Link>
+              </Reveal>
+            );
+          })}
         </div>
         <p className="mt-6 text-muted">
-          Pottery and tumblers, jewelry, signs and decor, gift boxes. Beef and pork shares, deer
-          processing, hay and firewood, dog treats, fresh lemonade. There are more than 130 categories,
-          and yours is almost certainly one of them.
+          Signs and decor, pottery, leather, gift boxes. Beef and pork shares, deer processing, hay and
+          firewood, dog treats, fresh lemonade. There are more than 130 categories, and yours is almost
+          certainly one of them.
         </p>
       </section>
 
@@ -191,11 +186,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
 
       {/* How selling works */}
       <section className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="how">
-        <h2 id="how" className="text-3xl font-semibold">How selling works</h2>
+        <h2 id="how" className="text-3xl font-semibold">How it works</h2>
         <p className="mt-2 max-w-2xl text-muted">
           You already know how to sell your own stuff. This just handles the part you never wanted to do,
-          which is keeping track of who ordered what.{" "}
-          <Link href="/sell" className="text-grove underline underline-offset-2">Everything a drop comes with</Link>.
+          which is keeping track of who ordered what.
         </p>
         <Reveal>
           <Image
@@ -209,7 +203,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
         </Reveal>
         <ol className="mt-8 grid gap-4 sm:grid-cols-3 sm:gap-6">
           {[
-            { t: "Post it", d: "What it is, how many you have, what it costs, and where or when to pick it up. Add a few photos. Takes about a minute, standing right in the kitchen." },
+            { t: "Post it", d: "What it is, how many you have, what it costs, and where or when to pick it up. Add a few photos. Takes about a minute, standing right at the kitchen counter or the craft table." },
             { t: "Share it", d: "You get one link. Drop it in the Facebook groups you already use. It shows up as a card with your photo and price, and the count updates on its own, so nobody has to ask what's left." },
             { t: "Hand it out", d: "People reserve with a name and a phone number. Saturday morning, your list is your checklist. Check names off as they pay. If someone doesn't show, take them off and it opens back up for the next person." },
           ].map((step, i) => (
@@ -257,8 +251,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
             <h2 id="ship" className="mt-1 text-3xl font-semibold">Or skip the meetup and ship it</h2>
             <p className="mt-4 text-lg">
               Turn on shipping and a drop works like any online store. Buyers pay by card at checkout, you get
-              a list of names and addresses, you print the labels. Soap, candles, honey, cutting boards,
-              dry goods, anything that fits in a box can go anywhere in the country.
+              a list of names and addresses, you print the labels. Earrings, shirts, tumblers, soap, candles,
+              honey, anything that fits in a box can go anywhere in the country.
             </p>
             <ul className="mt-5 space-y-3">
               {[
@@ -276,12 +270,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
             <Link href="/browse?ships=1" className="btn btn-grove mt-6">See drops that ship</Link>
           </div>
           <Image
-            src="/illustrations/bag.jpg"
-            alt="A paper bag with a leaf tag, ready to go"
-            width={1254}
-            height={1254}
-            className="mx-auto w-full max-w-sm rounded-2xl"
-            sizes="(max-width: 1024px) 100vw, 384px"
+            src="/illustrations/jewelry.jpg"
+            alt="Hands pinning handmade earrings to a linen display board, with carded pairs ready to ship beside it"
+            width={1477}
+            height={1065}
+            className="w-full rounded-2xl"
+            sizes="(max-width: 1024px) 100vw, 560px"
           />
         </div>
       </section>
@@ -298,7 +292,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
                 on that list hears about it automatically. You never have to remember to tell them.
               </p>
               <p className="mt-3 text-lg text-cream/90">
-                Fifty people finding out about your bread the second it's ready beats hoping Facebook feels
+                Fifty people finding out about your new batch the second it's ready beats hoping Facebook feels
                 like showing your post to twelve of them.
               </p>
             </div>
@@ -347,9 +341,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
           <p className="mx-auto mt-3 max-w-xl text-lg">
             Your first three drops are free, no card required. After that, it's $10 a month or $60 a year,
             flat. We never take a cut of what you sell, whether someone pays cash or card.
-          </p>
-          <p className="mx-auto mt-2 max-w-xl text-muted">
-            Sell $200 in a month or $2,000, the bill is still $10.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link href={viewer.isSeller ? "/dashboard/new" : viewer.loggedIn ? "/dashboard" : "/login?mode=register"} className="btn btn-primary text-lg">

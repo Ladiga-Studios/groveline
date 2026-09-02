@@ -8,14 +8,10 @@ import { FOR_PAGES } from "@/lib/for";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Sell baked goods, produce, plants, and handmade goods locally",
+  title: "Sell what you make in batches | Groveline",
   description:
-    "Post what you have, share one link, and Groveline keeps the list. Buyers reserve in 15 seconds with no account. Cash or card, pickup or shipping. Your first three drops are free and we never take a cut.",
+    "Post a batch, share one link, and Groveline keeps the list. Shirts, tumblers, bread, soap, plants, plate sales. Buyers reserve in fifteen seconds, no account. First three drops free.",
   alternates: { canonical: "/sell" },
-  openGraph: {
-    title: "Sell what you make in batches | Groveline",
-    description: "Post a drop, share one link, hand it out. First three drops free. No cut of your sales, ever.",
-  },
 };
 
 async function getViewer() {
@@ -31,6 +27,42 @@ async function getViewer() {
     return { loggedIn: false, isSeller: false };
   }
 }
+
+/* Stat strip under the hero. Real numbers only; nothing here is aspirational. */
+const stats = [
+  { n: "15 sec", d: "for a buyer to reserve, no account needed" },
+  { n: "~1 min", d: "to post a drop from your phone" },
+  { n: "3 free", d: "drops before you pay anything" },
+  { n: "0%", d: "of your sales taken by Groveline" },
+];
+
+/* The comparison table. Column two is the pain, column three is the fix. */
+const compare = [
+  ["Is this still available?", "You answer it in the comments. Forty times.", "The count updates by itself. Sold out turns into a waitlist."],
+  ["Who ordered what", "A notebook, a screenshot, and a thread you scroll back through.", "One list, in order, with names, phone numbers, and quantities."],
+  ["Getting paid", "Cash, Venmo, and chasing the person who forgot.", "Cash at pickup, or a card hold that charges when you hand it over."],
+  ["Telling your regulars", "Hope Facebook shows your post to them.", "Everyone who follows you gets an email the second you post."],
+  ["No-shows", "You ate the loss, or texted around to resell it.", "Tap Remove. The items go back up for the next person."],
+  ["Pickup day", "Scrolling on your phone with a line forming.", "A checklist. Tap names as they pay. Print it if you'd rather."],
+];
+
+const steps = [
+  { t: "Post it", d: "What it is, how many, the price, and where or when to get it. Add photos. About a minute, standing at the counter or the craft table." },
+  { t: "Share the link", d: "Paste it in the Facebook groups you already use, text it, put it on a sign. Your followers get an email automatically." },
+  { t: "Hand it out", d: "Your reservations are your checklist. Tap names as people pay. No-show? Remove them and the items go back up." },
+];
+
+const features = [
+  ["Live count", "Nobody has to ask what's left. Sold out becomes a waitlist on its own."],
+  ["Reservations with no buyer account", "A name and a phone number. That's the whole form. Fifteen seconds on any phone."],
+  ["Follower and subscriber emails", "Anyone can drop an email on your shop page. Every new drop goes out to them automatically."],
+  ["Card payments to your bank", "Buyers pay through Stripe. The card is held at reservation and charged when you mark it picked up. Cash still works too."],
+  ["Shipping, if you want it", "Set one flat rate. The card charges when you mark it shipped. Pickup and shipping on the same drop is fine."],
+  ["Pickup reminders", "Buyers get an email the day before pickup, with a cancel link so you find out early instead of at the table."],
+  ["Printable pickup sheet", "A PDF for the table and a spreadsheet for your records, per drop."],
+  ["Your shop page", "Your photo, your bio, your drops, a follow button, and a link you can put on a business card."],
+  ["Post again", "Same drop next week? One tap copies it, you change the date, done."],
+];
 
 const faq = [
   {
@@ -67,74 +99,46 @@ const faq = [
   },
 ];
 
-/* Side-by-side of the way most people sell now versus a drop. Every row is
-   a real thing Groveline does, not a feeling. */
-const compare: { task: string; before: string; after: string }[] = [
-  { task: "Is this still available?", before: "You answer it in the comments. Forty times.", after: "The count updates by itself. Sold out turns into a waitlist." },
-  { task: "Who ordered what", before: "A notebook, a screenshot, and a thread you scroll back through.", after: "One list, in order, with names, phone numbers, and quantities." },
-  { task: "Getting paid", before: "Cash, Venmo, and chasing the person who forgot.", after: "Cash at pickup, or a card hold that charges when you hand it over." },
-  { task: "Telling your regulars", before: "Hope Facebook shows your post to them.", after: "Everyone who follows you gets an email the second you post." },
-  { task: "No-shows", before: "You ate the loss, or texted around to resell it.", after: "Tap Remove. The items go back up for the next person." },
-  { task: "Pickup day", before: "Scrolling on your phone with a line forming.", after: "A checklist. Tap names as they pay. Print it if you'd rather." },
-];
-
-const numbers: [string, string][] = [
-  ["15 sec", "for a buyer to reserve, no account needed"],
-  ["~1 min", "to post a drop from your phone"],
-  ["3 free", "drops before you pay anything"],
-  ["0%", "of your sales taken by Groveline"],
-];
+/* The four /for pages plus the craft table, which links straight to the
+   handmade group in browse until it gets a page of its own. */
+const audiences = FOR_PAGES.map((p) => ({
+  href: `/for/${p.slug}`,
+  img: p.image,
+  alt: p.imageAlt,
+  t: p.heading,
+  d: p.tagline,
+}));
+audiences.splice(1, 0, {
+  href: "/browse?group=handmade",
+  img: "/illustrations/shirts.jpg",
+  alt: "A woman lifting a freshly pressed t-shirt from a heat press, folded shirts stacked beside her",
+  t: "From the craft table",
+  d: "Shirts, tumblers, jewelry, crochet",
+});
 
 export default async function SellPage() {
   const { loggedIn, isSeller } = await getViewer();
   const ctaHref = isSeller ? "/dashboard/new" : loggedIn ? "/dashboard" : "/login?mode=register";
-  const ctaLabel = isSeller ? "Post a drop" : loggedIn ? "Turn on selling for my account" : "Start selling free";
-
-  const faqJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faq.map((f) => ({
-      "@type": "Question",
-      name: f.q,
-      acceptedAnswer: { "@type": "Answer", text: f.a },
-    })),
-  };
-  const appJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    name: "Groveline",
-    applicationCategory: "BusinessApplication",
-    operatingSystem: "Web",
-    url: "https://groveline.io/sell",
-    description:
-      "Post a drop, share one link, and let buyers reserve in seconds. Built for people who sell baked goods, produce, eggs, meat, plants, handmade goods, and plate sales in batches.",
-    offers: [
-      { "@type": "Offer", price: "0", priceCurrency: "USD", description: "First three drops free" },
-      { "@type": "Offer", price: "10", priceCurrency: "USD", description: "Monthly plan, unlimited drops" },
-      { "@type": "Offer", price: "60", priceCurrency: "USD", description: "Yearly plan, unlimited drops" },
-    ],
-  };
+  const ctaLabel = isSeller ? "Post a drop" : loggedIn ? "Turn on selling for my account" : "Create your free account";
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(appJsonLd) }} />
-
       {/* Hero */}
-      <section className="mx-auto max-w-6xl px-4 pb-12 pt-10 sm:pt-16">
+      <section className="mx-auto max-w-6xl px-4 pb-10 pt-10 sm:pt-16">
         <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_1fr]">
           <div>
             <p className="rise text-sm font-medium text-leaf">For anyone who sells in batches</p>
-            <h1 className="rise rise-1 mt-2 font-display text-4xl font-semibold leading-[1.08] text-grove sm:text-5xl lg:text-6xl">
-              Post it once.
+            <h1 className="rise mt-2 font-display text-4xl font-semibold leading-[1.08] text-grove sm:text-5xl lg:text-6xl">
+              <span className="block">Post it once.</span>
               <span className="block text-gold">Stop answering &ldquo;still available?&rdquo;</span>
             </h1>
-            <p className="rise rise-2 mt-6 max-w-xl text-lg">
-              Groveline turns a batch of anything into one link. Buyers reserve with a name and a phone number, the
-              count updates on its own, and you show up with the goods and a checklist. Bread, eggs, beef, honey,
-              soap, seedlings, plate sales.
+            <p className="rise rise-1 mt-6 max-w-xl text-lg">
+              Groveline turns a batch of anything into one link. Buyers reserve with a name and a phone
+              number, the count updates on its own, and you show up with the goods and a checklist. A dozen
+              shirts, a run of tumblers, a tray of earrings, twenty bars of soap, Saturday&apos;s sourdough,
+              a hundred plates for the fire hall.
             </p>
-            <div className="rise rise-3 mt-8 flex flex-wrap gap-3">
+            <div className="rise rise-2 mt-8 flex flex-wrap gap-3">
               <Link href={ctaHref} className="btn btn-primary text-lg">{ctaLabel}</Link>
               <Link href="/pricing" className="btn btn-outline text-lg">See pricing</Link>
             </div>
@@ -143,26 +147,22 @@ export default async function SellPage() {
             </p>
           </div>
           <Image
-            src="/illustrations/handmade.jpg"
-            alt="A woman arranging soap and candles on a market table"
-            width={1254}
-            height={1254}
-            className="rise rise-2 mx-auto w-full max-w-md rounded-2xl"
-            sizes="(max-width: 1024px) 100vw, 448px"
+            src="/illustrations/shirts.jpg"
+            alt="A woman lifting a freshly pressed t-shirt from a heat press, with folded shirts stacked in four colors and more hanging on a rack behind her"
+            width={1448}
+            height={1086}
             priority
+            className="rise rise-2 w-full rounded-2xl"
+            sizes="(max-width: 1024px) 100vw, 540px"
           />
         </div>
 
-        {/* Numbers */}
         <dl className="mt-12 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-          {numbers.map(([n, label], i) => (
-            <Reveal key={n} delay={i * 60}>
+          {stats.map((s, i) => (
+            <Reveal key={s.n} delay={i * 60}>
               <div className="tag-card h-full p-4 sm:p-5">
-                <dt className="sr-only">{label}</dt>
-                <dd>
-                  <span className="block font-display text-3xl font-semibold text-grove sm:text-4xl">{n}</span>
-                  <span className="mt-1 block text-sm text-muted">{label}</span>
-                </dd>
+                <dt className="font-display text-3xl font-semibold text-grove">{s.n}</dt>
+                <dd className="mt-1 text-sm text-muted">{s.d}</dd>
               </div>
             </Reveal>
           ))}
@@ -170,49 +170,52 @@ export default async function SellPage() {
       </section>
 
       {/* Before and after */}
-      <section className="bg-cream-dark/50 px-4 py-16" aria-labelledby="compare">
-        <div className="mx-auto max-w-6xl">
+      <section className="bg-cream-dark/50">
+        <div className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="compare">
           <h2 id="compare" className="text-3xl font-semibold">What changes when you post a drop</h2>
           <p className="mt-2 max-w-2xl text-muted">
-            You already know how to sell. This is the part between the post and the handoff, which is where the
-            time goes.
+            You already know how to sell. This is the part between the post and the handoff, which is where
+            the time goes.
           </p>
-          <div className="mt-8 overflow-hidden rounded-2xl border border-cream-dark bg-white">
-            <div className="hidden grid-cols-[1fr_1.3fr_1.3fr] gap-4 border-b border-cream-dark bg-cream px-5 py-3 text-sm font-semibold sm:grid">
-              <span>The job</span>
-              <span className="text-muted">A Facebook post</span>
-              <span className="text-grove">A Groveline drop</span>
+          <Reveal>
+            <div className="tag-card mt-8 overflow-x-auto">
+              <table className="w-full min-w-[640px] text-left text-sm sm:text-base">
+                <thead>
+                  <tr className="bg-cream-dark/60 text-sm text-muted">
+                    <th scope="col" className="px-4 py-3 font-medium sm:px-5">The job</th>
+                    <th scope="col" className="px-4 py-3 font-medium sm:px-5">A Facebook post</th>
+                    <th scope="col" className="px-4 py-3 font-medium sm:px-5">A Groveline drop</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {compare.map(([job, before, after]) => (
+                    <tr key={job} className="border-t border-cream-dark align-top">
+                      <th scope="row" className="px-4 py-4 font-semibold sm:px-5">{job}</th>
+                      <td className="px-4 py-4 text-muted sm:px-5">{before}</td>
+                      <td className="px-4 py-4 font-medium text-grove sm:px-5">{after}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <ul>
-              {compare.map((row, i) => (
-                <li
-                  key={row.task}
-                  className={`grid gap-2 px-5 py-4 sm:grid-cols-[1fr_1.3fr_1.3fr] sm:gap-4 ${i > 0 ? "border-t border-cream-dark" : ""}`}
-                >
-                  <p className="font-semibold">{row.task}</p>
-                  <p className="text-muted"><span className="font-medium sm:hidden">Before: </span>{row.before}</p>
-                  <p><span className="font-medium text-grove sm:hidden">With Groveline: </span>{row.after}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
+          </Reveal>
         </div>
       </section>
 
-      {/* What a drop looks like */}
-      <section className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="looks">
+      {/* Buyer's view */}
+      <section className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="buyers">
         <div className="grid items-center gap-10 lg:grid-cols-2">
           <div>
-            <h2 id="looks" className="text-3xl font-semibold">This is what your buyers see</h2>
+            <h2 id="buyers" className="text-3xl font-semibold">This is what your buyers see</h2>
             <p className="mt-4 text-lg">
-              One page per drop, with your photos, the price, how many are left, and where to pick up. Paste the
-              link into any Facebook group and it shows up as a card with your photo and price already on it.
+              One page per drop, with your photos, the price, how many are left, and where to pick up. Paste
+              the link into any Facebook group and it shows up as a card with your photo and price already on it.
             </p>
             <ul className="mt-5 space-y-3">
               {[
-                ["Up to 10 photos", "Drag them in from a desktop or tap from your phone. The first one becomes the preview card."],
+                ["Up to 10 photos", "Drag them in from a desktop or tap from your phone. The first one becomes the preview card. Handmade sells on the details, so show the grain, the glitter, the color options."],
                 ["A map to the pickup spot", "Type in the address and buyers get a map and a directions button. Or leave the address off and just name the place."],
-                ["Your own link", "groveline.io/d/saturday-sourdough, or whatever you want to call it. Same for your shop page."],
+                ["Your own link", "groveline.io/d/fall-tumblers, or whatever you want to call it. Same for your shop page."],
                 ["A waitlist when you sell out", "The Reserve button turns into Join the waitlist. Next batch, you know how many to make."],
               ].map(([t, d]) => (
                 <li key={t} className="flex gap-3">
@@ -223,27 +226,26 @@ export default async function SellPage() {
             </ul>
           </div>
           <Reveal>
-            <div className="tag-card overflow-hidden !p-0" aria-hidden="true">
+            {/* A static mock of a drop page, so this reads the same with no live drops. */}
+            <div className="tag-card mx-auto max-w-md overflow-hidden !pl-0" aria-hidden="true">
               <Image
-                src="/illustrations/goods.jpg"
+                src="/illustrations/tumblers.jpg"
                 alt=""
-                width={600}
-                height={450}
-                className="aspect-[16/10] w-full object-cover"
-                sizes="(max-width: 1024px) 100vw, 540px"
+                width={1448}
+                height={1086}
+                className="aspect-[4/3] w-full object-cover"
+                sizes="(max-width: 1024px) 100vw, 448px"
               />
               <div className="p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm text-muted">Miller Farm · Piedmont, AL</p>
-                    <p className="mt-0.5 font-display text-2xl font-semibold text-grove">Saturday sourdough</p>
-                  </div>
-                  <p className="font-display text-2xl font-semibold">$9</p>
+                <p className="text-xs text-muted">Ridge &amp; Vine Designs, Piedmont, AL</p>
+                <div className="mt-1 flex items-baseline justify-between gap-4">
+                  <h3 className="text-xl font-semibold">Fall leaf tumblers</h3>
+                  <p className="font-display text-xl font-semibold text-grove">$28</p>
                 </div>
-                <p className="mt-2 text-sm text-muted">Pickup Saturday 8 to 11 AM · Farmers market, Ladiga St.</p>
-                <div className="mt-4 flex items-center justify-between rounded-lg bg-cream px-4 py-2.5 text-sm">
-                  <span className="font-medium">7 of 12 left</span>
-                  <span className="text-muted">5 reserved</span>
+                <p className="mt-1 text-sm text-muted">Pickup Saturday 9 to noon at the Piedmont Farmers Market, or shipped for $8</p>
+                <div className="mt-4 flex items-center justify-between rounded-lg bg-cream-dark/60 px-3 py-2 text-sm">
+                  <span className="font-medium">6 of 15 left</span>
+                  <span className="text-muted">9 reserved</span>
                 </div>
                 <div className="btn btn-primary mt-4 w-full">Reserve yours</div>
               </div>
@@ -253,15 +255,11 @@ export default async function SellPage() {
       </section>
 
       {/* Three steps */}
-      <section className="bg-cream-dark/50 px-4 py-16" aria-labelledby="steps">
-        <div className="mx-auto max-w-6xl">
+      <section className="bg-cream-dark/50">
+        <div className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="steps">
           <h2 id="steps" className="text-3xl font-semibold">Three steps, start to finish</h2>
           <ol className="mt-8 grid gap-4 sm:grid-cols-3 sm:gap-6">
-            {[
-              { t: "Post it", d: "What it is, how many, the price, and where or when to get it. Add photos. About a minute, standing in the kitchen." },
-              { t: "Share the link", d: "Paste it in the Facebook groups you already use, text it, put it on a sign. Your followers get an email automatically." },
-              { t: "Hand it out", d: "Your reservations are your checklist. Tap names as people pay. No-show? Remove them and the items go back up." },
-            ].map((step, i) => (
+            {steps.map((step, i) => (
               <Reveal key={step.t} delay={i * 90}>
                 <li className="tag-card h-full p-5">
                   <p className="font-display text-3xl font-semibold text-leaf">{i + 1}</p>
@@ -271,28 +269,16 @@ export default async function SellPage() {
               </Reveal>
             ))}
           </ol>
-          <div className="mt-8">
-            <Link href={ctaHref} className="btn btn-primary text-lg">{ctaLabel}</Link>
-          </div>
+          <Link href={ctaHref} className="btn btn-primary mt-8">{ctaLabel}</Link>
         </div>
       </section>
 
-      {/* Everything included */}
-      <section className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="included">
-        <h2 id="included" className="text-3xl font-semibold">Everything a drop comes with</h2>
-        <p className="mt-2 max-w-2xl text-muted">All of it is included on every plan, including the free drops.</p>
+      {/* Features */}
+      <section className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="features">
+        <h2 id="features" className="text-3xl font-semibold">Everything a drop comes with</h2>
+        <p className="mt-2 text-muted">All of it is included on every plan, including the free drops.</p>
         <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[
-            ["Live count", "Nobody has to ask what's left. Sold out becomes a waitlist on its own."],
-            ["Reservations with no buyer account", "A name and a phone number. That's the whole form. Fifteen seconds on any phone."],
-            ["Follower and subscriber emails", "Anyone can drop an email on your shop page. Every new drop goes out to them automatically."],
-            ["Card payments to your bank", "Buyers pay through Stripe. The card is held at reservation and charged when you mark it picked up. Cash still works too."],
-            ["Shipping, if you want it", "Set one flat rate. The card charges when you mark it shipped. Pickup and shipping on the same drop is fine."],
-            ["Pickup reminders", "Buyers get an email the day before pickup, with a cancel link so you find out early instead of at the table."],
-            ["Printable pickup sheet", "A PDF for the table and a spreadsheet for your records, per drop."],
-            ["Your shop page", "Your photo, your bio, your drops, a follow button, and a link you can put on a business card."],
-            ["Post again", "Same drop next week? One tap copies it, you change the date, done."],
-          ].map(([t, d], i) => (
+          {features.map(([t, d], i) => (
             <Reveal key={t} delay={(i % 3) * 60}>
               <li className="tag-card h-full p-5">
                 <h3 className="font-semibold">{t}</h3>
@@ -303,23 +289,33 @@ export default async function SellPage() {
         </ul>
       </section>
 
-      {/* Made for */}
-      <section className="bg-cream-dark/50 px-4 py-16" aria-labelledby="madefor">
-        <div className="mx-auto max-w-6xl">
-          <h2 id="madefor" className="text-3xl font-semibold">Built around what you sell</h2>
-          <p className="mt-2 max-w-2xl text-muted">Pick the one that sounds like you for the specifics.</p>
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
-            {FOR_PAGES.map((p, i) => (
-              <Reveal key={p.slug} delay={i * 70}>
-                <Link href={`/for/${p.slug}`} className="tag-card block h-full overflow-hidden !pl-0">
-                  <Image src={p.image} alt={p.imageAlt} width={600} height={450} className="aspect-[4/3] w-full object-cover" sizes="(max-width: 640px) 50vw, 280px" />
-                  <div className="p-3 sm:p-4">
-                    <h3 className="text-sm font-semibold sm:text-base">{p.heading}</h3>
-                    <p className="mt-1 hidden text-sm text-muted sm:block">{p.tagline}</p>
-                  </div>
-                </Link>
-              </Reveal>
-            ))}
+      {/* Audiences */}
+      <section className="bg-cream-dark/50">
+        <div className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="who">
+          <h2 id="who" className="text-3xl font-semibold">Built around what you sell</h2>
+          <p className="mt-2 text-muted">Pick the one that sounds like you for the specifics.</p>
+          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-6 lg:grid-cols-5">
+            {audiences.map((c, i) => {
+              const last = i === audiences.length - 1;
+              return (
+                <Reveal key={c.t} delay={i * 70} className={last ? "col-span-2 sm:col-span-1" : ""}>
+                  <Link href={c.href} className="tag-card block h-full overflow-hidden !pl-0">
+                    <Image
+                      src={c.img}
+                      alt={c.alt}
+                      width={600}
+                      height={450}
+                      className={`${last ? "aspect-[2/1] sm:aspect-[4/3]" : "aspect-[4/3]"} w-full object-cover`}
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 220px"
+                    />
+                    <div className="p-3 sm:p-4">
+                      <h3 className="text-sm font-semibold sm:text-base">{c.t}</h3>
+                      <p className="mt-1 hidden text-sm text-muted sm:block">{c.d}</p>
+                    </div>
+                  </Link>
+                </Reveal>
+              );
+            })}
           </div>
         </div>
       </section>
