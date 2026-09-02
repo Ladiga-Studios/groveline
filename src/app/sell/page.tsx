@@ -38,12 +38,12 @@ const stats = [
 
 /* The comparison table. Column two is the pain, column three is the fix. */
 const compare = [
-  ["Is this still available?", "You answer it in the comments. Forty times.", "The count updates by itself. Sold out turns into a waitlist."],
-  ["Who ordered what", "A notebook, a screenshot, and a thread you scroll back through.", "One list, in order, with names, phone numbers, and quantities."],
-  ["Getting paid", "Cash, Venmo, and chasing the person who forgot.", "Cash at pickup, or a card hold that charges when you hand it over."],
-  ["Telling your regulars", "Hope Facebook shows your post to them.", "Everyone who follows you gets an email the second you post."],
-  ["No-shows", "You ate the loss, or texted around to resell it.", "Tap Remove. The items go back up for the next person."],
-  ["Pickup day", "Scrolling on your phone with a line forming.", "A checklist. Tap names as they pay. Print it if you'd rather."],
+  ["Is this still available?", "You answer it in the comments, repeatedly.", "The count updates automatically. Sold out becomes a waitlist."],
+  ["Who ordered what", "A notebook, a screenshot, and a comment thread you scroll back through.", "One ordered list, with names, phone numbers, and quantities."],
+  ["Getting paid", "Cash and Venmo, plus following up with the person who forgot.", "Cash at pickup, or a card hold that charges when you hand it over."],
+  ["Reaching your regulars", "Hoping Facebook shows your post to them.", "Everyone who follows you gets an email the moment you post."],
+  ["No-shows", "You absorb the loss, or message around trying to resell it.", "Tap Remove. The item goes straight back up for the next buyer."],
+  ["Pickup day", "Managing a line from your phone.", "A checklist. Tap names as people pay, or print it in advance."],
 ];
 
 const steps = [
@@ -53,15 +53,15 @@ const steps = [
 ];
 
 const features = [
-  ["Live count", "Nobody has to ask what's left. Sold out becomes a waitlist on its own."],
-  ["Reservations with no buyer account", "A name and a phone number. That's the whole form. Fifteen seconds on any phone."],
-  ["Follower and subscriber emails", "Anyone can drop an email on your shop page. Every new drop goes out to them automatically."],
+  ["Live count", "Nobody has to ask what's left. Sold out becomes a waitlist automatically."],
+  ["Reservations with no buyer account", "A name and a phone number is the entire form &mdash; about fifteen seconds on any phone."],
+  ["Follower and subscriber emails", "Anyone can add their email on your shop page. Every new drop goes out to them automatically."],
   ["Card payments to your bank", "Buyers pay through Stripe. The card is held at reservation and charged when you mark it picked up. Cash still works too."],
-  ["Shipping, if you want it", "Set one flat rate. The card charges when you mark it shipped. Pickup and shipping on the same drop is fine."],
-  ["Pickup reminders", "Buyers get an email the day before pickup, with a cancel link so you find out early instead of at the table."],
-  ["Printable pickup sheet", "A PDF for the table and a spreadsheet for your records, per drop."],
+  ["Shipping, if you want it", "Set one flat rate, and the card charges when you mark the order shipped. Pickup and shipping can run on the same drop."],
+  ["Pickup reminders", "Buyers get an email the day before pickup, with a cancel link so you hear about changes early instead of at the table."],
+  ["Printable pickup sheet", "A PDF for the table, and a spreadsheet for your records, generated for every drop."],
   ["Your shop page", "Your photo, your bio, your drops, a follow button, and a link you can put on a business card."],
-  ["Post again", "Same drop next week? One tap copies it, you change the date, done."],
+  ["Post again", "Selling the same drop next week? One tap copies it &mdash; just update the date."],
 ];
 
 const faq = [
@@ -130,20 +130,20 @@ export default async function SellPage() {
             <p className="rise text-sm font-medium text-leaf">For anyone who sells in batches</p>
             <h1 className="rise mt-2 font-display text-4xl font-semibold leading-[1.08] text-grove sm:text-5xl lg:text-6xl">
               <span className="block">Post it once.</span>
-              <span className="block text-gold">Stop answering &ldquo;still available?&rdquo;</span>
+              <span className="block text-gold">Never answer &ldquo;is this still available&rdquo; again.</span>
             </h1>
             <p className="rise rise-1 mt-6 max-w-xl text-lg">
               Groveline turns a batch of anything into one link. Buyers reserve with a name and a phone
-              number, the count updates on its own, and you show up with the goods and a checklist. A dozen
-              shirts, a run of tumblers, a tray of earrings, twenty bars of soap, Saturday&apos;s sourdough,
-              a hundred plates for the fire hall.
+              number, the count updates automatically, and you show up with the goods and a ready-made
+              checklist. A dozen shirts, a run of tumblers, a tray of earrings, twenty bars of soap, a
+              weekend batch of sourdough, a hundred plates for a fundraiser.
             </p>
             <div className="rise rise-2 mt-8 flex flex-wrap gap-3">
               <Link href={ctaHref} className="btn btn-primary text-lg">{ctaLabel}</Link>
               <Link href="/pricing" className="btn btn-outline text-lg">See pricing</Link>
             </div>
             <p className="rise rise-3 mt-4 text-sm text-muted">
-              First three drops free, no card needed. $10 a month after that, and never a cut of a sale.
+              First three drops are free, no card required. $10 a month after that, and never a cut of a sale.
             </p>
           </div>
           <Image
@@ -174,8 +174,8 @@ export default async function SellPage() {
         <div className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="compare">
           <h2 id="compare" className="text-3xl font-semibold">What changes when you post a drop</h2>
           <p className="mt-2 max-w-2xl text-muted">
-            You already know how to sell. This is the part between the post and the handoff, which is where
-            the time goes.
+            You already know how to sell. This covers the part between the post and the handoff, which is
+            where most of the time goes.
           </p>
           <Reveal>
             <div className="tag-card mt-8 overflow-x-auto">
@@ -209,14 +209,15 @@ export default async function SellPage() {
             <h2 id="buyers" className="text-3xl font-semibold">This is what your buyers see</h2>
             <p className="mt-4 text-lg">
               One page per drop, with your photos, the price, how many are left, and where to pick up. Paste
-              the link into any Facebook group and it shows up as a card with your photo and price already on it.
+              the link into any Facebook group and it displays as a card with your photo and price already
+              on it.
             </p>
             <ul className="mt-5 space-y-3">
               {[
-                ["Up to 10 photos", "Drag them in from a desktop or tap from your phone. The first one becomes the preview card. Handmade sells on the details, so show the grain, the glitter, the color options."],
-                ["A map to the pickup spot", "Type in the address and buyers get a map and a directions button. Or leave the address off and just name the place."],
-                ["Your own link", "groveline.io/d/fall-tumblers, or whatever you want to call it. Same for your shop page."],
-                ["A waitlist when you sell out", "The Reserve button turns into Join the waitlist. Next batch, you know how many to make."],
+                ["Up to 10 photos", "Upload from a desktop or your phone. The first photo becomes the preview card. Handmade sells on detail, so show the grain, the glitter, and the color options."],
+                ["A map to the pickup spot", "Add an address and buyers get a map with directions built in, or leave it off and simply name the location."],
+                ["Your own link", "groveline.io/d/fall-tumblers, or a name you choose. The same applies to your shop page."],
+                ["A waitlist when you sell out", "The Reserve button switches to Join the waitlist, so you know exactly how many to make next time."],
               ].map(([t, d]) => (
                 <li key={t} className="flex gap-3">
                   <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-peach" aria-hidden="true" />
@@ -275,8 +276,8 @@ export default async function SellPage() {
 
       {/* Features */}
       <section className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="features">
-        <h2 id="features" className="text-3xl font-semibold">Everything a drop comes with</h2>
-        <p className="mt-2 text-muted">All of it is included on every plan, including the free drops.</p>
+        <h2 id="features" className="text-3xl font-semibold">Everything included with every drop</h2>
+        <p className="mt-2 text-muted">Every feature below is included on every plan, including the free drops.</p>
         <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {features.map(([t, d], i) => (
             <Reveal key={t} delay={(i % 3) * 60}>
@@ -293,7 +294,7 @@ export default async function SellPage() {
       <section className="bg-cream-dark/50">
         <div className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="who">
           <h2 id="who" className="text-3xl font-semibold">Built around what you sell</h2>
-          <p className="mt-2 text-muted">Pick the one that sounds like you for the specifics.</p>
+          <p className="mt-2 text-muted">Choose your category to see the specifics.</p>
           <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-6 lg:grid-cols-5">
             {audiences.map((c, i) => {
               const last = i === audiences.length - 1;
@@ -336,9 +337,9 @@ export default async function SellPage() {
       {/* Closing CTA */}
       <section className="bg-grove text-cream">
         <div className="mx-auto max-w-6xl px-4 py-16 text-center">
-          <h2 className="text-3xl font-semibold">Your first drop could be live before dinner</h2>
+          <h2 className="text-3xl font-semibold">Your first drop can be live within minutes</h2>
           <p className="mx-auto mt-3 max-w-xl text-lg text-cream/90">
-            Setup takes about a minute. Three drops are free, no card needed, and you can stop any time.
+            Setup takes about a minute. Three drops are free, no card required, and you can cancel any time.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link href={ctaHref} className="btn btn-primary text-lg">{ctaLabel}</Link>

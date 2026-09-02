@@ -22,23 +22,13 @@ const included = [
 ];
 
 const faq = [
-  ["Do I need to pay to try it?", "No. Post three drops on the house, no card required. That's three over the life of your account rather than three at a time, so deleting one doesn't give the slot back. If it works for you, pick a plan then."],
+  ["Do I need to pay to try it?", "No. Your first three drops are free, with no card required. That's three over the life of your account rather than three at a time, so deleting one won't return the slot. If it works for you, choose a plan afterward."],
   ["Do you take a cut of my sales?", "Never. Cash or card, big or small, the sale is yours. The subscription is the only thing you ever pay us."],
   ["What about card processing fees?", "Stripe charges its normal processing fee on card payments, about 2.9% plus 30 cents, the same as any card reader at a market. That comes out of the seller's side. Groveline adds nothing on top."],
-  ["Can I cancel?", "Any time, with one button in your account settings. Nothing changes until the end of what you already paid for, and your shop, drops, and followers all stay right where they are."],
+  ["Can I cancel?", "Any time, with one button in your account settings. Nothing changes until the end of your current billing period, and your shop, drops, and followers all remain in place."],
   ["What happens if I stop paying?", "You go back to the free tier. Your shop and everything on it stays up, you just can't post new drops past the three free ones until you pick a plan again."],
   ["Is buying free?", "Always. Buyers never pay Groveline anything, and they don't need an account."],
 ];
-
-const faqJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: faq.map(([q, a]) => ({
-    "@type": "Question",
-    name: q,
-    acceptedAnswer: { "@type": "Answer", text: a },
-  })),
-};
 
 export default async function PricingPage() {
   const supabase = await supabaseServer();
@@ -55,28 +45,12 @@ export default async function PricingPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <div className="max-w-2xl">
         <h1 className="text-4xl font-semibold">Simple, and it stays that way</h1>
         <p className="mt-4 text-lg">
           Your first three drops are free. After that it&apos;s one flat price, and we never take a cut of what you
           sell. Buying is free for everyone, always.
         </p>
-      </div>
-
-      {/* The flat price in real numbers, since a percentage is what most
-          people are used to paying elsewhere. */}
-      <div className="mt-8 grid gap-3 sm:grid-cols-3">
-        {[
-          ["$200 / month in sales", "$10"],
-          ["$800 / month in sales", "$10"],
-          ["$2,000 / month in sales", "$10"],
-        ].map(([sales, bill]) => (
-          <div key={sales} className="rounded-xl border border-cream-dark bg-white px-4 py-3">
-            <p className="text-sm text-muted">{sales}</p>
-            <p className="font-display text-2xl font-semibold text-grove">{bill} <span className="text-sm font-normal text-muted">to Groveline</span></p>
-          </div>
-        ))}
       </div>
 
       <div className="mt-10">
@@ -86,13 +60,13 @@ export default async function PricingPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="tag-card p-6">
               <p className="font-display text-4xl font-semibold text-grove">$10<span className="text-lg font-normal text-muted"> / month</span></p>
-              <p className="mt-1 text-sm text-muted">Month to month. Stop whenever.</p>
+              <p className="mt-1 text-sm text-muted">Billed monthly. Cancel any time.</p>
             </div>
             <div className="tag-card border-leaf p-6">
               <p className="font-display text-4xl font-semibold text-grove">$60<span className="text-lg font-normal text-muted"> / year</span></p>
-              <p className="mt-1 text-sm text-muted">Two months free. Set it and forget it.</p>
+              <p className="mt-1 text-sm text-muted">Equivalent to two months free, billed annually.</p>
             </div>
-            <p className="text-sm text-muted sm:col-span-2">Checkout is being connected. Your first three drops are free in the meantime, so go ahead and post.</p>
+            <p className="text-sm text-muted sm:col-span-2">Checkout is being connected. Your first three drops are free in the meantime, so you can post right away.</p>
           </div>
         )}
       </div>

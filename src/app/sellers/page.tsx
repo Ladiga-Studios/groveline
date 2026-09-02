@@ -29,7 +29,7 @@ export default async function SellersPage({ searchParams }: { searchParams: Prom
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <h1 className="text-3xl font-semibold sm:text-4xl">Every shop on Groveline</h1>
-      <p className="mt-2 max-w-2xl text-lg text-muted">Find the ones near you and follow along so you never miss what they post.</p>
+      <p className="mt-2 max-w-2xl text-lg text-muted">Find shops near you and follow them to see new drops as they're posted.</p>
       {states.length > 1 && (
         <nav aria-label="Filter by state" className="mt-4 flex flex-wrap gap-2">
           <Link href="/sellers" className={`btn !min-h-11 !px-4 ${!state ? "btn-grove" : "btn-outline"}`}>All</Link>
@@ -41,8 +41,8 @@ export default async function SellersPage({ searchParams }: { searchParams: Prom
       {list.length === 0 ? (
         <div className="tag-card mt-8 p-8 text-center">
           <Image src="/illustrations/plants.jpg" alt="" width={1254} height={1254} className="mx-auto h-40 w-auto" />
-          <p className="mt-4 font-display text-xl font-semibold">Nobody's set up shop here yet.</p>
-          <Link href="/sell" className="btn btn-primary mt-4">Be the first one</Link>
+          <p className="mt-4 font-display text-xl font-semibold">No shops in this area yet.</p>
+          <Link href="/sell" className="btn btn-primary mt-4">Be the first to sell here</Link>
         </div>
       ) : (
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

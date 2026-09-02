@@ -148,9 +148,9 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <h1 className="text-3xl font-semibold">What's around right now</h1>
+      <h1 className="text-3xl font-semibold">Available right now</h1>
       <p className="mt-2 text-muted">
-        {total} {total === 1 ? "drop" : "drops"} up for grabs this minute. Reserve in a few taps, then pick it up or have it shipped.
+        {total} {total === 1 ? "drop is" : "drops are"} available this minute. Reserve in a few taps, then pick up in person or have it shipped.
       </p>
 
       <form id="browse-form" action="/browse" method="get" className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -158,7 +158,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
         {group && <input type="hidden" name="group" value={group} />}
         <div className="grow">
           <label htmlFor="browse-q" className="sr-only">Search drops</label>
-          <input id="browse-q" name="q" className="field" placeholder="Try sourdough, tomatoes, soap..." defaultValue={q ?? ""} />
+          <input id="browse-q" name="q" className="field" placeholder="Search sourdough, tumblers, soap..." defaultValue={q ?? ""} />
         </div>
         <div>
           <label htmlFor="browse-state" className="sr-only">State</label>
@@ -210,8 +210,8 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
               <p className="font-display text-xl font-semibold">Nothing here right now.</p>
               <p className="mt-2 text-muted">
                 {filtering
-                  ? "Nothing matches those filters yet. Try loosening one up, or check back a little later."
-                  : "Sellers tend to post through the week, with most pickups landing on the weekend. Check back soon, or go ahead and be the first."}
+                  ? "No results match those filters. Try broadening your search, or check back later."
+                  : "Sellers typically post throughout the week, with most pickups scheduled for the weekend. Check back soon, or be the first to post."}
               </p>
               <div className="mt-4 flex justify-center gap-3">
                 {filtering && <Link href="/browse" className="btn btn-outline">Clear filters</Link>}
