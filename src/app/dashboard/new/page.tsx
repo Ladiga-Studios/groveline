@@ -114,7 +114,7 @@ export default function NewDropPage() {
     const priceCents = Math.round(parsePrice(price) * 100);
     const qty = parseInt(quantity, 10);
     if (!title.trim()) return setError("It needs a name, something like Sourdough loaves.");
-    if (!category) return setError("Pick a category so folks can actually find this.");
+    if (!category) return setError("Choose a category so buyers can find this.");
     if (!priceCents || priceCents <= 0) return setError("What's it going for?");
     if (!qty || qty <= 0) return setError("How many do you have?");
     const shipOnly = pickup.fulfillment === "shipping";
@@ -269,7 +269,7 @@ export default function NewDropPage() {
             </div>
             <div>
               <label htmlFor="d-cat" className="field-label req">Category</label>
-              <CategorySelect id="d-cat" value={category} onChange={setCategory} />
+              <CategorySelect id="d-cat" value={category} onChange={setCategory} hint={title} />
             </div>
             <div>
               <label htmlFor="d-desc" className="field-label">Description <span className="font-normal text-muted">(optional)</span></label>

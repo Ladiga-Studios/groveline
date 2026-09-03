@@ -101,3 +101,126 @@ export const CATEGORIES = CATEGORY_GROUPS.filter((grp) => grp.id !== "other").ma
 export function groupOf(value: string) {
   return CATEGORY_GROUPS.find((grp) => grp.items.some((i) => i.value === value));
 }
+
+/* Plain words sellers actually type, mapped to category values. Used by the
+   picker to search and to suggest a category from the drop title. Keep these
+   lowercase and singular where it matters; matching strips a trailing "s". */
+const KEYWORDS: Record<string, string[]> = {
+  bread: ["loaf", "loaves", "rolls", "baguette", "focaccia"],
+  sourdough: ["loaf", "loaves", "boule", "starter"],
+  cakes: ["cake", "layer cake", "sheet cake"],
+  cupcakes: ["cupcake"],
+  cookies: ["cookie"],
+  pies: ["pie"],
+  pastries: ["pastry", "croissant", "danish"],
+  "brownies-bars": ["brownie", "bar", "blondie"],
+  "muffins-scones": ["muffin", "scone"],
+  "biscuits-rolls": ["biscuit", "roll", "yeast roll"],
+  donuts: ["donut", "doughnut"],
+  "custom-cakes": ["birthday cake", "wedding cake"],
+  "chicken-eggs": ["egg", "dozen", "farm egg"],
+  "duck-eggs": ["duck"],
+  "jams-jellies": ["jam", "jelly", "preserve"],
+  honey: ["raw honey", "honeycomb", "bee"],
+  pickles: ["pickle", "pickled"],
+  "hot-sauce": ["pepper sauce"],
+  "sauces-bbq": ["sauce", "bbq sauce", "marinade"],
+  "plate-sale": ["plate", "lunch", "dinner", "fundraiser", "benefit"],
+  bbq: ["barbecue", "rib", "brisket", "smoked"],
+  "boston-butts": ["butt", "pork butt", "shoulder"],
+  "fish-fry": ["fish", "catfish"],
+  tamales: ["tamale"],
+  soups: ["soup", "stew", "chili", "gumbo"],
+  "fudge-candy": ["fudge", "candy", "praline", "brittle"],
+  seedlings: ["seedling", "start", "plug"],
+  "vegetable-starts": ["tomato plant", "pepper plant", "start"],
+  "cut-flowers": ["flower", "zinnia", "sunflower", "dahlia"],
+  bouquets: ["bouquet", "arrangement"],
+  wreaths: ["wreath"],
+  houseplants: ["plant", "pothos", "monstera"],
+  succulents: ["succulent", "cactus"],
+  soap: ["bar soap", "goat milk"],
+  candles: ["candle", "soy"],
+  "wax-melts": ["melt", "wax"],
+  "lotion-skincare": ["lotion", "balm", "scrub", "lip balm", "salve"],
+  pottery: ["mug", "ceramic", "bowl", "clay"],
+  woodwork: ["wood", "wooden", "turned"],
+  "cutting-boards": ["board", "charcuterie"],
+  "knit-crochet": ["crochet", "knit", "amigurumi", "plush", "beanie", "blanket", "yarn"],
+  quilts: ["quilt"],
+  sewing: ["sewn", "bag", "tote", "bow", "scrunchie", "bib"],
+  jewelry: ["earring", "necklace", "bracelet", "ring", "bead"],
+  leather: ["wallet", "belt", "keychain"],
+  "art-prints": ["print", "painting", "art", "sticker", "drawing"],
+  "signs-decor": ["sign", "decor", "door hanger", "wall"],
+  tumblers: ["tumbler", "cup", "mug", "koozie", "can cooler"],
+  "tshirts-apparel": ["shirt", "tee", "t-shirt", "hoodie", "sweatshirt", "apparel", "onesie", "hat", "cap"],
+  "vinyl-sublimation": ["vinyl", "sublimation", "decal", "htv"],
+  embroidery: ["embroidered", "monogram", "stitched"],
+  "gift-boxes": ["gift", "box", "basket"],
+  "christmas-trees": ["christmas", "tree", "fraser"],
+  "dog-treats": ["dog", "treat", "pup"],
+  firewood: ["wood", "cord"],
+  "hay-straw": ["hay", "straw", "bale"],
+  "venison-processing": ["deer", "venison"],
+  "beef-shares": ["quarter", "half", "share", "freezer beef"],
+  "pork-shares": ["half hog", "whole hog", "share"],
+  "coffee-tea": ["coffee", "tea", "roast"],
+  "cold-brew": ["coffee"],
+  tomatoes: ["tomato", "heirloom"],
+  corn: ["sweet corn", "ear"],
+  peaches: ["peach"],
+  berries: ["strawberry", "blueberry", "blackberry"],
+  pumpkins: ["pumpkin"],
+  microgreens: ["microgreen", "sprout"],
+};
+
+export type CategoryHit = Category & { group: CategoryGroup };
+
+const HITS: CategoryHit[] = CATEGORY_GROUPS.flatMap((group) => group.items.map((c) => ({ ...c, group })));
+
+const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9\s-]/g, " ").replace(/\s+/g, " ").trim();
+const singular = (w: string) => (w.length > 3 && w.endsWith("s") ? w.slice(0, -1) : w);
+
+/* Search categories by what the seller typed. Ranks label matches above
+   keyword matches above group matches. Empty query returns everything. */
+export function searchCategories(query: string): CategoryHit[] {
+  const q = norm(query);
+  if (!q) return HITS;
+  const qs = singular(q);
+  const scored = HITS.map((h, i) => {
+    const label = norm(h.label);
+    const words = label.split(" ");
+    let score = 0;
+    if (label.startsWith(q)) score = 5;
+    else if (words.some((w) => w.startsWith(q) || singular(w) === qs)) score = 4;
+    else if (label.includes(q)) score = 3;
+    else if ((KEYWORDS[h.value] ?? []).some((k) => k.startsWith(q) || singular(k) === qs || k.includes(q))) score = 2;
+    else if (norm(h.group.label).includes(q)) score = 1;
+    return { h, i, score };
+  });
+  return scored.filter((x) => x.score > 0).sort((a, b) => b.score - a.score || a.i - b.i).map((x) => x.h);
+}
+
+/* Guess categories from a drop title like "Fall leaf tumblers, 20oz".
+   Returns up to `max` hits, best first. Only whole-word matches count, so a
+   title has to actually contain the thing. */
+/* Words that show up in titles but say nothing about the category. */
+const STOP = new Set(["custom", "fresh", "farm", "homemade", "handmade", "local", "small", "large", "batch", "saturday", "sunday", "weekend", "the", "and", "for", "with", "from", "your", "our", "new", "big", "little", "mini", "set", "pack", "order", "orders", "sale", "special", "limited", "made", "make", "free", "premium", "best"]);
+
+export function suggestCategories(text: string, max = 3): CategoryHit[] {
+  const tokens = norm(text).split(" ").filter((t) => t.length >= 3).map(singular).filter((t) => !STOP.has(t));
+  if (!tokens.length) return [];
+  const scored = HITS.map((h, i) => {
+    const labelWords = norm(h.label).split(" ").map(singular);
+    const keys = (KEYWORDS[h.value] ?? []).map((k) => singular(norm(k)));
+    let score = 0;
+    for (const t of tokens) {
+      if (labelWords.includes(t)) score += 3;
+      else if (keys.includes(t)) score += 2;
+      else if (keys.some((k) => k.includes(" ") && norm(text).includes(k))) score += 2;
+    }
+    return { h, i, score };
+  });
+  return scored.filter((x) => x.score > 0).sort((a, b) => b.score - a.score || a.i - b.i).slice(0, max).map((x) => x.h);
+}
