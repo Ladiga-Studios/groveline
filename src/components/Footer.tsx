@@ -9,8 +9,8 @@ export default function Footer() {
         <div>
           <Logo light />
           <p className="mt-3 max-w-xs text-cream/80">
-            A place for people who sell things in batches. Post what you have,
-            neighbors reserve it, and you meet up in person or ship it.
+            An online shop for the things you make. Post what you have,
+            buyers reserve it, and you hand it over in person or ship it.
           </p>
           <div className="mt-5 flex flex-col gap-2 text-cream/80">
             <a href="mailto:hello@groveline.io" className="w-fit hover:underline">hello@groveline.io</a>

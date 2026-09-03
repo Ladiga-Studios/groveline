@@ -9,7 +9,7 @@ import type { Drop } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Groveline | Sell what you make in batches, reserved in seconds",
+  title: "Groveline | An online shop for the things you make",
   description:
     "Post a batch, share one link, and Groveline keeps the list. Bread, produce, shirts, tumblers, jewelry, soap, plants, and plate sales. Buyers reserve in seconds with no account.",
   alternates: { canonical: "/" },
@@ -90,9 +90,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
               <span className="block text-gold">Let Groveline track who claimed it.</span>
             </h1>
             <p className="rise rise-1 mt-6 max-w-xl text-lg">
-              Groveline is where people who sell in batches post what they have, so buyers can reserve it
-              before it&apos;s gone. Shirts, tumblers, soap, bread, plants, plate sales: if you make it
-              in a batch, it belongs here. Reservations take about fifteen seconds, with no account required.
+              Groveline is an online shop for the things you make. Post what you have, and buyers can
+              reserve it before it&apos;s gone. Shirts, tumblers, soap, bread, plants, plate sales: if you
+              make it, it belongs here. Reservations take about fifteen seconds, with no account required.
               Meet buyers in person, or ship anywhere in the country.
             </p>
             <div className="rise rise-2 mt-8 flex flex-wrap gap-3">

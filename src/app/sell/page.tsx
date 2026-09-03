@@ -8,7 +8,7 @@ import { FOR_PAGES } from "@/lib/for";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Sell what you make in batches | Groveline",
+  title: "Open your online shop | Groveline",
   description:
     "Post a batch, share one link, and Groveline keeps the list. Shirts, tumblers, bread, soap, plants, plate sales. Buyers reserve in fifteen seconds, no account. First three drops free.",
   alternates: { canonical: "/sell" },
@@ -119,15 +119,14 @@ export default async function SellPage() {
       <section className="mx-auto max-w-6xl px-4 pb-10 pt-10 sm:pt-16">
         <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_1fr]">
           <div>
-            <p className="rise text-sm font-medium text-leaf">For anyone who sells in batches</p>
-            <h1 className="rise mt-2 font-display text-4xl font-semibold leading-[1.08] text-grove sm:text-5xl lg:text-6xl">
+            <h1 className="rise font-display text-4xl font-semibold leading-[1.08] text-grove sm:text-5xl lg:text-6xl">
               <span className="block">Post it once.</span>
               <span className="block text-gold">Watch the reservations come in.</span>
             </h1>
             <p className="rise rise-1 mt-6 max-w-xl text-lg">
-              Groveline turns a batch of anything into one link. Buyers reserve with a name and a phone
-              number, the count updates automatically, and you show up with the goods and a ready-made
-              checklist. A dozen shirts, a run of tumblers, a tray of earrings, twenty bars of soap, a
+              Groveline gives you an online shop with a page for everything you make. Buyers reserve with a
+              name and a phone number, the count updates automatically, and you show up with the goods and a
+              ready-made checklist. A dozen shirts, a run of tumblers, a tray of earrings, twenty bars of soap, a
               weekend batch of sourdough, a hundred plates for a fundraiser.
             </p>
             <div className="rise rise-2 mt-8 flex flex-wrap gap-3">
