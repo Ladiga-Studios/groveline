@@ -54,14 +54,14 @@ const steps = [
 
 const features = [
   ["Live count", "Nobody has to ask what's left. Sold out becomes a waitlist automatically."],
-  ["Reservations with no buyer account", "A name and a phone number is the entire form &mdash; about fifteen seconds on any phone."],
+  ["Reservations with no buyer account", "A name and a phone number is the entire form, taking about fifteen seconds on any phone."],
   ["Follower and subscriber emails", "Anyone can add their email on your shop page. Every new drop goes out to them automatically."],
   ["Card payments to your bank", "Buyers pay through Stripe. The card is held at reservation and charged when you mark it picked up. Cash still works too."],
   ["Shipping, if you want it", "Set one flat rate, and the card charges when you mark the order shipped. Pickup and shipping can run on the same drop."],
   ["Pickup reminders", "Buyers get an email the day before pickup, with a cancel link so you hear about changes early instead of at the table."],
   ["Printable pickup sheet", "A PDF for the table, and a spreadsheet for your records, generated for every drop."],
   ["Your shop page", "Your photo, your bio, your drops, a follow button, and a link you can put on a business card."],
-  ["Post again", "Selling the same drop next week? One tap copies it &mdash; just update the date."],
+  ["Post again", "Selling the same drop next week? One tap copies it, so you only need to update the date."],
 ];
 
 const faq = [
@@ -99,8 +99,7 @@ const faq = [
   },
 ];
 
-/* The four /for pages plus the craft table, which links straight to the
-   handmade group in browse until it gets a page of its own. */
+/* One card per /for page, in the order they appear in the nav. */
 const audiences = FOR_PAGES.map((p) => ({
   href: `/for/${p.slug}`,
   img: p.image,
@@ -108,13 +107,6 @@ const audiences = FOR_PAGES.map((p) => ({
   t: p.heading,
   d: p.tagline,
 }));
-audiences.splice(1, 0, {
-  href: "/browse?group=handmade",
-  img: "/illustrations/shirts.jpg",
-  alt: "A woman lifting a freshly pressed t-shirt from a heat press, folded shirts stacked beside her",
-  t: "From the craft table",
-  d: "Shirts, tumblers, jewelry, crochet",
-});
 
 export default async function SellPage() {
   const { loggedIn, isSeller } = await getViewer();
@@ -130,7 +122,7 @@ export default async function SellPage() {
             <p className="rise text-sm font-medium text-leaf">For anyone who sells in batches</p>
             <h1 className="rise mt-2 font-display text-4xl font-semibold leading-[1.08] text-grove sm:text-5xl lg:text-6xl">
               <span className="block">Post it once.</span>
-              <span className="block text-gold">Never answer &ldquo;is this still available&rdquo; again.</span>
+              <span className="block text-gold">Watch the reservations come in.</span>
             </h1>
             <p className="rise rise-1 mt-6 max-w-xl text-lg">
               Groveline turns a batch of anything into one link. Buyers reserve with a name and a phone

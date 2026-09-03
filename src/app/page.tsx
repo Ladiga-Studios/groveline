@@ -91,7 +91,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
             </h1>
             <p className="rise rise-1 mt-6 max-w-xl text-lg">
               Groveline is where people who sell in batches post what they have, so buyers can reserve it
-              before it&apos;s gone. Shirts, tumblers, soap, bread, plants, plate sales &mdash; if you make it
+              before it&apos;s gone. Shirts, tumblers, soap, bread, plants, plate sales: if you make it
               in a batch, it belongs here. Reservations take about fifteen seconds, with no account required.
               Meet buyers in person, or ship anywhere in the country.
             </p>
@@ -130,10 +130,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
         <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-6 lg:grid-cols-5">
           {[
             { img: "/illustrations/goods.jpg", alt: "Bread, tomatoes, eggs, and a jar of preserves", t: "From the kitchen and the garden", d: "Sourdough, cakes, and cookies. Tomatoes, greens, and sweet corn. Eggs by the dozen, plus jam, honey, and pickles.", href: "/for/kitchen" },
-            { img: "/illustrations/shirts.jpg", alt: "A woman lifting a freshly pressed t-shirt from a heat press, folded shirts stacked beside her", t: "From the craft table", d: "Shirts, tumblers, jewelry, and crochet. Vinyl, sublimation, and embroidery. If it sells at a craft fair, it sells here.", href: "/browse?group=handmade" },
+            { img: "/illustrations/shirts.jpg", alt: "A woman lifting a freshly pressed t-shirt from a heat press, folded shirts stacked beside her", t: "From the craft table", d: "Shirts, tumblers, jewelry, and crochet. Vinyl, sublimation, and embroidery. If it sells at a craft fair, it sells here.", href: "/for/craft" },
             { img: "/illustrations/workshop.jpg", alt: "A woodworker sanding a cutting board, finished boards stacked beside him", t: "From the workshop", d: "Cutting boards, signs, soap, candles, and wax melts. Pottery, leather, and quilts belong here too.", href: "/for/workshop" },
             { img: "/illustrations/plants.jpg", alt: "A plant stand with seedlings, houseplants, and cut flowers", t: "From the greenhouse", d: "Seedlings and vegetable starts in spring. Cut flowers and bouquets all summer. Wreaths and Christmas trees when it turns cold.", href: "/for/greenhouse" },
-            { img: "/illustrations/plates.jpg", alt: "A volunteer handing a plate of food across a table", t: "From the fire hall", d: "Plate sales, Boston butts, fish fries, and bake sales. Know your numbers before you start cooking.", href: "/for/fundraisers" },
+            { img: "/illustrations/plates.jpg", alt: "A volunteer handing a plate of food across a table", t: "Community fundraisers", d: "Plate sales, Boston butts, fish fries, and bake sales. Know your numbers before you start cooking.", href: "/for/fundraisers" },
           ].map((c, i, all) => {
             const last = i === all.length - 1;
             return (
@@ -187,7 +187,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
       <section className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="how">
         <h2 id="how" className="text-3xl font-semibold">How it works</h2>
         <p className="mt-2 max-w-2xl text-muted">
-          You already know how to sell. Groveline handles the part that eats your time &mdash; tracking who
+          You already know how to sell. Groveline handles the part that eats your time: tracking who
           ordered what.
         </p>
         <Reveal>
@@ -250,8 +250,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
             <h2 id="ship" className="mt-1 text-3xl font-semibold">Or skip the meetup and ship it</h2>
             <p className="mt-4 text-lg">
               Turn on shipping and a drop works like any online store. Buyers pay by card at checkout, you
-              receive a list of names and addresses, and you print the labels. Anything that fits in a box
-              &mdash; earrings, shirts, tumblers, soap, candles &mdash; can ship anywhere in the country.
+              receive a list of names and addresses, and you print the labels. Earrings, shirts, tumblers,
+              soap, candles: anything that fits in a box can ship anywhere in the country.
             </p>
             <ul className="mt-5 space-y-3">
               {[

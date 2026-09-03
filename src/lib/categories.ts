@@ -53,6 +53,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     ["pottery", "Pottery"], ["woodwork", "Woodwork"], ["cutting-boards", "Cutting boards"], ["knit-crochet", "Knit & crochet"],
     ["quilts", "Quilts"], ["sewing", "Sewing"], ["jewelry", "Jewelry"], ["leather", "Leather goods"],
     ["art-prints", "Art & prints"], ["signs-decor", "Signs & decor"], ["tumblers", "Tumblers & cups"],
+    ["tshirts-apparel", "T-shirts & apparel"], ["vinyl-sublimation", "Vinyl & sublimation"], ["embroidery", "Embroidery"],
     ["other-handmade", "Other handmade"],
   ]),
   /* No live animals: see PROHIBITED in src/lib/policy.ts. Poultry and
