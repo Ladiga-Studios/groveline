@@ -155,7 +155,7 @@ export default async function DropPage({ params }: { params: Promise<{ slug: str
 
           <div className="order-6 flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-3">
-              <FacebookShareButton url={url} />
+              <FacebookShareButton url={url} title={`${drop.title} for ${money(drop.price_cents)}`} text="Reserve yours before it is gone." />
               <ShareButton url={url} title={`${drop.title} for ${money(drop.price_cents)}`} text="Reserve yours before it is gone." />
             </div>
             <ReportButton dropId={drop.id} />
